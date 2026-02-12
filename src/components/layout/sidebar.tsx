@@ -29,6 +29,7 @@ import {
   LogOut,
   Building2,
   Menu,
+  Shield,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 
@@ -42,17 +43,24 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
+const adminNavigation = [
+  { name: "Admin", href: "/admin", icon: Shield },
+]
+
 interface SidebarProps {
   tenantName?: string
   tenantLogo?: string
+  isSuperadmin?: boolean
 }
 
-export function Sidebar({ tenantName = "My Business", tenantLogo }: SidebarProps) {
+export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin = false }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user
+
+  const allNavigation = isSuperadmin ? [...navigation, ...adminNavigation] : navigation
 
   return (
     <aside
@@ -105,7 +113,7 @@ export function Sidebar({ tenantName = "My Business", tenantLogo }: SidebarProps
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
-        {navigation.map((item) => {
+        {allNavigation.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link

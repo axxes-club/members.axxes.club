@@ -23,8 +23,25 @@ export default function SignUpPage() {
     const name = formData.get("name") as string
     const email = formData.get("email") as string
     const password = formData.get("password") as string
+    const inviteCode = formData.get("inviteCode") as string
 
     try {
+      // First validate the invite code
+      const validateRes = await fetch("/api/v1/validate-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: inviteCode }),
+      })
+
+      const validateData = await validateRes.json()
+
+      if (!validateRes.ok || !validateData.valid) {
+        setError(validateData.error || "Invalid invite code")
+        setIsLoading(false)
+        return
+      }
+
+      // Then create the account
       const result = await signUp.email({
         name,
         email,
@@ -34,6 +51,13 @@ export default function SignUpPage() {
       if (result.error) {
         setError(result.error.message || "Failed to create account")
       } else {
+        // Mark invite code as used
+        await fetch("/api/v1/use-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: inviteCode }),
+        })
+
         router.push("/onboarding")
       }
     } catch (err) {
@@ -56,7 +80,7 @@ export default function SignUpPage() {
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
           <CardDescription>
-            Enter your details to create your account
+            Enter your details and invite code to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -66,6 +90,17 @@ export default function SignUpPage() {
                 {error}
               </div>
             )}
+            <div className="space-y-2">
+              <Label htmlFor="inviteCode">Invite Code</Label>
+              <Input
+                id="inviteCode"
+                name="inviteCode"
+                type="text"
+                placeholder="Enter your invite code"
+                className="uppercase"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
