@@ -7,7 +7,7 @@ export default function Home() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 lg:px-12">
         <div className="text-xl font-bold tracking-tight">
-          members.axxes.club
+          members.axxes.<span className="text-purple-500">club</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/sign-in">

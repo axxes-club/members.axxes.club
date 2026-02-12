@@ -42,6 +42,10 @@
   --warning: 45 93% 47%;
   --warning-foreground: 0 0% 100%;
 
+  /* Club Purple */
+  --club: 270 70% 60%;
+  --club-foreground: 0 0% 100%;
+
   /* Border & Input */
   --border: 0 0% 90%;
   --input: 0 0% 90%;

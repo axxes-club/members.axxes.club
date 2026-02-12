@@ -8,7 +8,9 @@ export default function AuthLayout({
       {/* Left panel - branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground flex-col justify-between p-12">
         <div>
-          <span className="text-2xl font-bold tracking-tight">AXXES</span>
+          <span className="text-2xl font-bold tracking-tight">
+            members.axxes.<span className="text-purple-400">club</span>
+          </span>
         </div>
         <div className="space-y-6">
           <h1 className="text-display-lg">

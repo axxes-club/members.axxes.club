@@ -44,7 +44,7 @@ export default async function DashboardLayout({
           {/* Mobile Header */}
           <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
             <MobileSidebarTrigger />
-            <span className="font-semibold">members.axxes.club</span>
+            <span className="font-semibold">members.axxes.<span className="text-purple-500">club</span></span>
           </header>
           <main className="flex-1 overflow-y-auto">
             <div className="container mx-auto p-6 lg:p-8">{children}</div>
