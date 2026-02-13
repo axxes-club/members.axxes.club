@@ -68,7 +68,7 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "CRM", href: "/crm", icon: Users },
+  { name: "Contacts", href: "/crm", icon: Users },
   {
     name: "Events",
     href: "/events",

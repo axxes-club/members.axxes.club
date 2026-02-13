@@ -251,3 +251,119 @@ export async function removeTeamMember(membershipId: string) {
 
   revalidatePath("/settings")
 }
+
+// Get invitation by token (for acceptance page)
+export async function getInvitationByToken(token: string) {
+  const invitation = await db.query.tenantInvitations.findFirst({
+    where: eq(tenantInvitations.token, token),
+    with: {
+      tenant: true,
+      invitedBy: true,
+    },
+  })
+
+  if (!invitation) {
+    return null
+  }
+
+  return {
+    id: invitation.id,
+    email: invitation.email,
+    role: invitation.role,
+    status: invitation.status,
+    expiresAt: invitation.expiresAt,
+    tenantName: invitation.tenant?.name || "Unknown",
+    invitedByName: invitation.invitedBy?.name || "Unknown",
+  }
+}
+
+// Accept an invitation
+export async function acceptInvitation(token: string) {
+  const { cookies } = await import("next/headers")
+  const { auth } = await import("@/lib/auth")
+
+  // Get current user session
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ")
+
+  const session = await auth.api.getSession({
+    headers: new Headers({ cookie: cookieHeader }),
+  })
+
+  if (!session?.user) {
+    throw new Error("You must be signed in to accept an invitation")
+  }
+
+  const invitation = await db.query.tenantInvitations.findFirst({
+    where: eq(tenantInvitations.token, token),
+  })
+
+  if (!invitation) {
+    throw new Error("Invitation not found")
+  }
+
+  if (invitation.status !== "pending") {
+    throw new Error(`This invitation has already been ${invitation.status}`)
+  }
+
+  if (new Date(invitation.expiresAt) < new Date()) {
+    // Update status to expired
+    await db
+      .update(tenantInvitations)
+      .set({ status: "expired", updatedAt: new Date() })
+      .where(eq(tenantInvitations.id, invitation.id))
+    throw new Error("This invitation has expired")
+  }
+
+  // Check if email matches
+  if (invitation.email.toLowerCase() !== session.user.email?.toLowerCase()) {
+    throw new Error("This invitation was sent to a different email address")
+  }
+
+  // Check if already a member
+  const existingMembership = await db.query.tenantMemberships.findFirst({
+    where: and(
+      eq(tenantMemberships.tenantId, invitation.tenantId),
+      eq(tenantMemberships.userId, session.user.id),
+      sql`${tenantMemberships.deletedAt} IS NULL`
+    ),
+  })
+
+  if (existingMembership) {
+    // Update invitation status anyway
+    await db
+      .update(tenantInvitations)
+      .set({
+        status: "accepted",
+        acceptedById: session.user.id,
+        acceptedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(tenantInvitations.id, invitation.id))
+
+    return { tenantId: invitation.tenantId, alreadyMember: true }
+  }
+
+  // Create membership
+  await db.insert(tenantMemberships).values({
+    tenantId: invitation.tenantId,
+    userId: session.user.id,
+    role: invitation.role,
+  })
+
+  // Update invitation status
+  await db
+    .update(tenantInvitations)
+    .set({
+      status: "accepted",
+      acceptedById: session.user.id,
+      acceptedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(tenantInvitations.id, invitation.id))
+
+  return { tenantId: invitation.tenantId, alreadyMember: false }
+}

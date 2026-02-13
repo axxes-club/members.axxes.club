@@ -132,6 +132,10 @@ export const tenantInvitationsRelations = relations(tenantInvitations, ({ one })
     fields: [tenantInvitations.tenantId],
     references: [tenants.id],
   }),
+  invitedBy: one(user, {
+    fields: [tenantInvitations.invitedById],
+    references: [user.id],
+  }),
 }))
 
 // Types
