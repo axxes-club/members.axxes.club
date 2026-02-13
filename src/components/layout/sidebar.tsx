@@ -41,6 +41,9 @@ import {
   CreditCard,
   Plug,
   Bell,
+  Megaphone,
+  Search,
+  FileImage,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
@@ -59,6 +62,15 @@ const navigation: NavItem[] = [
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   { name: "Social Media", href: "/social", icon: Share2 },
+  {
+    name: "Marketing",
+    href: "/marketing",
+    icon: Megaphone,
+    subsections: [
+      { name: "SEO", href: "/marketing/seo", icon: Search },
+      { name: "Assets", href: "/marketing/assets", icon: FileImage },
+    ],
+  },
   {
     name: "Settings",
     href: "/settings",
