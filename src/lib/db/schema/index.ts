@@ -34,3 +34,6 @@ export * from "./website-settings"
 
 // Activity / Audit
 export * from "./activity"
+
+// Messaging
+export * from "./messaging"

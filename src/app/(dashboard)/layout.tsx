@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { user, brandProfiles, themeSettings, tenants } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { getTotalUnreadCount } from "@/lib/actions/messaging"
 
 async function getCurrentUser() {
   const cookieStore = await cookies()
@@ -56,9 +57,10 @@ export default async function DashboardLayout({
   const cookieStore = await cookies()
   const tenantId = cookieStore.get("tenant_id")?.value
 
-  const [currentUser, tenantData] = await Promise.all([
+  const [currentUser, tenantData, unreadMessagesCount] = await Promise.all([
     getCurrentUser(),
     getTenantData(tenantId),
+    tenantId ? getTotalUnreadCount().catch(() => 0) : Promise.resolve(0),
   ])
 
   return (
@@ -73,6 +75,7 @@ export default async function DashboardLayout({
             tenantName={tenantData.tenant?.name}
             tenantLogo={tenantData.tenant?.logoUrl || undefined}
             isSuperadmin={currentUser?.isSuperadmin ?? false}
+            unreadMessagesCount={unreadMessagesCount}
           />
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Mobile Header */}

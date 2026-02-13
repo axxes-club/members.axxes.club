@@ -30,10 +30,10 @@ async function getSession() {
   })
 }
 
-export async function withTenantAccess<T>(
+export async function withTenantAccess(
   request: NextRequest,
-  handler: (tenantId: string, userId: string) => Promise<NextResponse<T>>
-): Promise<NextResponse<T | ApiErrorResponse>> {
+  handler: (tenantId: string, userId: string) => Promise<NextResponse<unknown>>
+): Promise<NextResponse<unknown>> {
   const session = await getSession()
 
   if (!session?.user) {
@@ -66,12 +66,12 @@ export async function withTenantAccess<T>(
   return handler(tenantId, userId)
 }
 
-export async function withResourceAccess<T>(
+export async function withResourceAccess(
   request: NextRequest,
   _resourceTable: string,
   _resourceId: string,
-  handler: (tenantId: string, userId: string) => Promise<NextResponse<T>>
-): Promise<NextResponse<T | ApiErrorResponse>> {
+  handler: (tenantId: string, userId: string) => Promise<NextResponse<unknown>>
+): Promise<NextResponse<unknown>> {
   return withTenantAccess(request, handler)
 }
 

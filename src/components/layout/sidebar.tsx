@@ -51,11 +51,13 @@ import {
   FileText,
   MapPin,
   CalendarDays,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
 import { TenantSwitcher } from "./tenant-switcher"
+import { UnreadBadge } from "./unread-badge"
 
 interface NavItem {
   name: string
@@ -96,6 +98,7 @@ const navigation: NavItem[] = [
       { name: "Settings", href: "/website/settings", icon: Settings },
     ],
   },
+  { name: "Messages", href: "/messages", icon: MessageSquare },
   {
     name: "Marketing",
     href: "/marketing",
@@ -129,9 +132,10 @@ interface SidebarProps {
   tenantName?: string
   tenantLogo?: string
   isSuperadmin?: boolean
+  unreadMessagesCount?: number
 }
 
-export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false }: SidebarProps) {
+export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
@@ -193,7 +197,14 @@ export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSu
               title={isCollapsed ? item.name : undefined}
             >
               <item.icon className="h-4 w-4 shrink-0" />
-              {!isCollapsed && <span>{item.name}</span>}
+              {!isCollapsed && (
+                <>
+                  <span className="flex-1">{item.name}</span>
+                  {item.name === "Messages" && (
+                    <UnreadBadge initialCount={unreadMessagesCount} />
+                  )}
+                </>
+              )}
             </Link>
           )
         })}
