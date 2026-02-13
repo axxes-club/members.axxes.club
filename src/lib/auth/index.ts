@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { sendPasswordResetEmail } from "@/lib/email"
 
 export const auth = betterAuth({
@@ -43,8 +44,13 @@ export async function getAuthContext() {
     }),
   })
 
-  if (!session?.user) throw new Error("Unauthorized")
-  if (!tenantId) throw new Error("No tenant selected")
+  if (!session?.user) {
+    redirect("/sign-in")
+  }
+
+  if (!tenantId) {
+    redirect("/onboarding")
+  }
 
   return { userId: session.user.id, tenantId }
 }
