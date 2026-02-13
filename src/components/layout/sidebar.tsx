@@ -33,7 +33,6 @@ import {
   ChevronDown,
   ChevronRight,
   LogOut,
-  Building2,
   Menu,
   Shield,
   Palette,
@@ -56,6 +55,7 @@ import {
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
+import { TenantSwitcher } from "./tenant-switcher"
 
 interface NavItem {
   name: string
@@ -125,12 +125,13 @@ const adminNavigation: NavItem[] = [
 ]
 
 interface SidebarProps {
+  tenantId?: string
   tenantName?: string
   tenantLogo?: string
   isSuperadmin?: boolean
 }
 
-export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin = false }: SidebarProps) {
+export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
@@ -154,44 +155,12 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
     >
       {/* Logo & Tenant Switcher */}
       <div className="flex h-16 shrink-0 items-center border-b px-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-2 px-2",
-                isCollapsed && "justify-center px-0"
-              )}
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                {tenantLogo ? (
-                  <img src={tenantLogo} alt="" className="h-6 w-6 rounded" />
-                ) : (
-                  <Building2 className="h-4 w-4" />
-                )}
-              </div>
-              {!isCollapsed && (
-                <>
-                  <span className="truncate font-semibold">{tenantName}</span>
-                  <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-                </>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[240px]">
-            <DropdownMenuLabel>Switch Business</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Building2 className="mr-2 h-4 w-4" />
-              {tenantName}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              Manage Businesses
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TenantSwitcher
+          currentTenantId={tenantId}
+          currentTenantName={tenantName}
+          currentTenantLogo={tenantLogo}
+          isCollapsed={isCollapsed}
+        />
       </div>
 
       {/* Navigation */}

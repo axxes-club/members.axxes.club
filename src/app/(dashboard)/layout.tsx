@@ -5,7 +5,7 @@ import { BrandThemeProvider } from "@/providers/brand-theme-provider"
 import { Sidebar, MobileSidebarTrigger } from "@/components/layout/sidebar"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { user, brandProfiles, themeSettings } from "@/lib/db/schema"
+import { user, brandProfiles, themeSettings, tenants } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
 async function getCurrentUser() {
@@ -30,10 +30,13 @@ async function getCurrentUser() {
   return dbUser
 }
 
-async function getTenantThemeData(tenantId: string | undefined) {
-  if (!tenantId) return { brandProfile: null, themeSettings: null }
+async function getTenantData(tenantId: string | undefined) {
+  if (!tenantId) return { tenant: null, brandProfile: null, themeSettings: null }
 
-  const [brandProfile, themeSetting] = await Promise.all([
+  const [tenant, brandProfile, themeSetting] = await Promise.all([
+    db.query.tenants.findFirst({
+      where: eq(tenants.id, tenantId),
+    }),
     db.query.brandProfiles.findFirst({
       where: eq(brandProfiles.tenantId, tenantId),
     }),
@@ -42,7 +45,7 @@ async function getTenantThemeData(tenantId: string | undefined) {
     }),
   ])
 
-  return { brandProfile: brandProfile || null, themeSettings: themeSetting || null }
+  return { tenant: tenant || null, brandProfile: brandProfile || null, themeSettings: themeSetting || null }
 }
 
 export default async function DashboardLayout({
@@ -53,19 +56,24 @@ export default async function DashboardLayout({
   const cookieStore = await cookies()
   const tenantId = cookieStore.get("tenant_id")?.value
 
-  const [currentUser, themeData] = await Promise.all([
+  const [currentUser, tenantData] = await Promise.all([
     getCurrentUser(),
-    getTenantThemeData(tenantId),
+    getTenantData(tenantId),
   ])
 
   return (
     <SidebarProvider>
       <BrandThemeProvider
-        brandProfile={themeData.brandProfile}
-        applyBrandColors={themeData.themeSettings?.applyBrandColors ?? false}
+        brandProfile={tenantData.brandProfile}
+        applyBrandColors={tenantData.themeSettings?.applyBrandColors ?? false}
       >
         <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar isSuperadmin={currentUser?.isSuperadmin ?? false} />
+          <Sidebar
+            tenantId={tenantId}
+            tenantName={tenantData.tenant?.name}
+            tenantLogo={tenantData.tenant?.logoUrl || undefined}
+            isSuperadmin={currentUser?.isSuperadmin ?? false}
+          />
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Mobile Header */}
             <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">

@@ -1,8 +1,8 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { inviteCodes, user } from "@/lib/db/schema"
-import { eq, desc } from "drizzle-orm"
+import { inviteCodes, user, tenants, tenantMemberships, loginActivity } from "@/lib/db/schema"
+import { eq, desc, count, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { auth } from "@/lib/auth"
@@ -166,6 +166,107 @@ export async function toggleUserSuperadmin(userId: string) {
     })
     .where(eq(user.id, userId))
     .returning()
+
+  revalidatePath("/admin")
+  return updated
+}
+
+// Get admin dashboard stats
+export async function getAdminStats() {
+  await requireSuperadmin()
+
+  const [userCount, tenantCount, recentLogins] = await Promise.all([
+    db.select({ count: count() }).from(user),
+    db.select({ count: count() }).from(tenants),
+    db.select({ count: count() }).from(loginActivity),
+  ])
+
+  return {
+    totalUsers: userCount[0]?.count || 0,
+    totalBusinesses: tenantCount[0]?.count || 0,
+    totalLogins: recentLogins[0]?.count || 0,
+  }
+}
+
+// Get all tenants/businesses with owner info
+export async function getAllTenants() {
+  await requireSuperadmin()
+
+  const allTenants = await db.query.tenants.findMany({
+    orderBy: [desc(tenants.createdAt)],
+  })
+
+  // Get owner info and member counts for each tenant
+  const tenantsWithDetails = await Promise.all(
+    allTenants.map(async (tenant) => {
+      const [owner, memberCount] = await Promise.all([
+        db.query.user.findFirst({
+          where: eq(user.id, tenant.ownerId),
+        }),
+        db.select({ count: count() })
+          .from(tenantMemberships)
+          .where(eq(tenantMemberships.tenantId, tenant.id)),
+      ])
+
+      return {
+        ...tenant,
+        owner: owner ? { id: owner.id, name: owner.name, email: owner.email, image: owner.image } : null,
+        memberCount: memberCount[0]?.count || 0,
+      }
+    })
+  )
+
+  return tenantsWithDetails
+}
+
+// Get login activity
+export async function getLoginActivity(limit: number = 50) {
+  await requireSuperadmin()
+
+  const activities = await db.query.loginActivity.findMany({
+    orderBy: [desc(loginActivity.createdAt)],
+    limit,
+    with: {
+      user: true,
+      tenant: true,
+    },
+  })
+
+  return activities.map((activity) => ({
+    id: activity.id,
+    eventType: activity.eventType,
+    ipAddress: activity.ipAddress,
+    userAgent: activity.userAgent,
+    createdAt: activity.createdAt,
+    user: activity.user ? {
+      id: activity.user.id,
+      name: activity.user.name,
+      email: activity.user.email,
+      image: activity.user.image,
+    } : null,
+    tenant: activity.tenant ? {
+      id: activity.tenant.id,
+      name: activity.tenant.name,
+    } : null,
+  }))
+}
+
+// Update tenant status (suspend, activate, etc.)
+export async function updateTenantStatus(tenantId: string, status: "active" | "suspended" | "pending" | "cancelled") {
+  await requireSuperadmin()
+
+  const [updated] = await db
+    .update(tenants)
+    .set({
+      status,
+      updatedAt: new Date(),
+    })
+    .where(eq(tenants.id, tenantId))
+    .returning()
+
+  if (!updated) {
+    throw new Error("Tenant not found")
+  }
 
   revalidatePath("/admin")
   return updated
