@@ -148,8 +148,8 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col border-r bg-card transition-all duration-300 relative",
-        isCollapsed ? "w-[72px]" : "w-[280px]"
+        "hidden lg:flex flex-col border-r bg-background transition-all duration-200 relative",
+        isCollapsed ? "w-16" : "w-[260px]"
       )}
     >
       {/* Logo & Tenant Switcher */}
@@ -195,7 +195,7 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {allNavigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
           const hasSubsections = item.subsections && item.subsections.length > 0
@@ -215,15 +215,15 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2 text-[13px] transition-colors",
                 isActive
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  ? "text-foreground bg-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
                 isCollapsed && "justify-center px-2"
               )}
               title={isCollapsed ? item.name : undefined}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-4 w-4 shrink-0" />
               {!isCollapsed && <span>{item.name}</span>}
             </Link>
           )
@@ -336,24 +336,24 @@ function NavItemWithSubsections({
       <CollapsibleTrigger asChild>
         <button
           className={cn(
-            "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            "flex w-full items-center gap-3 px-3 py-2 text-[13px] transition-colors",
             isParentActive
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              ? "text-foreground bg-accent"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
           )}
         >
-          <item.icon className="h-5 w-5 shrink-0" />
+          <item.icon className="h-4 w-4 shrink-0" />
           <span className="flex-1 text-left">{item.name}</span>
           <ChevronRight
             className={cn(
-              "h-4 w-4 shrink-0 transition-transform",
+              "h-3.5 w-3.5 shrink-0 transition-transform opacity-50",
               isOpen && "rotate-90"
             )}
           />
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4 pt-1">
-        <div className="space-y-1 border-l pl-4">
+      <CollapsibleContent className="pl-3 pt-0.5">
+        <div className="space-y-0.5 border-l border-border/50 pl-4 ml-2">
           {item.subsections?.map((sub) => {
             const isSubActive = pathname === sub.href
             return (
@@ -361,13 +361,13 @@ function NavItemWithSubsections({
                 key={sub.name}
                 href={sub.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-2.5 px-3 py-1.5 text-[13px] transition-colors",
                   isSubActive
-                    ? "bg-accent font-medium text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <sub.icon className="h-4 w-4 shrink-0" />
+                <sub.icon className="h-3.5 w-3.5 shrink-0" />
                 <span>{sub.name}</span>
               </Link>
             )
