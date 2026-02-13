@@ -16,6 +16,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
   LayoutDashboard,
   Users,
   Calendar,
@@ -26,24 +31,49 @@ import {
   PanelLeftClose,
   PanelLeft,
   ChevronDown,
+  ChevronRight,
   LogOut,
   Building2,
   Menu,
   Shield,
+  Palette,
+  UserCog,
+  CreditCard,
+  Plug,
+  Bell,
+  type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 
-const navigation = [
+interface NavItem {
+  name: string
+  href: string
+  icon: LucideIcon
+  subsections?: { name: string; href: string; icon: LucideIcon }[]
+}
+
+const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "CRM", href: "/crm", icon: Users },
   { name: "Events", href: "/events", icon: Calendar },
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   { name: "Social Media", href: "/social", icon: Share2 },
-  { name: "Settings", href: "/settings", icon: Settings },
+  {
+    name: "Settings",
+    href: "/settings",
+    icon: Settings,
+    subsections: [
+      { name: "Brand Profile", href: "/settings/brand", icon: Palette },
+      { name: "Team", href: "/settings/team", icon: UserCog },
+      { name: "Billing", href: "/settings/billing", icon: CreditCard },
+      { name: "Integrations", href: "/settings/integrations", icon: Plug },
+      { name: "Notifications", href: "/settings/notifications", icon: Bell },
+    ],
+  },
 ]
 
-const adminNavigation = [
+const adminNavigation: NavItem[] = [
   { name: "Admin", href: "/admin", icon: Shield },
 ]
 
@@ -112,9 +142,21 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {allNavigation.map((item) => {
-          const isActive = pathname.startsWith(item.href)
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+          const hasSubsections = item.subsections && item.subsections.length > 0
+
+          if (hasSubsections && !isCollapsed) {
+            return (
+              <NavItemWithSubsections
+                key={item.name}
+                item={item}
+                pathname={pathname}
+              />
+            )
+          }
+
           return (
             <Link
               key={item.name}
@@ -204,6 +246,63 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
         )}
       </Button>
     </aside>
+  )
+}
+
+function NavItemWithSubsections({
+  item,
+  pathname,
+}: {
+  item: NavItem
+  pathname: string
+}) {
+  const isParentActive = pathname.startsWith(item.href)
+  const [isOpen, setIsOpen] = React.useState(isParentActive)
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <button
+          className={cn(
+            "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            isParentActive
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          )}
+        >
+          <item.icon className="h-5 w-5 shrink-0" />
+          <span className="flex-1 text-left">{item.name}</span>
+          <ChevronRight
+            className={cn(
+              "h-4 w-4 shrink-0 transition-transform",
+              isOpen && "rotate-90"
+            )}
+          />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pl-4 pt-1">
+        <div className="space-y-1 border-l pl-4">
+          {item.subsections?.map((sub) => {
+            const isSubActive = pathname === sub.href
+            return (
+              <Link
+                key={sub.name}
+                href={sub.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                  isSubActive
+                    ? "bg-accent font-medium text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <sub.icon className="h-4 w-4 shrink-0" />
+                <span>{sub.name}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }
 

@@ -17,3 +17,6 @@ export * from "./orders"
 
 // Social Media
 export * from "./social"
+
+// Settings
+export * from "./brand-profiles"
