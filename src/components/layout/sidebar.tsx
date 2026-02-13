@@ -48,6 +48,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Globe,
+  FileText,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
@@ -67,6 +69,15 @@ const navigation: NavItem[] = [
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   { name: "Social Media", href: "/social", icon: Share2 },
+  {
+    name: "Website",
+    href: "/website",
+    icon: Globe,
+    subsections: [
+      { name: "Pages", href: "/website/pages", icon: FileText },
+      { name: "Settings", href: "/website/settings", icon: Settings },
+    ],
+  },
   {
     name: "Marketing",
     href: "/marketing",
