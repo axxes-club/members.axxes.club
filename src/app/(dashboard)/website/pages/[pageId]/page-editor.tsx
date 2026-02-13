@@ -17,6 +17,9 @@ import {
 } from "lucide-react"
 import { EditorCanvas } from "./editor-canvas"
 import { EditorSidebar } from "./editor-sidebar"
+import { EditorZoomProvider, useEditorZoom } from "./editor-zoom-context"
+import { EditorZoomControls } from "./editor-zoom-controls"
+import { EditorMinimap } from "./editor-minimap"
 import { updatePage, publishPage, unpublishPage } from "@/lib/actions/pages"
 import type { Page, PageBlock, BlockType, BlockContent, BlockSettings } from "@/lib/db/schema"
 
@@ -106,6 +109,71 @@ export function PageEditor({ page: initialPage }: PageEditorProps) {
   }, [selectedBlockId])
 
   return (
+    <EditorZoomProvider>
+      <PageEditorContent
+        page={page}
+        setPage={setPage}
+        blocks={blocks}
+        selectedBlockId={selectedBlockId}
+        selectedBlock={selectedBlock}
+        isSaving={isSaving}
+        isPublishing={isPublishing}
+        hasUnsavedChanges={hasUnsavedChanges}
+        handleTitleChange={handleTitleChange}
+        handleSave={handleSave}
+        handlePublishToggle={handlePublishToggle}
+        handleBlockSelect={handleBlockSelect}
+        handleBlocksUpdate={handleBlocksUpdate}
+        handleBlockAdd={handleBlockAdd}
+        handleBlockUpdate={handleBlockUpdate}
+        handleBlockDelete={handleBlockDelete}
+        setSelectedBlockId={setSelectedBlockId}
+      />
+    </EditorZoomProvider>
+  )
+}
+
+interface PageEditorContentProps {
+  page: Page & { blocks: PageBlock[] }
+  setPage: React.Dispatch<React.SetStateAction<Page & { blocks: PageBlock[] }>>
+  blocks: PageBlock[]
+  selectedBlockId: string | null
+  selectedBlock: PageBlock | null
+  isSaving: boolean
+  isPublishing: boolean
+  hasUnsavedChanges: boolean
+  handleTitleChange: (title: string) => void
+  handleSave: () => void
+  handlePublishToggle: () => void
+  handleBlockSelect: (blockId: string | null) => void
+  handleBlocksUpdate: (blocks: PageBlock[]) => void
+  handleBlockAdd: (block: PageBlock) => void
+  handleBlockUpdate: (blockId: string, updates: Partial<PageBlock>) => void
+  handleBlockDelete: (blockId: string) => void
+  setSelectedBlockId: (id: string | null) => void
+}
+
+function PageEditorContent({
+  page,
+  blocks,
+  selectedBlockId,
+  selectedBlock,
+  isSaving,
+  isPublishing,
+  hasUnsavedChanges,
+  handleTitleChange,
+  handleSave,
+  handlePublishToggle,
+  handleBlockSelect,
+  handleBlocksUpdate,
+  handleBlockAdd,
+  handleBlockUpdate,
+  handleBlockDelete,
+  setSelectedBlockId,
+}: PageEditorContentProps) {
+  const { canvasContainerRef } = useEditorZoom()
+
+  return (
     <div className="flex h-[calc(100vh-4rem)] flex-col -m-6 lg:-m-8">
       {/* Editor Header */}
       <header className="flex h-14 items-center justify-between border-b bg-background px-4">
@@ -131,6 +199,12 @@ export function PageEditor({ page: initialPage }: PageEditorProps) {
             )}
           </div>
         </div>
+
+        {/* Zoom Controls - Center */}
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <EditorZoomControls />
+        </div>
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -166,7 +240,10 @@ export function PageEditor({ page: initialPage }: PageEditorProps) {
       {/* Editor Body */}
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas */}
-        <div className="flex-1 overflow-y-auto bg-muted/30 p-8">
+        <div
+          ref={canvasContainerRef as React.RefObject<HTMLDivElement>}
+          className="relative flex-1 overflow-auto bg-muted/30 p-8"
+        >
           <EditorCanvas
             pageId={page.id}
             blocks={blocks}
@@ -176,6 +253,9 @@ export function PageEditor({ page: initialPage }: PageEditorProps) {
             onBlockAdd={handleBlockAdd}
             onBlockDelete={handleBlockDelete}
           />
+
+          {/* Minimap - Bottom Right */}
+          <EditorMinimap blocks={blocks} />
         </div>
 
         {/* Sidebar */}

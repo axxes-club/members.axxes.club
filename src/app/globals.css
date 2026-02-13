@@ -337,4 +337,129 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
+
+  /* ===== Premium Micro-Interactions ===== */
+
+  /* Hover lift effect for cards */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .hover-lift:active {
+    transform: translateY(0);
+  }
+
+  /* Glow effect using club accent */
+  .hover-glow {
+    transition: box-shadow 0.2s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 20px hsl(var(--club) / 0.15);
+  }
+
+  /* Row hover with accent line indicator */
+  .row-hover {
+    position: relative;
+    transition: background-color 0.15s ease;
+  }
+
+  .row-hover::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 2px;
+    height: 60%;
+    background: hsl(var(--club));
+    transition: transform 0.2s ease;
+  }
+
+  .row-hover:hover {
+    background-color: hsl(var(--accent));
+  }
+
+  .row-hover:hover::before {
+    transform: translateY(-50%) scaleY(1);
+  }
+
+  /* ===== Club Accent Utilities ===== */
+
+  /* Border colors */
+  .border-club {
+    border-color: hsl(var(--club));
+  }
+
+  .border-club-subtle {
+    border-color: hsl(var(--club) / 0.3);
+  }
+
+  /* Background colors */
+  .bg-club-subtle {
+    background-color: hsl(var(--club) / 0.1);
+  }
+
+  /* Active state with club accent underline */
+  .active-club {
+    position: relative;
+  }
+
+  .active-club::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: hsl(var(--club));
+  }
+
+  /* Decorative left accent line */
+  .accent-line {
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .accent-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: hsl(var(--club));
+  }
+
+  /* ===== Shimmer Animation for Loading ===== */
+
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.08),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }

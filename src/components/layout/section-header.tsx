@@ -21,7 +21,7 @@ export function SectionHeader({
       <div className="space-y-2">
         <div className="flex items-center gap-4">
           {number && (
-            <span className="text-section-number text-muted-foreground">
+            <span className="text-section-number text-club">
               {number}
             </span>
           )}

@@ -19,6 +19,9 @@ const badgeVariants = cva(
           "border-transparent bg-warning text-warning-foreground",
         outline: "border-border text-foreground",
         muted: "border-transparent bg-muted text-muted-foreground",
+        club: "border-transparent bg-club text-club-foreground",
+        "club-outline": "border-club text-club",
+        "club-subtle": "border-transparent bg-club/10 text-club",
       },
     },
     defaultVariants: {

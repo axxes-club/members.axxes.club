@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Plus, GripVertical, Trash2, Copy, Eye, EyeOff } from "lucide-react"
 import { createBlock, deleteBlock, reorderBlocks, duplicateBlock, toggleBlockVisibility } from "@/lib/actions/pages"
 import { BlockRenderer } from "./blocks/block-renderer"
+import { useEditorZoom } from "./editor-zoom-context"
 import type { PageBlock, BlockType } from "@/lib/db/schema"
 
 interface EditorCanvasProps {
@@ -30,6 +31,55 @@ export function EditorCanvas({
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null)
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
   const [isAddingBlock, setIsAddingBlock] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const {
+    zoomLevel,
+    canvasContainerRef,
+    setScrollPosition,
+    setViewportSize,
+    setContentSize,
+  } = useEditorZoom()
+
+  // Track scroll position
+  useEffect(() => {
+    const container = canvasContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      setScrollPosition({
+        x: container.scrollLeft,
+        y: container.scrollTop,
+      })
+    }
+
+    container.addEventListener("scroll", handleScroll)
+    return () => container.removeEventListener("scroll", handleScroll)
+  }, [canvasContainerRef, setScrollPosition])
+
+  // Track viewport and content size
+  useEffect(() => {
+    const container = canvasContainerRef.current
+    const content = contentRef.current
+    if (!container || !content) return
+
+    const updateSizes = () => {
+      setViewportSize({
+        width: container.clientWidth,
+        height: container.clientHeight,
+      })
+      setContentSize({
+        width: content.scrollWidth,
+        height: content.scrollHeight,
+      })
+    }
+
+    updateSizes()
+    const observer = new ResizeObserver(updateSizes)
+    observer.observe(container)
+    observer.observe(content)
+    return () => observer.disconnect()
+  }, [canvasContainerRef, setViewportSize, setContentSize, blocks])
 
   const handleDragStart = (e: React.DragEvent, blockId: string) => {
     setDraggedBlockId(blockId)
@@ -74,9 +124,16 @@ export function EditorCanvas({
     )
   }
 
+  // Inverse scale for toolbars so they remain same size
+  const toolbarScale = 1 / zoomLevel
+
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="rounded-lg border bg-background shadow-sm">
+    <div
+      ref={contentRef}
+      className="mx-auto max-w-4xl origin-top transition-transform duration-150"
+      style={{ transform: `scale(${zoomLevel})` }}
+    >
+      <div className="border bg-background shadow-sm">
         {/* Drop zone at top */}
         <div
           className={cn(
@@ -111,12 +168,13 @@ export function EditorCanvas({
                 onDragStart={(e) => handleDragStart(e, block.id)}
                 onDragEnd={handleDragEnd}
               >
-                {/* Block Toolbar */}
+                {/* Block Toolbar - Left */}
                 <div
                   className={cn(
                     "absolute -left-12 top-0 flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100",
                     selectedBlockId === block.id && "opacity-100"
                   )}
+                  style={{ transform: `scale(${toolbarScale})`, transformOrigin: "top right" }}
                 >
                   <Button
                     variant="ghost"
@@ -127,11 +185,13 @@ export function EditorCanvas({
                   </Button>
                 </div>
 
+                {/* Block Toolbar - Right */}
                 <div
                   className={cn(
                     "absolute -right-12 top-0 flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100",
                     selectedBlockId === block.id && "opacity-100"
                   )}
+                  style={{ transform: `scale(${toolbarScale})`, transformOrigin: "top left" }}
                 >
                   <Button
                     variant="ghost"
