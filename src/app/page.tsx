@@ -6,9 +6,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-black text-white">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 lg:px-12">
-        <div className="text-xl font-bold tracking-tight">
-          members.axxes.<span className="text-purple-500">club</span>
-        </div>
+        <div className="h-3 w-3 rounded-full bg-purple-500" />
         <div className="flex items-center gap-4">
           <Link href="/sign-in">
             <Button variant="ghost" className="text-white hover:text-white hover:bg-white/10">
