@@ -44,9 +44,14 @@ import {
   Megaphone,
   Search,
   FileImage,
+  SunMoon,
+  Sun,
+  Moon,
+  Monitor,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
+import { useTheme } from "next-themes"
 
 interface NavItem {
   name: string
@@ -77,6 +82,7 @@ const navigation: NavItem[] = [
     icon: Settings,
     subsections: [
       { name: "Brand Profile", href: "/settings/brand", icon: Palette },
+      { name: "Appearance", href: "/settings/appearance", icon: SunMoon },
       { name: "Team", href: "/settings/team", icon: UserCog },
       { name: "Billing", href: "/settings/billing", icon: CreditCard },
       { name: "Integrations", href: "/settings/integrations", icon: Plug },
@@ -101,6 +107,12 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
   const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const allNavigation = isSuperadmin ? [...navigation, ...adminNavigation] : navigation
 
@@ -229,6 +241,25 @@ export function Sidebar({ tenantName = "My Business", tenantLogo, isSuperadmin =
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+              Theme
+            </DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setTheme("light")}>
+              <Sun className="mr-2 h-4 w-4" />
+              Light
+              {mounted && theme === "light" && <span className="ml-auto text-xs">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <Moon className="mr-2 h-4 w-4" />
+              Dark
+              {mounted && theme === "dark" && <span className="ml-auto text-xs">✓</span>}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>
+              <Monitor className="mr-2 h-4 w-4" />
+              System
+              {mounted && theme === "system" && <span className="ml-auto text-xs">✓</span>}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

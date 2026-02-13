@@ -24,3 +24,6 @@ export * from "./brand-profiles"
 // Marketing (SEO & Assets)
 export * from "./seo"
 export * from "./assets"
+
+// Theme
+export * from "./theme-settings"

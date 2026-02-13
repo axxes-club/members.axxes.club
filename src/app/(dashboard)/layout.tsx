@@ -1,10 +1,11 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { SidebarProvider } from "@/providers/sidebar-provider"
+import { BrandThemeProvider } from "@/providers/brand-theme-provider"
 import { Sidebar, MobileSidebarTrigger } from "@/components/layout/sidebar"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { user } from "@/lib/db/schema"
+import { user, brandProfiles, themeSettings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
 async function getCurrentUser() {
@@ -29,28 +30,54 @@ async function getCurrentUser() {
   return dbUser
 }
 
+async function getTenantThemeData(tenantId: string | undefined) {
+  if (!tenantId) return { brandProfile: null, themeSettings: null }
+
+  const [brandProfile, themeSetting] = await Promise.all([
+    db.query.brandProfiles.findFirst({
+      where: eq(brandProfiles.tenantId, tenantId),
+    }),
+    db.query.themeSettings.findFirst({
+      where: eq(themeSettings.tenantId, tenantId),
+    }),
+  ])
+
+  return { brandProfile: brandProfile || null, themeSettings: themeSetting || null }
+}
+
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const currentUser = await getCurrentUser()
+  const cookieStore = await cookies()
+  const tenantId = cookieStore.get("tenant_id")?.value
+
+  const [currentUser, themeData] = await Promise.all([
+    getCurrentUser(),
+    getTenantThemeData(tenantId),
+  ])
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar isSuperadmin={currentUser?.isSuperadmin ?? false} />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Mobile Header */}
-          <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
-            <MobileSidebarTrigger />
-            <span className="font-semibold">members.axxes.<span className="text-purple-500">club</span></span>
-          </header>
-          <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto p-6 lg:p-8">{children}</div>
-          </main>
+      <BrandThemeProvider
+        brandProfile={themeData.brandProfile}
+        applyBrandColors={themeData.themeSettings?.applyBrandColors ?? false}
+      >
+        <div className="flex h-screen overflow-hidden bg-background">
+          <Sidebar isSuperadmin={currentUser?.isSuperadmin ?? false} />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Mobile Header */}
+            <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
+              <MobileSidebarTrigger />
+              <span className="font-semibold">members.axxes.<span className="text-purple-500">club</span></span>
+            </header>
+            <main className="flex-1 overflow-y-auto">
+              <div className="container mx-auto p-6 lg:p-8">{children}</div>
+            </main>
+          </div>
         </div>
-      </div>
+      </BrandThemeProvider>
     </SidebarProvider>
   )
 }
