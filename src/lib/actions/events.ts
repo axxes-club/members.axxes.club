@@ -264,38 +264,210 @@ export async function getEventStats() {
 }
 
 // Venues
-export async function getVenues() {
+const venueSchema = z.object({
+  name: z.string().min(1, "Venue name is required"),
+  description: z.string().optional(),
+  capacity: z.number().optional(),
+  addressLine1: z.string().optional(),
+  addressLine2: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  website: z.string().optional(),
+})
+
+export type VenueFormData = z.infer<typeof venueSchema>
+
+export async function getVenues({
+  page = 1,
+  limit = 50,
+}: {
+  page?: number
+  limit?: number
+} = {}) {
   const { tenantId } = await getTenantId()
 
-  return db.query.venues.findMany({
+  const [venueList, countResult] = await Promise.all([
+    db.query.venues.findMany({
+      where: and(
+        eq(venues.tenantId, tenantId),
+        sql`${venues.deletedAt} IS NULL`
+      ),
+      orderBy: [asc(venues.name)],
+      limit,
+      offset: (page - 1) * limit,
+    }),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(venues)
+      .where(and(
+        eq(venues.tenantId, tenantId),
+        sql`${venues.deletedAt} IS NULL`
+      )),
+  ])
+
+  return {
+    venues: venueList,
+    total: Number(countResult[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(Number(countResult[0].count) / limit),
+  }
+}
+
+export async function getVenue(id: string) {
+  const { tenantId } = await getTenantId()
+
+  const venue = await db.query.venues.findFirst({
     where: and(
+      eq(venues.id, id),
       eq(venues.tenantId, tenantId),
       sql`${venues.deletedAt} IS NULL`
     ),
-    orderBy: [asc(venues.name)],
+    with: {
+      events: {
+        where: sql`${events.deletedAt} IS NULL`,
+        orderBy: [desc(events.startsAt)],
+        limit: 10,
+      },
+    },
   })
+
+  if (!venue) {
+    throw new Error("Venue not found")
+  }
+
+  return venue
 }
 
-export async function createVenue(data: {
-  name: string
-  addressLine1?: string
-  city?: string
-  state?: string
-  capacity?: number
-}) {
+export async function createVenue(data: VenueFormData) {
   const { tenantId } = await getTenantId()
+
+  const parsed = venueSchema.parse(data)
+
+  const slug = parsed.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .substring(0, 50)
 
   const [venue] = await db
     .insert(venues)
     .values({
       tenantId,
-      name: data.name,
-      addressLine1: data.addressLine1 || null,
-      city: data.city || null,
-      state: data.state || null,
-      capacity: data.capacity || null,
+      name: parsed.name,
+      slug,
+      description: parsed.description || null,
+      capacity: parsed.capacity || null,
+      addressLine1: parsed.addressLine1 || null,
+      addressLine2: parsed.addressLine2 || null,
+      city: parsed.city || null,
+      state: parsed.state || null,
+      postalCode: parsed.postalCode || null,
+      country: parsed.country || "US",
+      phone: parsed.phone || null,
+      email: parsed.email || null,
+      website: parsed.website || null,
     })
     .returning()
 
+  revalidatePath("/events/venues")
   return venue
+}
+
+export async function updateVenue(id: string, data: Partial<VenueFormData>) {
+  const { tenantId } = await getTenantId()
+
+  const [venue] = await db
+    .update(venues)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(venues.id, id),
+        eq(venues.tenantId, tenantId)
+      )
+    )
+    .returning()
+
+  if (!venue) {
+    throw new Error("Venue not found")
+  }
+
+  revalidatePath("/events/venues")
+  revalidatePath(`/events/venues/${id}`)
+  return venue
+}
+
+export async function deleteVenue(id: string) {
+  const { tenantId } = await getTenantId()
+
+  // Check if venue has events
+  const venueEvents = await db.query.events.findMany({
+    where: and(
+      eq(events.venueId, id),
+      eq(events.tenantId, tenantId),
+      sql`${events.deletedAt} IS NULL`
+    ),
+    limit: 1,
+  })
+
+  if (venueEvents.length > 0) {
+    throw new Error("Cannot delete venue with associated events")
+  }
+
+  await db
+    .update(venues)
+    .set({
+      deletedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(venues.id, id),
+        eq(venues.tenantId, tenantId)
+      )
+    )
+
+  revalidatePath("/events/venues")
+}
+
+export async function getVenueStats() {
+  const { tenantId } = await getTenantId()
+
+  const [totalVenues, totalCapacity, venuesWithEvents] = await Promise.all([
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(venues)
+      .where(and(
+        eq(venues.tenantId, tenantId),
+        sql`${venues.deletedAt} IS NULL`
+      )),
+    db
+      .select({ total: sql<number>`COALESCE(SUM(${venues.capacity}), 0)` })
+      .from(venues)
+      .where(and(
+        eq(venues.tenantId, tenantId),
+        sql`${venues.deletedAt} IS NULL`
+      )),
+    db
+      .select({ count: sql<number>`count(DISTINCT ${events.venueId})` })
+      .from(events)
+      .where(and(
+        eq(events.tenantId, tenantId),
+        sql`${events.deletedAt} IS NULL`,
+        sql`${events.venueId} IS NOT NULL`
+      )),
+  ])
+
+  return {
+    total: Number(totalVenues[0].count),
+    totalCapacity: Number(totalCapacity[0].total),
+    withEvents: Number(venuesWithEvents[0].count),
+  }
 }

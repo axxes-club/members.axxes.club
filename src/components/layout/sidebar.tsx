@@ -50,6 +50,8 @@ import {
   Monitor,
   Globe,
   FileText,
+  MapPin,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
@@ -65,10 +67,26 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "CRM", href: "/crm", icon: Users },
-  { name: "Events", href: "/events", icon: Calendar },
+  {
+    name: "Events",
+    href: "/events",
+    icon: Calendar,
+    subsections: [
+      { name: "Events", href: "/events", icon: CalendarDays },
+      { name: "Venues", href: "/events/venues", icon: MapPin },
+    ],
+  },
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
-  { name: "Social Media", href: "/social", icon: Share2 },
+  {
+    name: "Social Media",
+    href: "/social",
+    icon: Share2,
+    subsections: [
+      { name: "Accounts", href: "/social", icon: Users },
+      { name: "Posts", href: "/social/posts", icon: FileText },
+    ],
+  },
   {
     name: "Website",
     href: "/website",

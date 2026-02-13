@@ -22,7 +22,7 @@ export default function NewEventPage() {
   useEffect(() => {
     async function loadVenues() {
       try {
-        const venueList = await getVenues()
+        const { venues: venueList } = await getVenues()
         setVenues(venueList)
       } catch {
         // Ignore errors, venues are optional
