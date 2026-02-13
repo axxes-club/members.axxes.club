@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
 import { cookies } from "next/headers"
+import { sendPasswordResetEmail } from "@/lib/email"
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL || "http://localhost:3000",
@@ -10,6 +11,12 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({
+        email: user.email,
+        resetLink: url,
+      })
+    },
   },
   session: {
     cookieCache: {
