@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -40,8 +41,17 @@ export function TenantSwitcher({
   const [isLoading, setIsLoading] = React.useState(true)
   const [isSwitching, setIsSwitching] = React.useState<string | null>(null)
 
-  // Fetch user's tenants on mount
+  // Fetch user's tenants on mount and check for pending switch notification
   React.useEffect(() => {
+    // Check for pending business switch notification
+    const switchedTo = sessionStorage.getItem("switched_business")
+    if (switchedTo) {
+      sessionStorage.removeItem("switched_business")
+      toast.warning(`Switched to ${switchedTo}`, {
+        description: "You are now viewing a different business",
+      })
+    }
+
     async function fetchTenants() {
       try {
         const response = await fetch("/api/v1/tenants")
@@ -61,6 +71,7 @@ export function TenantSwitcher({
   const handleSwitchTenant = async (tenantId: string) => {
     if (tenantId === currentTenantId) return
 
+    const targetTenant = tenants.find((t) => t.id === tenantId)
     setIsSwitching(tenantId)
     try {
       const response = await fetch("/api/v1/tenants/select", {
@@ -70,6 +81,10 @@ export function TenantSwitcher({
       })
 
       if (response.ok) {
+        // Store the switch notification for after redirect
+        if (targetTenant) {
+          sessionStorage.setItem("switched_business", targetTenant.name)
+        }
         // Refresh the page to load new tenant context
         router.refresh()
         window.location.href = "/dashboard"

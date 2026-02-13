@@ -63,7 +63,7 @@ export default async function ProductDetailPage({
         }
       />
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-3 items-start">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <SectionHeader number="01" title="Product Information" />
@@ -182,6 +182,8 @@ export default async function ProductDetailPage({
 
         {/* Sidebar */}
         <div className="space-y-6">
+          <SectionHeader title="Overview" />
+
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Inventory</CardTitle>
