@@ -1,59 +1,64 @@
 @import "tailwindcss";
 
-/* AXXES Design System - Editorial Dark Mode First */
+/* AXXES Design System - Exact axxes.club Colors
+   #0a0a0a - black
+   #141414 - black-light
+   #f5f5f0 - cream
+   #8a8a85 - warm-gray
+   #4a4a48 - warm-gray-dark
+*/
 :root {
-  /* Core Colors - AXXES Palette */
-  /* Light mode uses inverted dark aesthetic with warm undertones */
-  --background: 50 20% 98%;
-  --foreground: 30 10% 8%;
+  /* Light mode - Cream on black inverted */
+  --background: 60 20% 95%;
+  --foreground: 0 0% 4%;
 
-  /* Card - Warm white */
-  --card: 50 20% 99%;
-  --card-foreground: 30 10% 8%;
+  /* Card */
+  --card: 60 20% 97%;
+  --card-foreground: 0 0% 4%;
 
   /* Popover */
-  --popover: 50 20% 99%;
-  --popover-foreground: 30 10% 8%;
+  --popover: 60 20% 97%;
+  --popover-foreground: 0 0% 4%;
 
-  /* Primary - Deep Black with warmth */
-  --primary: 30 10% 8%;
-  --primary-foreground: 50 20% 96%;
+  /* Primary - Black */
+  --primary: 0 0% 4%;
+  --primary-foreground: 60 20% 95%;
 
-  /* Secondary - Warm Light */
-  --secondary: 50 10% 94%;
-  --secondary-foreground: 30 10% 20%;
+  /* Secondary */
+  --secondary: 60 10% 92%;
+  --secondary-foreground: 0 0% 8%;
 
-  /* Muted - Warm Gray */
-  --muted: 50 10% 94%;
-  --muted-foreground: 30 5% 45%;
+  /* Muted */
+  --muted: 60 10% 92%;
+  --muted-foreground: 60 2% 53%;
 
-  /* Accent - Subtle warm highlight */
-  --accent: 50 15% 92%;
-  --accent-foreground: 30 10% 8%;
+  /* Accent */
+  --accent: 60 15% 90%;
+  --accent-foreground: 0 0% 4%;
 
-  /* Destructive - Warm Red */
+  /* Destructive */
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  /* Success - Muted Green */
+  /* Success */
   --success: 152 60% 40%;
   --success-foreground: 0 0% 100%;
 
-  /* Warning - Warm Amber */
+  /* Warning */
   --warning: 38 92% 50%;
-  --warning-foreground: 30 10% 8%;
+  --warning-foreground: 0 0% 4%;
 
   /* Club Accent */
   --club: 270 50% 55%;
   --club-foreground: 0 0% 100%;
 
-  /* Border & Input - Warm subtle */
-  --border: 50 10% 88%;
-  --input: 50 10% 88%;
-  --ring: 30 10% 20%;
+  /* Border & Input */
+  --border: 60 5% 85%;
+  --input: 60 5% 85%;
+  --ring: 0 0% 20%;
 
-  /* Radius - Sharper AXXES style */
-  --radius: 0.25rem;
+  /* Radius - Sharp (no rounding) */
+  --radius: 0;
 
   /* Sidebar */
   --sidebar-width: 260px;
@@ -62,38 +67,38 @@
 
 /* Dark Mode - AXXES Primary Aesthetic */
 .dark {
-  /* Core - Deep warm black with cream text */
-  --background: 30 10% 4%;
-  --foreground: 50 20% 96%;
+  /* Core - #0a0a0a black with #f5f5f0 cream text */
+  --background: 0 0% 4%;
+  --foreground: 60 20% 95%;
 
-  /* Card - Slightly elevated surface */
-  --card: 30 8% 8%;
-  --card-foreground: 50 20% 96%;
+  /* Card - #141414 elevated surface */
+  --card: 0 0% 8%;
+  --card-foreground: 60 20% 95%;
 
   /* Popover */
-  --popover: 30 8% 10%;
-  --popover-foreground: 50 20% 96%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 60 20% 95%;
 
-  /* Primary - Cream (inverted) */
-  --primary: 50 20% 96%;
-  --primary-foreground: 30 10% 4%;
+  /* Primary - Cream */
+  --primary: 60 20% 95%;
+  --primary-foreground: 0 0% 4%;
 
-  /* Secondary - Warm dark surface */
-  --secondary: 30 6% 12%;
-  --secondary-foreground: 50 15% 90%;
+  /* Secondary */
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 60 10% 90%;
 
-  /* Muted - Warm dark */
-  --muted: 30 6% 12%;
-  --muted-foreground: 30 5% 54%;
+  /* Muted - #4a4a48 */
+  --muted: 0 0% 12%;
+  --muted-foreground: 60 2% 53%;
 
-  /* Accent - Subtle lift */
-  --accent: 30 6% 15%;
-  --accent-foreground: 50 15% 96%;
+  /* Accent */
+  --accent: 0 0% 14%;
+  --accent-foreground: 60 15% 95%;
 
-  /* Border - Warm subtle */
-  --border: 50 10% 15%;
-  --input: 50 10% 15%;
-  --ring: 50 15% 70%;
+  /* Border - cream at 10% opacity equivalent */
+  --border: 60 5% 18%;
+  --input: 60 5% 18%;
+  --ring: 60 10% 70%;
 }
 
 @theme inline {
@@ -128,11 +133,11 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
-  /* Border Radius - Sharp AXXES style */
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.375rem;
-  --radius-xl: 0.5rem;
+  /* Border Radius - None (AXXES sharp style) */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
 
   /* Shadows - Minimal, warm */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);

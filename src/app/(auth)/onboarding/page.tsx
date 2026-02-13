@@ -114,7 +114,7 @@ export default function OnboardingPage() {
         </div>
 
         {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className=" bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
@@ -128,7 +128,7 @@ export default function OnboardingPage() {
             >
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <div className="flex h-10 w-10 items-center justify-center  bg-primary text-primary-foreground">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <div>
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground mb-4">
+          <div className="flex h-12 w-12 items-center justify-center  bg-primary text-primary-foreground mb-4">
             <Building2 className="h-6 w-6" />
           </div>
           <CardTitle>Business Information</CardTitle>
@@ -185,7 +185,7 @@ export default function OnboardingPage() {
         <CardContent>
           <div className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className=" bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}

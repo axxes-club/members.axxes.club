@@ -55,7 +55,7 @@ function SignInForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="bg-destructive/10 p-3 text-sm text-destructive">
               {error}
             </div>
           )}
@@ -113,7 +113,7 @@ export default function SignInPage() {
         </p>
       </div>
 
-      <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+      <Suspense fallback={<div className="h-64 animate-pulse bg-muted" />}>
         <SignInForm />
       </Suspense>
     </div>

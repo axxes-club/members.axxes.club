@@ -106,9 +106,9 @@ export function TenantSwitcher({
             isCollapsed && "justify-center px-0"
           )}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center  bg-primary text-primary-foreground">
             {currentTenantLogo ? (
-              <img src={currentTenantLogo} alt="" className="h-6 w-6 rounded" />
+              <img src={currentTenantLogo} alt="" className="h-6 w-6 " />
             ) : (
               <Building2 className="h-4 w-4" />
             )}
