@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useSearchParams } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
@@ -13,6 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -24,8 +35,10 @@ import {
   ExternalLink,
   Check,
   Loader2,
+  AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface Integration {
   id: string
@@ -35,19 +48,26 @@ interface Integration {
   icon: React.ReactNode
   logoUrl?: string
   website: string
-  connected: boolean
+  authType: "oauth" | "apikey"
   comingSoon?: boolean
+}
+
+interface ConnectionState {
+  connected: boolean
+  externalUserEmail?: string
+  externalUserName?: string
+  connectedAt?: string
 }
 
 const integrations: Integration[] = [
   {
-    id: "afters-am",
+    id: "afters",
     name: "Afters.am",
     description: "Our integrated ticketing platform for seamless event management and ticket sales.",
     category: "ticketing",
     icon: <Ticket className="h-6 w-6" />,
     website: "https://afters.am",
-    connected: false,
+    authType: "oauth",
   },
   {
     id: "qortr",
@@ -56,7 +76,8 @@ const integrations: Integration[] = [
     category: "venues",
     icon: <Building2 className="h-6 w-6" />,
     website: "https://qortr.com",
-    connected: false,
+    authType: "apikey",
+    comingSoon: true,
   },
   {
     id: "peerspace",
@@ -65,7 +86,8 @@ const integrations: Integration[] = [
     category: "venues",
     icon: <Building2 className="h-6 w-6" />,
     website: "https://peerspace.com",
-    connected: false,
+    authType: "apikey",
+    comingSoon: true,
   },
   {
     id: "orders-co",
@@ -74,7 +96,8 @@ const integrations: Integration[] = [
     category: "orders",
     icon: <Package className="h-6 w-6" />,
     website: "https://orders.co",
-    connected: false,
+    authType: "apikey",
+    comingSoon: true,
   },
   {
     id: "shipstation",
@@ -83,7 +106,8 @@ const integrations: Integration[] = [
     category: "shipping",
     icon: <Truck className="h-6 w-6" />,
     website: "https://shipstation.com",
-    connected: false,
+    authType: "apikey",
+    comingSoon: true,
   },
   {
     id: "dropbox",
@@ -92,7 +116,8 @@ const integrations: Integration[] = [
     category: "storage",
     icon: <FolderOpen className="h-6 w-6" />,
     website: "https://dropbox.com",
-    connected: false,
+    authType: "oauth",
+    comingSoon: true,
   },
 ]
 
@@ -105,46 +130,151 @@ const categoryLabels: Record<string, string> = {
 }
 
 export default function IntegrationsSettingsPage() {
-  const [connectionStates, setConnectionStates] = React.useState<Record<string, boolean>>(
-    Object.fromEntries(integrations.map((i) => [i.id, i.connected]))
-  )
-  const [connectingId, setConnectingId] = React.useState<string | null>(null)
-  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const searchParams = useSearchParams()
+  const [connectionStates, setConnectionStates] = React.useState<Record<string, ConnectionState>>({})
+  const [loadingStates, setLoadingStates] = React.useState<Record<string, boolean>>({})
+  const [initialLoading, setInitialLoading] = React.useState(true)
+  
+  // API Key dialog state
+  const [apiKeyDialogOpen, setApiKeyDialogOpen] = React.useState(false)
   const [selectedIntegration, setSelectedIntegration] = React.useState<Integration | null>(null)
+  const [apiKeyInput, setApiKeyInput] = React.useState("")
+  const [accountIdInput, setAccountIdInput] = React.useState("")
+  
+  // Disconnect dialog state
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = React.useState(false)
+  const [integrationToDisconnect, setIntegrationToDisconnect] = React.useState<Integration | null>(null)
 
-  const handleConnect = (integration: Integration) => {
-    setSelectedIntegration(integration)
-    setDialogOpen(true)
+  // Handle OAuth callback messages
+  React.useEffect(() => {
+    const success = searchParams.get("success")
+    const error = searchParams.get("error")
+    
+    if (success === "afters") {
+      toast.success("Successfully connected to Afters.am!")
+      // Refresh connection status
+      checkAftersConnection()
+    }
+    
+    if (error) {
+      toast.error(`Connection failed: ${error}`)
+    }
+  }, [searchParams])
+
+  // Check Afters connection status on load
+  React.useEffect(() => {
+    checkAftersConnection()
+  }, [])
+
+  const checkAftersConnection = async () => {
+    try {
+      const res = await fetch("/api/integrations/afters")
+      if (res.ok) {
+        const data = await res.json()
+        setConnectionStates(prev => ({
+          ...prev,
+          afters: {
+            connected: data.connected,
+            externalUserEmail: data.externalUserEmail,
+            externalUserName: data.externalUserName,
+            connectedAt: data.connectedAt,
+          }
+        }))
+      }
+    } catch (error) {
+      console.error("Error checking Afters connection:", error)
+    } finally {
+      setInitialLoading(false)
+    }
   }
 
-  const handleConfirmConnect = async () => {
-    if (!selectedIntegration) return
+  const handleConnect = async (integration: Integration) => {
+    if (integration.comingSoon) {
+      toast.info(`${integration.name} integration coming soon!`)
+      return
+    }
 
-    setConnectingId(selectedIntegration.id)
-    setDialogOpen(false)
+    if (integration.authType === "oauth") {
+      // Start OAuth flow
+      setLoadingStates(prev => ({ ...prev, [integration.id]: true }))
+      
+      try {
+        const res = await fetch(`/api/integrations/${integration.id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scopes: ["read:profile", "read:events", "read:orders", "read:tickets"],
+          }),
+        })
+        
+        if (res.ok) {
+          const data = await res.json()
+          // Redirect to OAuth provider
+          window.location.href = data.authorizationUrl
+        } else {
+          const error = await res.json()
+          toast.error(error.error || "Failed to start connection")
+        }
+      } catch (error) {
+        console.error("Error starting OAuth:", error)
+        toast.error("Failed to start connection")
+      } finally {
+        setLoadingStates(prev => ({ ...prev, [integration.id]: false }))
+      }
+    } else {
+      // Show API key dialog
+      setSelectedIntegration(integration)
+      setApiKeyDialogOpen(true)
+    }
+  }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+  const handleApiKeyConnect = async () => {
+    if (!selectedIntegration || !apiKeyInput.trim()) return
 
-    setConnectionStates((prev) => ({
+    setLoadingStates(prev => ({ ...prev, [selectedIntegration.id]: true }))
+    setApiKeyDialogOpen(false)
+
+    // Simulate API key connection (implement actual API call)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    setConnectionStates(prev => ({
       ...prev,
-      [selectedIntegration.id]: true,
+      [selectedIntegration.id]: { connected: true },
     }))
-    setConnectingId(null)
+    setLoadingStates(prev => ({ ...prev, [selectedIntegration.id]: false }))
+    setApiKeyInput("")
+    setAccountIdInput("")
     setSelectedIntegration(null)
+    toast.success(`Connected to ${selectedIntegration.name}`)
   }
 
-  const handleDisconnect = async (integrationId: string) => {
-    setConnectingId(integrationId)
+  const handleDisconnect = async () => {
+    if (!integrationToDisconnect) return
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setLoadingStates(prev => ({ ...prev, [integrationToDisconnect.id]: true }))
+    setDisconnectDialogOpen(false)
 
-    setConnectionStates((prev) => ({
-      ...prev,
-      [integrationId]: false,
-    }))
-    setConnectingId(null)
+    try {
+      const res = await fetch(`/api/integrations/${integrationToDisconnect.id}`, {
+        method: "DELETE",
+      })
+
+      if (res.ok) {
+        setConnectionStates(prev => ({
+          ...prev,
+          [integrationToDisconnect.id]: { connected: false },
+        }))
+        toast.success(`Disconnected from ${integrationToDisconnect.name}`)
+      } else {
+        toast.error("Failed to disconnect")
+      }
+    } catch (error) {
+      console.error("Error disconnecting:", error)
+      toast.error("Failed to disconnect")
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [integrationToDisconnect.id]: false }))
+      setIntegrationToDisconnect(null)
+    }
   }
 
   const groupedIntegrations = integrations.reduce((acc, integration) => {
@@ -165,19 +295,22 @@ export default function IntegrationsSettingsPage() {
       </div>
 
       {/* Connected integrations summary */}
-      {Object.values(connectionStates).some(Boolean) && (
+      {Object.entries(connectionStates).some(([_, state]) => state.connected) && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Connected Services</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            <h3 className="text-sm font-medium mb-3">Connected Services</h3>
             <div className="flex flex-wrap gap-2">
               {integrations
-                .filter((i) => connectionStates[i.id])
-                .map((integration) => (
+                .filter(i => connectionStates[i.id]?.connected)
+                .map(integration => (
                   <Badge key={integration.id} variant="secondary" className="gap-1.5">
                     <Check className="h-3 w-3" />
                     {integration.name}
+                    {connectionStates[integration.id]?.externalUserEmail && (
+                      <span className="text-muted-foreground">
+                        ({connectionStates[integration.id].externalUserEmail})
+                      </span>
+                    )}
                   </Badge>
                 ))}
             </div>
@@ -190,30 +323,44 @@ export default function IntegrationsSettingsPage() {
         <div key={category} className="space-y-4">
           <h2 className="text-lg font-semibold">{categoryLabels[category]}</h2>
           <div className="grid gap-4 md:grid-cols-2">
-            {categoryIntegrations.map((integration) => {
-              const isConnected = connectionStates[integration.id]
-              const isConnecting = connectingId === integration.id
+            {categoryIntegrations.map(integration => {
+              const state = connectionStates[integration.id] || { connected: false }
+              const isLoading = loadingStates[integration.id] || (initialLoading && integration.id === "afters")
 
               return (
-                <Card key={integration.id} className={cn(isConnected && "border-club/50")}>
+                <Card
+                  key={integration.id}
+                  className={cn(
+                    state.connected && "border-club/50",
+                    integration.comingSoon && "opacity-60"
+                  )}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className={cn(
                         "flex h-12 w-12 shrink-0 items-center justify-center rounded-lg",
-                        isConnected ? "bg-club/10 text-club" : "bg-muted text-muted-foreground"
+                        state.connected ? "bg-club/10 text-club" : "bg-muted text-muted-foreground"
                       )}>
                         {integration.icon}
                       </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">{integration.name}</h3>
-                          {isConnected && (
+                          {state.connected && (
                             <Badge variant="club" className="text-[10px]">Connected</Badge>
+                          )}
+                          {integration.comingSoon && (
+                            <Badge variant="outline" className="text-[10px]">Coming Soon</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">
                           {integration.description}
                         </p>
+                        {state.connected && state.externalUserName && (
+                          <p className="text-xs text-muted-foreground">
+                            Connected as {state.externalUserName}
+                          </p>
+                        )}
                         <a
                           href={integration.website}
                           target="_blank"
@@ -226,23 +373,29 @@ export default function IntegrationsSettingsPage() {
                       </div>
                     </div>
                     <div className="mt-4 flex items-center justify-between">
-                      {isConnected ? (
+                      {state.connected ? (
                         <>
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={true}
-                              onCheckedChange={() => handleDisconnect(integration.id)}
-                              disabled={isConnecting}
+                              onCheckedChange={() => {
+                                setIntegrationToDisconnect(integration)
+                                setDisconnectDialogOpen(true)
+                              }}
+                              disabled={isLoading}
                             />
                             <span className="text-sm text-muted-foreground">Enabled</span>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDisconnect(integration.id)}
-                            disabled={isConnecting}
+                            onClick={() => {
+                              setIntegrationToDisconnect(integration)
+                              setDisconnectDialogOpen(true)
+                            }}
+                            disabled={isLoading}
                           >
-                            {isConnecting ? (
+                            {isLoading ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               "Disconnect"
@@ -254,9 +407,9 @@ export default function IntegrationsSettingsPage() {
                           className="ml-auto"
                           size="sm"
                           onClick={() => handleConnect(integration)}
-                          disabled={isConnecting}
+                          disabled={isLoading || integration.comingSoon}
                         >
-                          {isConnecting ? (
+                          {isLoading ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               Connecting...
@@ -275,8 +428,8 @@ export default function IntegrationsSettingsPage() {
         </div>
       ))}
 
-      {/* Connect Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* API Key Dialog */}
+      <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Connect to {selectedIntegration?.name}</DialogTitle>
@@ -291,6 +444,8 @@ export default function IntegrationsSettingsPage() {
                 id="apiKey"
                 placeholder="Enter your API key..."
                 type="password"
+                value={apiKeyInput}
+                onChange={e => setApiKeyInput(e.target.value)}
               />
             </div>
             {selectedIntegration?.id !== "dropbox" && (
@@ -299,6 +454,8 @@ export default function IntegrationsSettingsPage() {
                 <Input
                   id="accountId"
                   placeholder="Enter your account ID..."
+                  value={accountIdInput}
+                  onChange={e => setAccountIdInput(e.target.value)}
                 />
               </div>
             )}
@@ -307,15 +464,33 @@ export default function IntegrationsSettingsPage() {
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setApiKeyDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmConnect}>
+            <Button onClick={handleApiKeyConnect} disabled={!apiKeyInput.trim()}>
               Connect
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Disconnect Confirmation Dialog */}
+      <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect {integrationToDisconnect?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will revoke access and remove the connection. You can reconnect at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDisconnect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Disconnect
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

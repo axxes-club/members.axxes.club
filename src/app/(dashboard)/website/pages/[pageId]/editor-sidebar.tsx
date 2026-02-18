@@ -38,8 +38,9 @@ import {
   X,
 } from "lucide-react"
 import { createBlock, updateBlock } from "@/lib/actions/pages"
-import { BLOCK_TYPES, type PageBlock, type BlockType, type BlockContent } from "@/lib/db/schema"
+import { BLOCK_TYPES, type PageBlock, type BlockType, type BlockContent, type BlockSettings } from "@/lib/db/schema"
 import { BlockSettingsEditor } from "./blocks/block-settings-editor"
+import type { BrandProfileForEditor } from "@/lib/brand/brand-styles"
 
 interface EditorSidebarProps {
   pageId: string
@@ -47,6 +48,7 @@ interface EditorSidebarProps {
   onBlockAdd: (block: PageBlock) => void
   onBlockUpdate: (blockId: string, updates: Partial<PageBlock>) => void
   onBlockDeselect: () => void
+  brandProfile?: BrandProfileForEditor | null
 }
 
 // Block category definitions
@@ -145,6 +147,7 @@ export function EditorSidebar({
   onBlockAdd,
   onBlockUpdate,
   onBlockDeselect,
+  brandProfile,
 }: EditorSidebarProps) {
   const [isAddingBlock, setIsAddingBlock] = useState(false)
 
@@ -165,6 +168,12 @@ export function EditorSidebar({
     if (!selectedBlock) return
     await updateBlock(selectedBlock.id, { content })
     onBlockUpdate(selectedBlock.id, { content })
+  }
+
+  const handleSettingsUpdate = async (settings: BlockSettings) => {
+    if (!selectedBlock) return
+    await updateBlock(selectedBlock.id, { settings })
+    onBlockUpdate(selectedBlock.id, { settings })
   }
 
   return (
@@ -189,7 +198,9 @@ export function EditorSidebar({
             <div className="p-4">
               <BlockSettingsEditor
                 block={selectedBlock}
-                onUpdate={handleContentUpdate}
+                onUpdateContent={handleContentUpdate}
+                onUpdateSettings={handleSettingsUpdate}
+                brandProfile={brandProfile}
               />
             </div>
           </ScrollArea>

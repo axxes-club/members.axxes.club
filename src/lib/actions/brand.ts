@@ -16,6 +16,15 @@ export async function getBrandProfile() {
   return profile
 }
 
+// Get a public brand profile by tenant ID (no auth required)
+export async function getPublicBrandProfile(tenantId: string) {
+  const profile = await db.query.brandProfiles.findFirst({
+    where: eq(brandProfiles.tenantId, tenantId),
+  })
+
+  return profile
+}
+
 export async function upsertBrandProfile(data: Partial<NewBrandProfile>) {
   const { tenantId } = await getAuthContext()
 

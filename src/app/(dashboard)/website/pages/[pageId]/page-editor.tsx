@@ -22,12 +22,14 @@ import { EditorZoomControls } from "./editor-zoom-controls"
 import { EditorMinimap } from "./editor-minimap"
 import { updatePage, publishPage, unpublishPage } from "@/lib/actions/pages"
 import type { Page, PageBlock, BlockType, BlockContent, BlockSettings } from "@/lib/db/schema"
+import type { BrandProfileForEditor } from "@/lib/brand/brand-styles"
 
 interface PageEditorProps {
   page: Page & { blocks: PageBlock[] }
+  brandProfile?: BrandProfileForEditor | null
 }
 
-export function PageEditor({ page: initialPage }: PageEditorProps) {
+export function PageEditor({ page: initialPage, brandProfile }: PageEditorProps) {
   const router = useRouter()
   const [page, setPage] = useState(initialPage)
   const [blocks, setBlocks] = useState<PageBlock[]>(initialPage.blocks)
@@ -128,6 +130,7 @@ export function PageEditor({ page: initialPage }: PageEditorProps) {
         handleBlockUpdate={handleBlockUpdate}
         handleBlockDelete={handleBlockDelete}
         setSelectedBlockId={setSelectedBlockId}
+        brandProfile={brandProfile}
       />
     </EditorZoomProvider>
   )
@@ -151,6 +154,7 @@ interface PageEditorContentProps {
   handleBlockUpdate: (blockId: string, updates: Partial<PageBlock>) => void
   handleBlockDelete: (blockId: string) => void
   setSelectedBlockId: (id: string | null) => void
+  brandProfile?: BrandProfileForEditor | null
 }
 
 function PageEditorContent({
@@ -170,6 +174,7 @@ function PageEditorContent({
   handleBlockUpdate,
   handleBlockDelete,
   setSelectedBlockId,
+  brandProfile,
 }: PageEditorContentProps) {
   const { canvasContainerRef } = useEditorZoom()
 
@@ -265,6 +270,7 @@ function PageEditorContent({
           onBlockAdd={handleBlockAdd}
           onBlockUpdate={handleBlockUpdate}
           onBlockDeselect={() => setSelectedBlockId(null)}
+          brandProfile={brandProfile}
         />
       </div>
     </div>

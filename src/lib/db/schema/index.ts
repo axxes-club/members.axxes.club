@@ -37,3 +37,6 @@ export * from "./activity"
 
 // Messaging
 export * from "./messaging"
+
+// Integrations
+export * from "./integrations"
