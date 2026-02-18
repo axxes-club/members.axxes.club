@@ -1,11 +1,11 @@
 import { pgTable, text, timestamp, boolean, index, jsonb } from "drizzle-orm/pg-core"
 import { user } from "./users"
-import { tenant } from "./tenants"
+import { tenants } from "./tenants"
 
 // Integration connections (OAuth and API key based)
 export const integrationConnection = pgTable("integration_connection", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id").notNull().references(() => tenant.id, { onDelete: "cascade" }),
+  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   
   // Integration identifier
