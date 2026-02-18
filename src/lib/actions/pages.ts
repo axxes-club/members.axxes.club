@@ -121,6 +121,44 @@ export async function getPageBySlug(slug: string) {
   return page
 }
 
+// Get a public page by tenant ID and slug (no auth required)
+export async function getPublicPage(tenantId: string, slug: string) {
+  const page = await db.query.pages.findFirst({
+    where: and(
+      eq(pages.slug, slug),
+      eq(pages.tenantId, tenantId),
+      eq(pages.isPublished, true)
+    ),
+    with: {
+      blocks: {
+        orderBy: [asc(pageBlocks.sortOrder)],
+        where: eq(pageBlocks.isVisible, true),
+      },
+    },
+  })
+
+  return page
+}
+
+// Get a public homepage by tenant ID (no auth required)
+export async function getPublicHomepage(tenantId: string) {
+  const page = await db.query.pages.findFirst({
+    where: and(
+      eq(pages.tenantId, tenantId),
+      eq(pages.isHomepage, true),
+      eq(pages.isPublished, true)
+    ),
+    with: {
+      blocks: {
+        orderBy: [asc(pageBlocks.sortOrder)],
+        where: eq(pageBlocks.isVisible, true),
+      },
+    },
+  })
+
+  return page
+}
+
 export async function getHomepage() {
   const { tenantId } = await getTenantId()
 

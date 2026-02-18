@@ -48,6 +48,18 @@ export async function getTenant() {
   return tenant
 }
 
+// Get a public tenant by slug (no auth required)
+export async function getPublicTenantBySlug(slug: string) {
+  const tenant = await db.query.tenants.findFirst({
+    where: and(
+      eq(tenants.slug, slug),
+      eq(tenants.status, "active")
+    ),
+  })
+
+  return tenant
+}
+
 export async function updateTenant(data: TenantUpdateData) {
   const { tenantId } = await getTenantId()
 

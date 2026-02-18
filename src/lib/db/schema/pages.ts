@@ -209,8 +209,162 @@ export type BlockContent =
   | TestimonialsBlockContent
   | HTMLBlockContent
 
-// Block settings type
+// ============================================
+// ENHANCED BLOCK SETTINGS WITH OVERRIDES SYSTEM
+// ============================================
+
+// Spacing value type (can be number or CSS value string)
+export type SpacingValue = number | string
+
+// Typography overrides - granular text control
+export type TypographyOverrides = {
+  fontFamily?: string
+  fontSize?: string
+  fontWeight?: string | number
+  lineHeight?: string | number
+  letterSpacing?: string
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize"
+  textDecoration?: "none" | "underline" | "line-through"
+  fontStyle?: "normal" | "italic"
+}
+
+// Color overrides - granular color control
+export type ColorOverrides = {
+  text?: string
+  background?: string
+  border?: string
+  accent?: string
+  link?: string
+  linkHover?: string
+  heading?: string
+  muted?: string
+}
+
+// Spacing overrides - padding and margin control
+export type SpacingOverrides = {
+  padding?: {
+    top?: SpacingValue
+    right?: SpacingValue
+    bottom?: SpacingValue
+    left?: SpacingValue
+  }
+  margin?: {
+    top?: SpacingValue
+    right?: SpacingValue
+    bottom?: SpacingValue
+    left?: SpacingValue
+  }
+  gap?: SpacingValue
+}
+
+// Border overrides
+export type BorderOverrides = {
+  width?: string
+  style?: "none" | "solid" | "dashed" | "dotted" | "double"
+  color?: string
+  radius?: string
+  // Individual sides
+  top?: { width?: string; style?: string; color?: string }
+  right?: { width?: string; style?: string; color?: string }
+  bottom?: { width?: string; style?: string; color?: string }
+  left?: { width?: string; style?: string; color?: string }
+}
+
+// Shadow overrides
+export type ShadowOverrides = {
+  preset?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "inner"
+  custom?: string // Custom box-shadow value
+}
+
+// Background overrides
+export type BackgroundOverrides = {
+  color?: string
+  gradient?: string
+  image?: string
+  imagePosition?: string
+  imageSize?: "cover" | "contain" | "auto" | string
+  imageRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y"
+  imageAttachment?: "scroll" | "fixed" | "local"
+  overlay?: {
+    color?: string
+    opacity?: number
+  }
+  blur?: string
+}
+
+// Animation overrides
+export type AnimationOverrides = {
+  entrance?: "none" | "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "scale" | "bounce"
+  duration?: string
+  delay?: string
+  easing?: string
+}
+
+// Layout overrides
+export type LayoutOverrides = {
+  display?: "block" | "flex" | "grid" | "inline" | "inline-block" | "none"
+  flexDirection?: "row" | "column" | "row-reverse" | "column-reverse"
+  justifyContent?: "start" | "center" | "end" | "between" | "around" | "evenly"
+  alignItems?: "start" | "center" | "end" | "stretch" | "baseline"
+  gridColumns?: number | string
+  gridGap?: string
+  position?: "static" | "relative" | "absolute" | "fixed" | "sticky"
+  zIndex?: number
+  overflow?: "visible" | "hidden" | "scroll" | "auto"
+}
+
+// Size overrides
+export type SizeOverrides = {
+  width?: string
+  minWidth?: string
+  maxWidth?: string
+  height?: string
+  minHeight?: string
+  maxHeight?: string
+  aspectRatio?: string
+}
+
+// Responsive breakpoint overrides
+export type ResponsiveOverrides = {
+  sm?: Partial<BlockStyleOverrides>  // 640px+
+  md?: Partial<BlockStyleOverrides>  // 768px+
+  lg?: Partial<BlockStyleOverrides>  // 1024px+
+  xl?: Partial<BlockStyleOverrides>  // 1280px+
+}
+
+// Complete style overrides object
+export type BlockStyleOverrides = {
+  typography?: TypographyOverrides
+  colors?: ColorOverrides
+  spacing?: SpacingOverrides
+  border?: BorderOverrides
+  shadow?: ShadowOverrides
+  background?: BackgroundOverrides
+  animation?: AnimationOverrides
+  layout?: LayoutOverrides
+  size?: SizeOverrides
+}
+
+// Brand integration settings
+export type BrandIntegration = {
+  useBrandColors?: boolean
+  useBrandFonts?: boolean
+  useBrandRadius?: boolean
+  useBrandShadows?: boolean
+  // Specific brand color mappings
+  colorMappings?: {
+    text?: "primary" | "secondary" | "accent" | "background" | "custom"
+    background?: "primary" | "secondary" | "accent" | "background" | "custom"
+    accent?: "primary" | "secondary" | "accent" | "custom"
+  }
+}
+
+// Block settings type - ENHANCED
 export type BlockSettings = {
+  // === BRAND INTEGRATION ===
+  brand?: BrandIntegration
+
+  // === LEGACY COMPATIBILITY (still supported) ===
   padding?: { top?: number; bottom?: number; left?: number; right?: number }
   margin?: { top?: number; bottom?: number }
   backgroundColor?: string
@@ -218,6 +372,33 @@ export type BlockSettings = {
   textColor?: string
   maxWidth?: "sm" | "md" | "lg" | "xl" | "full"
   customClasses?: string
+
+  // === ENHANCED OVERRIDES SYSTEM ===
+  overrides?: BlockStyleOverrides
+
+  // === RESPONSIVE OVERRIDES ===
+  responsive?: ResponsiveOverrides
+
+  // === CUSTOM CSS ===
+  customCSS?: string  // Raw CSS that applies to this block
+
+  // === VISIBILITY & DISPLAY ===
+  hideOnMobile?: boolean
+  hideOnDesktop?: boolean
+
+  // === ACCESSIBILITY ===
+  ariaLabel?: string
+  ariaDescribedBy?: string
+  role?: string
+
+  // === INTERACTION ===
+  cursor?: string
+  pointerEvents?: "auto" | "none"
+  userSelect?: "auto" | "none" | "text" | "all"
+
+  // === ADVANCED ===
+  containerQuery?: boolean  // Enable container queries
+  printStyles?: Partial<BlockStyleOverrides>  // Print-specific styles
 }
 
 // Block type enum values

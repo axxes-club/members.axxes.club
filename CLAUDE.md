@@ -62,6 +62,7 @@ pnpm drizzle-kit studio     # Open Drizzle Studio GUI
 - `src/components/ui/` - Radix-based primitives (shadcn/ui style)
 - `src/components/layout/` - Sidebar, breadcrumbs, tenant switcher
 - Uses Tailwind CSS v4 with `tailwind-merge` and `class-variance-authority`
+- Toast notifications: Sonner (`toast` from "sonner"), configured top-center with `richColors`
 
 ### Path Aliases
 - `@/*` maps to `./src/*`
