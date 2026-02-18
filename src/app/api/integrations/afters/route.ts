@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
+import { headers, cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { integrationConnection } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
@@ -8,23 +8,34 @@ import { and, eq } from "drizzle-orm"
 const AFTERS_CLIENT_ID = process.env.AFTERS_CLIENT_ID!
 const AFTERS_OAUTH_URL = process.env.AFTERS_OAUTH_URL || "https://afters.am"
 
+async function getSessionWithTenant() {
+  const headersList = await headers()
+  const cookieStore = await cookies()
+  
+  const session = await auth.api.getSession({ headers: headersList })
+  if (!session?.user?.id) {
+    return null
+  }
+
+  const tenantId = cookieStore.get("tenant_id")?.value
+  if (!tenantId) {
+    return null
+  }
+
+  return { userId: session.user.id, tenantId }
+}
+
 // GET - Check connection status
 export async function GET() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.id) {
+    const context = await getSessionWithTenant()
+    if (!context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Get tenant from session or context
-    const tenantId = session.session?.activeOrganizationId
-    if (!tenantId) {
-      return NextResponse.json({ error: "No active organization" }, { status: 400 })
     }
 
     const connection = await db.query.integrationConnection.findFirst({
       where: and(
-        eq(integrationConnection.tenantId, tenantId),
+        eq(integrationConnection.tenantId, context.tenantId),
         eq(integrationConnection.provider, "afters"),
         eq(integrationConnection.isActive, true)
       ),
@@ -49,14 +60,9 @@ export async function GET() {
 // POST - Initiate OAuth flow (returns authorization URL)
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.id) {
+    const context = await getSessionWithTenant()
+    if (!context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const tenantId = session.session?.activeOrganizationId
-    if (!tenantId) {
-      return NextResponse.json({ error: "No active organization" }, { status: 400 })
     }
 
     const body = await request.json().catch(() => ({}))
@@ -64,8 +70,8 @@ export async function POST(request: NextRequest) {
 
     // Generate state with tenant info for callback
     const state = Buffer.from(JSON.stringify({
-      tenantId,
-      userId: session.user.id,
+      tenantId: context.tenantId,
+      userId: context.userId,
       timestamp: Date.now(),
     })).toString("base64url")
 
@@ -88,20 +94,15 @@ export async function POST(request: NextRequest) {
 // DELETE - Disconnect integration
 export async function DELETE() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.id) {
+    const context = await getSessionWithTenant()
+    if (!context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const tenantId = session.session?.activeOrganizationId
-    if (!tenantId) {
-      return NextResponse.json({ error: "No active organization" }, { status: 400 })
     }
 
     // Find the connection
     const connection = await db.query.integrationConnection.findFirst({
       where: and(
-        eq(integrationConnection.tenantId, tenantId),
+        eq(integrationConnection.tenantId, context.tenantId),
         eq(integrationConnection.provider, "afters")
       ),
     })
@@ -122,7 +123,7 @@ export async function DELETE() {
     // Delete the connection
     await db.delete(integrationConnection).where(
       and(
-        eq(integrationConnection.tenantId, tenantId),
+        eq(integrationConnection.tenantId, context.tenantId),
         eq(integrationConnection.provider, "afters")
       )
     )
