@@ -9,10 +9,11 @@ interface ConversationPageProps {
 export default async function ConversationPage({ params }: ConversationPageProps) {
   const { id } = await params
 
-  try {
-    const conversation = await getConversation(id)
-    return <ConversationView conversation={conversation} />
-  } catch {
+  const conversation = await getConversation(id).catch(() => null)
+  
+  if (!conversation) {
     notFound()
   }
+
+  return <ConversationView conversation={conversation} />
 }

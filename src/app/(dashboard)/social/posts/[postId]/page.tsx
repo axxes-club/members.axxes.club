@@ -10,22 +10,22 @@ interface PostPageProps {
 export default async function PostPage({ params }: PostPageProps) {
   const { postId } = await params
 
-  try {
-    const [post, accounts] = await Promise.all([
-      getPost(postId),
-      getSocialAccounts(),
-    ])
+  const [post, accounts] = await Promise.all([
+    getPost(postId).catch(() => null),
+    getSocialAccounts().catch(() => []),
+  ])
 
-    return (
-      <div className="space-y-8">
-        <PageHeader
-          heading="Edit Post"
-          description="Modify your social media post"
-        />
-        <PostDetailView post={post} accounts={accounts} />
-      </div>
-    )
-  } catch {
+  if (!post) {
     notFound()
   }
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        heading="Edit Post"
+        description="Modify your social media post"
+      />
+      <PostDetailView post={post} accounts={accounts} />
+    </div>
+  )
 }

@@ -117,7 +117,7 @@ export async function validateInviteCode(code: string) {
   return { valid: true, inviteCode }
 }
 
-export async function useInviteCode(code: string) {
+export async function consumeInviteCode(code: string) {
   const result = await validateInviteCode(code)
 
   if (!result.valid) {

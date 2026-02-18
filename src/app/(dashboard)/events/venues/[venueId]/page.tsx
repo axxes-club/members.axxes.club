@@ -10,19 +10,19 @@ interface VenuePageProps {
 export default async function VenuePage({ params }: VenuePageProps) {
   const { venueId } = await params
 
-  try {
-    const venue = await getVenue(venueId)
-
-    return (
-      <div className="space-y-8">
-        <PageHeader
-          heading={venue.name}
-          description="View and manage venue details"
-        />
-        <VenueDetailView venue={venue} />
-      </div>
-    )
-  } catch {
+  const venue = await getVenue(venueId).catch(() => null)
+  
+  if (!venue) {
     notFound()
   }
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        heading={venue.name}
+        description="View and manage venue details"
+      />
+      <VenueDetailView venue={venue} />
+    </div>
+  )
 }

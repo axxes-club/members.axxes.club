@@ -16,7 +16,7 @@ export interface AssetFilters {
 export async function getAssets(filters?: AssetFilters) {
   const { tenantId } = await getAuthContext()
 
-  let query = db
+  const query = db
     .select()
     .from(assets)
     .where(eq(assets.tenantId, tenantId))

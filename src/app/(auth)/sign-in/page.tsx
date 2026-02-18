@@ -37,7 +37,7 @@ function SignInForm() {
       } else {
         router.push(redirect)
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)

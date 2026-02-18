@@ -28,7 +28,7 @@ export default function EditContactPage() {
       try {
         const data = await getContact(id)
         setContact(data)
-      } catch (err) {
+      } catch (_err) {
         setError("Contact not found")
       } finally {
         setIsFetching(false)
@@ -57,7 +57,7 @@ export default function EditContactPage() {
     try {
       await updateContact(id, data)
       router.push(`/crm/${id}`)
-    } catch (err) {
+    } catch (_err) {
       setError(err instanceof Error ? err.message : "Failed to update contact")
     } finally {
       setIsLoading(false)

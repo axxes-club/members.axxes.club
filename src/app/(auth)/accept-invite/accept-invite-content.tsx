@@ -51,7 +51,7 @@ export function AcceptInviteContent() {
         } else {
           setInvitation(data)
         }
-      } catch (e) {
+      } catch (_e) {
         setError("Failed to load invitation")
       } finally {
         setLoading(false)
@@ -75,7 +75,7 @@ export function AcceptInviteContent() {
         setTimeout(() => {
           router.push("/dashboard")
         }, 2000)
-      } catch (e) {
+      } catch (_e) {
         setError(e instanceof Error ? e.message : "Failed to accept invitation")
       }
     })
@@ -120,7 +120,7 @@ export function AcceptInviteContent() {
             <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
             <h2 className="mt-4 text-xl font-semibold">Welcome to the team!</h2>
             <p className="mt-2 text-muted-foreground">
-              You've successfully joined <strong>{invitation?.tenantName}</strong>.
+              You&apos;ve successfully joined <strong>{invitation?.tenantName}</strong>.
               Redirecting you to the dashboard...
             </p>
           </div>
@@ -138,7 +138,7 @@ export function AcceptInviteContent() {
           </div>
           <CardTitle>Team Invitation</CardTitle>
           <CardDescription>
-            You've been invited to join <strong>{invitation?.tenantName}</strong>
+            You&apos;ve been invited to join <strong>{invitation?.tenantName}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -192,7 +192,7 @@ export function AcceptInviteContent() {
         </div>
         <CardTitle>Join {invitation?.tenantName}</CardTitle>
         <CardDescription>
-          You've been invited to join this team as a {invitation?.role}.
+          You&apos;ve been invited to join this team as a {invitation?.role}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -222,7 +222,7 @@ export function AcceptInviteContent() {
           <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-4 text-sm">
             <p className="font-medium text-amber-800 dark:text-amber-200">Email mismatch</p>
             <p className="mt-1 text-amber-700 dark:text-amber-300">
-              This invitation was sent to <strong>{invitation?.email}</strong>, but you're
+              This invitation was sent to <strong>{invitation?.email}</strong>, but you&apos;re
               signed in as <strong>{session.user.email}</strong>.
             </p>
             <p className="mt-2 text-amber-700 dark:text-amber-300">

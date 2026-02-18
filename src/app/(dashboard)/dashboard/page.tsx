@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { SectionHeader } from "@/components/layout/section-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, Package, ShoppingCart, TrendingUp, DollarSign } from "lucide-react"
+import { Users, Calendar, Package, TrendingUp, DollarSign } from "lucide-react"
 
 export default function DashboardPage() {
   return (

@@ -60,7 +60,7 @@ export default function SignUpPage() {
 
         router.push("/onboarding")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)

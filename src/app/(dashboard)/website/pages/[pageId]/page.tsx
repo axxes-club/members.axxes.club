@@ -11,14 +11,15 @@ interface PageEditorPageProps {
 export default async function PageEditorPage({ params }: PageEditorPageProps) {
   const { pageId } = await params
 
-  try {
-    const [page, brandProfile] = await Promise.all([
-      getPage(pageId),
-      getBrandProfile(),
-    ])
-    const brandForEditor = extractBrandProfileForEditor(brandProfile ?? null)
-    return <PageEditor page={page} brandProfile={brandForEditor} />
-  } catch {
+  const [page, brandProfile] = await Promise.all([
+    getPage(pageId).catch(() => null),
+    getBrandProfile().catch(() => null),
+  ])
+
+  if (!page) {
     notFound()
   }
+
+  const brandForEditor = extractBrandProfileForEditor(brandProfile ?? null)
+  return <PageEditor page={page} brandProfile={brandForEditor} />
 }

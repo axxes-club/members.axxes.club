@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { useInviteCode } from "@/lib/actions/admin"
+import { consumeInviteCode } from "@/lib/actions/admin"
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await useInviteCode(code)
+    await consumeInviteCode(code)
 
     return NextResponse.json({ success: true })
   } catch (error) {

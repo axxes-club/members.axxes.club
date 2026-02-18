@@ -30,7 +30,7 @@ export default function OnboardingPage() {
           const data = await response.json()
           setExistingTenants(data.data || [])
         }
-      } catch (err) {
+      } catch (_err) {
         console.error("Failed to fetch tenants:", err)
       } finally {
         setIsLoadingTenants(false)
@@ -56,7 +56,7 @@ export default function OnboardingPage() {
         const data = await response.json()
         setError(data.error || "Failed to select business")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
@@ -85,7 +85,7 @@ export default function OnboardingPage() {
         const data = await response.json()
         setError(data.error || "Failed to create business")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
