@@ -1,0 +1,23 @@
+# CODEOWNERS for members.axxes.club
+# These owners will be requested for review when someone opens a PR
+
+# Default owner for everything
+* @josmanvis
+
+# Database schema changes require extra review
+/src/lib/db/schema/ @josmanvis
+/drizzle/ @josmanvis
+
+# Auth changes require extra review
+/src/lib/auth/ @josmanvis
+
+# API routes
+/src/app/api/ @josmanvis
+
+# CI/CD configuration
+/.github/ @josmanvis
+
+# Configuration files
+/*.config.* @josmanvis
+/tsconfig.json @josmanvis
+/package.json @josmanvis

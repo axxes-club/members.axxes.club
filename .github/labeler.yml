@@ -1,0 +1,70 @@
+# PR Labeler configuration
+# Labels PRs based on the files that were changed
+
+# Frontend changes
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/app/**'
+          - 'src/components/**'
+          - '*.css'
+          - '*.scss'
+
+# API changes
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/app/api/**'
+          - 'src/lib/actions/**'
+
+# Database changes
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/lib/db/**'
+          - 'drizzle/**'
+          - 'drizzle.config.ts'
+
+# Auth changes
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/lib/auth/**'
+          - 'src/app/(auth)/**'
+
+# Configuration changes
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.config.*'
+          - '.env*'
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+          - 'tsconfig.json'
+
+# CI/CD changes
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+
+# Documentation
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
+
+# Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+
+# Integrations
+integrations:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/app/api/integrations/**'
+          - 'src/lib/db/schema/integrations.ts'
