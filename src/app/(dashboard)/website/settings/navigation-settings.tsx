@@ -184,9 +184,9 @@ export function NavigationSettings({ settings }: NavigationSettingsProps) {
 
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">Show "Powered by" badge</Label>
+              <Label className="text-base">{`Show "Powered by" badge`}</Label>
               <p className="text-sm text-muted-foreground">
-                Display a small "Powered by members.axxes.club" link
+                {`Display a small "Powered by members.axxes.club" link`}
               </p>
             </div>
             <Switch

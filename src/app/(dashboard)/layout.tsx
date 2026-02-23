@@ -1,7 +1,9 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { Toaster } from "sonner"
 import { SidebarProvider } from "@/providers/sidebar-provider"
 import { BrandThemeProvider } from "@/providers/brand-theme-provider"
+import { ThemeProvider } from "@/providers/theme-provider"
 import { Sidebar, MobileSidebarTrigger } from "@/components/layout/sidebar"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
@@ -64,31 +66,39 @@ export default async function DashboardLayout({
   ])
 
   return (
-    <SidebarProvider>
-      <BrandThemeProvider
-        brandProfile={tenantData.brandProfile}
-        applyBrandColors={tenantData.themeSettings?.applyBrandColors ?? false}
-      >
-        <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar
-            tenantId={tenantId}
-            tenantName={tenantData.tenant?.name}
-            tenantLogo={tenantData.tenant?.logoUrl || undefined}
-            isSuperadmin={currentUser?.isSuperadmin ?? false}
-            unreadMessagesCount={unreadMessagesCount}
-          />
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Mobile Header */}
-            <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
-              <MobileSidebarTrigger />
-              <span className="font-semibold">members.axxes.<span className="text-purple-500">club</span></span>
-            </header>
-            <main className="flex-1 overflow-y-auto">
-              <div className="container mx-auto p-6 lg:p-8">{children}</div>
-            </main>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <SidebarProvider>
+        <BrandThemeProvider
+          brandProfile={tenantData.brandProfile}
+          applyBrandColors={tenantData.themeSettings?.applyBrandColors ?? false}
+        >
+          <div className="flex h-screen overflow-hidden bg-background">
+            <Sidebar
+              tenantId={tenantId}
+              tenantName={tenantData.tenant?.name}
+              tenantLogo={tenantData.tenant?.logoUrl || undefined}
+              isSuperadmin={currentUser?.isSuperadmin ?? false}
+              unreadMessagesCount={unreadMessagesCount}
+            />
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {/* Mobile Header */}
+              <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
+                <MobileSidebarTrigger />
+                <span className="font-semibold">members.axxes.<span className="text-purple-500">club</span></span>
+              </header>
+              <main className="flex-1 overflow-y-auto">
+                <div className="container mx-auto p-6 lg:p-8">{children}</div>
+              </main>
+              <Toaster position="top-center" richColors />
+            </div>
           </div>
-        </div>
-      </BrandThemeProvider>
-    </SidebarProvider>
+        </BrandThemeProvider>
+      </SidebarProvider>
+    </ThemeProvider>
   )
 }

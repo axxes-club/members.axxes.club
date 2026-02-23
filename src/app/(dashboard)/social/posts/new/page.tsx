@@ -1,4 +1,6 @@
 import { PageHeader } from "@/components/layout/page-header"
+export const dynamic = "force-dynamic"
+
 import { getSocialAccounts } from "@/lib/actions/social"
 import { NewPostForm } from "./new-post-form"
 

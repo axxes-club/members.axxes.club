@@ -1,4 +1,6 @@
 import { getThemeSettings } from "@/lib/actions/theme"
+
+export const dynamic = "force-dynamic"
 import { getBrandProfile } from "@/lib/actions/brand"
 import { PageHeader } from "@/components/layout/page-header"
 import { ThemeModeSelector } from "./theme-mode-selector"

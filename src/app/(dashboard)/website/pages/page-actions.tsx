@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreVertical, Pencil, ExternalLink, Home, Trash2, Eye, EyeOff } from "lucide-react"
+import { MoreVertical, Pencil, Home, Trash2, Eye, EyeOff } from "lucide-react"
 import { deletePage, publishPage, unpublishPage, setHomepage } from "@/lib/actions/pages"
 import type { Page } from "@/lib/db/schema"
 
@@ -116,7 +116,7 @@ export function PageActions({ page }: PageActionsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete page?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "{page.title}" and all its content. This action cannot be undone.
+              {`This will permanently delete "${page.title}" and all its content. This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

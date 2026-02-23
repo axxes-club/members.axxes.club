@@ -1,4 +1,6 @@
 import Link from "next/link"
+export const dynamic = "force-dynamic"
+
 import { PageHeader } from "@/components/layout/page-header"
 import { SectionHeader } from "@/components/layout/section-header"
 import { Card, CardContent } from "@/components/ui/card"

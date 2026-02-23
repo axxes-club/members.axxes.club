@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation"
+export const dynamic = "force-dynamic"
+
 import { PageHeader } from "@/components/layout/page-header"
 import { getVenue } from "@/lib/actions/events"
 import { VenueDetailView } from "./venue-detail-view"

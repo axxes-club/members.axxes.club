@@ -9,6 +9,8 @@ import { DesignRulesForm } from "./design-rules-form"
 import { ContactForm } from "./contact-form"
 import { VoiceToneForm } from "./voice-tone-form"
 
+export const dynamic = "force-dynamic"
+
 export default async function BrandProfilePage() {
   const profile = await getBrandProfile()
 

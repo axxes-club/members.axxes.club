@@ -1,4 +1,6 @@
 import { PageHeader } from "@/components/layout/page-header"
+export const dynamic = "force-dynamic"
+
 import { NewPageForm } from "./new-page-form"
 
 export default function NewPagePage() {

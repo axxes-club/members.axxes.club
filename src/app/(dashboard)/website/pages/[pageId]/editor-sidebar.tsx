@@ -197,6 +197,7 @@ export function EditorSidebar({
           <ScrollArea className="flex-1">
             <div className="p-4">
               <BlockSettingsEditor
+                key={selectedBlock.id}
                 block={selectedBlock}
                 onUpdateContent={handleContentUpdate}
                 onUpdateSettings={handleSettingsUpdate}

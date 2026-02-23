@@ -30,7 +30,7 @@ export default function OnboardingPage() {
           const data = await response.json()
           setExistingTenants(data.data || [])
         }
-      } catch (_err) {
+      } catch (err) {
         console.error("Failed to fetch tenants:", err)
       } finally {
         setIsLoadingTenants(false)

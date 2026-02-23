@@ -1,4 +1,6 @@
 import Link from "next/link"
+export const dynamic = "force-dynamic"
+
 import { notFound } from "next/navigation"
 import { PageHeader } from "@/components/layout/page-header"
 import { SectionHeader } from "@/components/layout/section-header"

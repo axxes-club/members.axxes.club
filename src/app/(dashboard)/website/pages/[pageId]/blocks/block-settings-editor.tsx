@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
@@ -84,11 +83,6 @@ export function BlockSettingsEditor({
   const [settings, setSettings] = useState<BlockSettings>(block.settings || {})
   const [activeTab, setActiveTab] = useState("content")
   const [responsiveMode, setResponsiveMode] = useState<"base" | "sm" | "md" | "lg" | "xl">("base")
-
-  useEffect(() => {
-    setContent(block.content)
-    setSettings(block.settings || {})
-  }, [block.id, block.content, block.settings])
 
   const handleContentChange = (key: string, value: unknown) => {
     const newContent = { ...content, [key]: value }

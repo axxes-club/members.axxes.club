@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 
 export async function requestPasswordReset(email: string) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (auth.api as any).forgetPassword({
       body: {
         email,
