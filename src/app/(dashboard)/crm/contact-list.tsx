@@ -115,9 +115,9 @@ export function ContactList({ contacts, total, page, totalPages, search, filterM
   const handleRemoveFilter = useCallback((key: keyof FilterState, value?: string) => {
     const newFilters: FilterState = { ...filters }
     if (value !== undefined && Array.isArray(newFilters[key])) {
-      newFilters[key] = newFilters[key].filter((v: string) => v !== value)
+      ;(newFilters[key] as string[]) = (newFilters[key] as string[]).filter((v: string) => v !== value)
     } else {
-      newFilters[key] = key.startsWith("has") ? undefined : []
+      ;(newFilters[key] as string[] | undefined) = key.startsWith("has") ? undefined : []
     }
     handleFiltersChange(newFilters)
   }, [filters, handleFiltersChange])
