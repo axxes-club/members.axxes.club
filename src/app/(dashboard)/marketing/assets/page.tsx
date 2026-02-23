@@ -1,4 +1,6 @@
 import { PageHeader } from "@/components/layout/page-header"
+export const dynamic = "force-dynamic"
+
 import { SectionHeader } from "@/components/layout/section-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { FileImage } from "lucide-react"

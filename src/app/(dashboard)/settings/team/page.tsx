@@ -5,6 +5,8 @@ import { InviteMemberDialog } from "../invite-member-dialog"
 import { PendingInvitationsList } from "./pending-invitations-list"
 import { Users, Mail, Shield } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default async function TeamSettingsPage() {
   const [members, invitations, tenant] = await Promise.all([
     getTeamMembers(),

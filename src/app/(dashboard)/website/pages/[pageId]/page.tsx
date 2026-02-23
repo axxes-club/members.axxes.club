@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation"
+export const dynamic = "force-dynamic"
+
 import { getPage } from "@/lib/actions/pages"
 import { getBrandProfile } from "@/lib/actions/brand"
 import { extractBrandProfileForEditor } from "@/lib/brand/brand-styles"

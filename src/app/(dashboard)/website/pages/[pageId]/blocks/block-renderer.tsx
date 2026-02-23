@@ -45,7 +45,6 @@ import {
   ExternalLink,
   MapPin,
   Calendar,
-  Clock,
   ChevronLeft,
   ChevronRight,
   Instagram,
@@ -55,11 +54,13 @@ import {
   Linkedin,
   Globe,
   Mail,
-  Phone,
   ShoppingBag,
   Star,
   Quote,
 } from "lucide-react"
+
+// Fixed reference date for placeholder events (to avoid impure Date.now() calls during render)
+const REFERENCE_DATE = new Date("2026-03-01T00:00:00Z")
 
 interface BlockRendererProps {
   block: PageBlock
@@ -935,7 +936,7 @@ function EventsListBlock({ content, isEditing }: { content: EventsListBlockConte
   const events = Array.from({ length: Math.min(limit, 4) }).map((_, idx) => ({
     id: idx,
     title: `Event ${idx + 1}`,
-    date: new Date(Date.now() + idx * 7 * 24 * 60 * 60 * 1000),
+    date: new Date(REFERENCE_DATE.getTime() + idx * 7 * 24 * 60 * 60 * 1000),
     venue: `Venue ${idx + 1}`,
     location: "City, Country",
   }))
@@ -1016,7 +1017,7 @@ function EventCardBlock({ content, isEditing }: { content: EventCardBlockContent
   // Placeholder - would fetch specific event from database
   const event = {
     title: "Sample Event",
-    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    date: new Date(REFERENCE_DATE.getTime() + 7 * 24 * 60 * 60 * 1000),
     venue: "Sample Venue",
     location: "City, Country",
     description: "Event description goes here...",
@@ -1103,7 +1104,7 @@ function EventCardBlock({ content, isEditing }: { content: EventCardBlockContent
 
 // Countdown Block
 function CountdownBlock({ content, isEditing }: { content: CountdownBlockContent; isEditing: boolean }) {
-  const targetDate = content.targetDate ? new Date(content.targetDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const targetDate = content.targetDate ? new Date(content.targetDate) : new Date(REFERENCE_DATE.getTime() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
   const diff = targetDate.getTime() - now.getTime()
 

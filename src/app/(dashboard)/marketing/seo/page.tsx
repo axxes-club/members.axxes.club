@@ -1,4 +1,6 @@
 import { getSeoSettings } from "@/lib/actions/seo"
+export const dynamic = "force-dynamic"
+
 import { PageHeader } from "@/components/layout/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { GlobalSettingsForm } from "./global-settings-form"

@@ -10,13 +10,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { updateBrandDesignRules } from "@/lib/actions/brand"
 import type { BrandProfile } from "@/lib/db/schema"
 
+interface DesignRules {
+  cornerRadius?: string
+  buttonStyle?: string
+  imageStyle?: string
+  shadowStyle?: string
+  doList?: string[]
+  dontList?: string[]
+  notes?: string
+  logoMinSize?: string
+  logoClearSpace?: string
+}
+
 interface DesignRulesFormProps {
   profile: BrandProfile | null | undefined
 }
 
+const DONT_PLACEHOLDER = `Don't stretch the logo
+Don't use unapproved colors
+Don't add effects to logo`
+
 export function DesignRulesForm({ profile }: DesignRulesFormProps) {
   const [loading, setLoading] = useState(false)
-  const rules = profile?.designRules as any || {}
+  const rules = (profile?.designRules as DesignRules) || {}
 
   const [cornerRadius, setCornerRadius] = useState(rules.cornerRadius || "8px")
   const [buttonStyle, setButtonStyle] = useState(rules.buttonStyle || "filled")
@@ -159,7 +175,7 @@ export function DesignRulesForm({ profile }: DesignRulesFormProps) {
             <h3 className="text-sm font-medium mb-4">Brand Guidelines</h3>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="doList">Do's (one per line)</Label>
+                <Label htmlFor="doList">{`Do's (one per line)`}</Label>
                 <Textarea
                   id="doList"
                   value={doList}
@@ -169,12 +185,12 @@ export function DesignRulesForm({ profile }: DesignRulesFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dontList">Don'ts (one per line)</Label>
+                <Label htmlFor="dontList">{`Don'ts (one per line)`}</Label>
                 <Textarea
                   id="dontList"
                   value={dontList}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDontList(e.target.value)}
-                  placeholder="Don't stretch the logo&#10;Don't use unapproved colors&#10;Don't add effects to logo"
+                  placeholder={DONT_PLACEHOLDER}
                   rows={5}
                 />
               </div>

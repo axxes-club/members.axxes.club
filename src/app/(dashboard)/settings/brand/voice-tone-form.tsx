@@ -2,15 +2,22 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { updateBrandVoiceTone } from "@/lib/actions/brand"
-import { X, Plus } from "lucide-react"
+import { X } from "lucide-react"
 import type { BrandProfile } from "@/lib/db/schema"
+
+interface VoiceTone {
+  personality?: string[]
+  writingStyle?: string
+  keywords?: string[]
+  avoidWords?: string[]
+  samplePhrases?: string[]
+}
 
 interface VoiceToneFormProps {
   profile: BrandProfile | null | undefined
@@ -24,7 +31,7 @@ const PERSONALITY_OPTIONS = [
 
 export function VoiceToneForm({ profile }: VoiceToneFormProps) {
   const [loading, setLoading] = useState(false)
-  const voiceTone = profile?.voiceTone as any || {}
+  const voiceTone = (profile?.voiceTone as VoiceTone) || {}
 
   const [personality, setPersonality] = useState<string[]>(voiceTone.personality || [])
   const [writingStyle, setWritingStyle] = useState(voiceTone.writingStyle || "casual")
@@ -60,7 +67,7 @@ export function VoiceToneForm({ profile }: VoiceToneFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Voice & Tone</CardTitle>
+        <CardTitle>{`Voice & Tone`}</CardTitle>
         <CardDescription>
           Define how your brand communicates with your audience.
         </CardDescription>
@@ -72,7 +79,7 @@ export function VoiceToneForm({ profile }: VoiceToneFormProps) {
             <div>
               <Label>Brand Personality</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Select traits that describe your brand's character.
+                {`Select traits that describe your brand's character.`}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -100,12 +107,12 @@ export function VoiceToneForm({ profile }: VoiceToneFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="casual">Casual & Conversational</SelectItem>
-                <SelectItem value="professional">Professional & Polished</SelectItem>
-                <SelectItem value="playful">Playful & Fun</SelectItem>
-                <SelectItem value="edgy">Edgy & Bold</SelectItem>
-                <SelectItem value="minimal">Minimal & Direct</SelectItem>
-                <SelectItem value="luxurious">Luxurious & Refined</SelectItem>
+                <SelectItem value="casual">{`Casual & Conversational`}</SelectItem>
+                <SelectItem value="professional">{`Professional & Polished`}</SelectItem>
+                <SelectItem value="playful">{`Playful & Fun`}</SelectItem>
+                <SelectItem value="edgy">{`Edgy & Bold`}</SelectItem>
+                <SelectItem value="minimal">{`Minimal & Direct`}</SelectItem>
+                <SelectItem value="luxurious">{`Luxurious & Refined`}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
@@ -138,7 +145,7 @@ export function VoiceToneForm({ profile }: VoiceToneFormProps) {
                 rows={3}
               />
               <p className="text-xs text-muted-foreground">
-                Words that don't align with your brand.
+                {`Words that don't align with your brand.`}
               </p>
             </div>
           </div>
@@ -174,7 +181,7 @@ export function VoiceToneForm({ profile }: VoiceToneFormProps) {
                     <span className="text-xs text-muted-foreground uppercase tracking-wide">Sample copy:</span>
                     <div className="mt-2 space-y-2">
                       {samplePhrases.split("\n").filter(Boolean).map((phrase: string, i: number) => (
-                        <p key={i} className="text-lg font-medium">"{phrase}"</p>
+                        <p key={i} className="text-lg font-medium">{`"${phrase}"`}</p>
                       ))}
                     </div>
                   </div>

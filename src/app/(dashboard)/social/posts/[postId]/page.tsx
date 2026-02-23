@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation"
+export const dynamic = "force-dynamic"
+
 import { PageHeader } from "@/components/layout/page-header"
 import { getPost, getSocialAccounts } from "@/lib/actions/social"
 import { PostDetailView } from "./post-detail-view"

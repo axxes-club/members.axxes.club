@@ -75,8 +75,8 @@ export function AcceptInviteContent() {
         setTimeout(() => {
           router.push("/dashboard")
         }, 2000)
-      } catch (_e) {
-        setError(e instanceof Error ? e.message : "Failed to accept invitation")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to accept invitation")
       }
     })
   }

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -149,7 +148,7 @@ export function TypographyForm({ profile }: TypographyFormProps) {
                   className="text-lg italic border-l-4 pl-4 text-muted-foreground"
                   style={{ fontFamily: accentFont }}
                 >
-                  "This is how accent text would appear in quotes or callouts."
+                  {"This is how accent text would appear in quotes or callouts."}
                 </blockquote>
               )}
             </div>

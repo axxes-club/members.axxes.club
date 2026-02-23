@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation"
+export const dynamic = "force-dynamic"
+
 import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { user, inviteCodes } from "@/lib/db/schema"

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation"
+export const dynamic = "force-dynamic"
+
 import { getConversation } from "@/lib/actions/messaging"
 import { ConversationView } from "./conversation-view"
 
