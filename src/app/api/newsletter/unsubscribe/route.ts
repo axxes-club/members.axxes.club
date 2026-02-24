@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { eq } from "drizzle-orm"
-import { newsletterSends, listMemberships, newsletterEvents, newsletterCampaigns } from "@/lib/db/schema"
+import { eq, and, sql } from "drizzle-orm"
+import { newsletterSends, listMemberships, newsletterEvents, newsletterCampaigns, subscriberLists } from "@/lib/db/schema"
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
       const list = membership.list
       if (list) {
         const result = await db
-          .select({ count: db.$count(listMemberships, eq(listMemberships.listId, list.id)) })
+          .select({ count: sql<number>`count(*)::int` })
           .from(listMemberships)
-          .where(eq(listMemberships.status, "subscribed"))
+          .where(and(eq(listMemberships.listId, list.id), eq(listMemberships.status, "subscribed")))
 
         await db
-          .update(newsletterCampaigns)
-          .set({ subscriberCount: result.length })
-          .where(eq(newsletterCampaigns.id, list.id))
+          .update(subscriberLists)
+          .set({ subscriberCount: result[0]?.count ?? 0 })
+          .where(eq(subscriberLists.id, list.id))
       }
     }
 

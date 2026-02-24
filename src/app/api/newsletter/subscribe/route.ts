@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
 import { subscriberLists, listMemberships, contacts, tenants } from "@/lib/db/schema"
 import { nanoid } from "nanoid"
 
@@ -183,11 +183,11 @@ export async function POST(request: NextRequest) {
 
 async function updateSubscriberCount(listId: string) {
   const result = await db
-    .select({ count: db.$count(listMemberships, eq(listMemberships.listId, listId)) })
+    .select({ count: sql<number>`count(*)::int` })
     .from(listMemberships)
-    .where(eq(listMemberships.status, "subscribed"))
+    .where(and(eq(listMemberships.listId, listId), eq(listMemberships.status, "subscribed")))
 
-  const count = result.length
+  const count = result[0]?.count ?? 0
 
   await db
     .update(subscriberLists)
@@ -195,9 +195,3 @@ async function updateSubscriberCount(listId: string) {
     .where(eq(subscriberLists.id, listId))
 }
 
-// Helper to count with conditions
-declare module "@/lib/db" {
-  interface Database {
-    $count(table: any, where?: any): number
-  }
-}

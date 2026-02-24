@@ -15,7 +15,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function NewsletterSettingsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<{
+    emailProvider: "smtp" | "resend" | "sendgrid" | "mailgun"
+    defaultFromName: string
+    defaultFromEmail: string
+    defaultReplyTo: string
+    resendApiKey: string
+    sendgridApiKey: string
+    mailgunApiKey: string
+    mailgunDomain: string
+    smtpHost: string
+    smtpPort: number
+    smtpUser: string
+    smtpPassword: string
+    smtpSecure: boolean
+    openTrackingEnabled: boolean
+    clickTrackingEnabled: boolean
+    logoUrl: string
+    brandColor: string
+  }>({
     emailProvider: "smtp",
     defaultFromName: "",
     defaultFromEmail: "",

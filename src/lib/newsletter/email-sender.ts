@@ -420,7 +420,7 @@ export async function sendCampaign(campaignId: string): Promise<BulkSendResult> 
       html: personalizedHtml,
       text: personalizedText,
       from,
-      replyTo: campaign.replyTo || settings?.defaultReplyTo,
+      replyTo: campaign.replyTo || settings?.defaultReplyTo || undefined,
       headers: {
         "X-Campaign-Id": campaignId,
         "X-Send-Id": send.id,

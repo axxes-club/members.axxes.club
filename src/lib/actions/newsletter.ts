@@ -620,16 +620,22 @@ export async function getCampaignStats(campaignId: string) {
     orderBy: [desc(trackedLinks.clickCount)],
   })
 
+  const sentCount = campaign.sentCount ?? 0
+  const openedCount = campaign.openedCount ?? 0
+  const clickedCount = campaign.clickedCount ?? 0
+  const bouncedCount = campaign.bouncedCount ?? 0
+  const unsubscribedCount = campaign.unsubscribedCount ?? 0
+
   return {
     campaign,
     eventCounts,
     recentOpens,
     recentClicks,
     links,
-    openRate: campaign.sentCount > 0 ? (campaign.openedCount / campaign.sentCount) * 100 : 0,
-    clickRate: campaign.sentCount > 0 ? (campaign.clickedCount / campaign.sentCount) * 100 : 0,
-    bounceRate: campaign.sentCount > 0 ? (campaign.bouncedCount / campaign.sentCount) * 100 : 0,
-    unsubscribeRate: campaign.sentCount > 0 ? (campaign.unsubscribedCount / campaign.sentCount) * 100 : 0,
+    openRate: sentCount > 0 ? (openedCount / sentCount) * 100 : 0,
+    clickRate: sentCount > 0 ? (clickedCount / sentCount) * 100 : 0,
+    bounceRate: sentCount > 0 ? (bouncedCount / sentCount) * 100 : 0,
+    unsubscribeRate: sentCount > 0 ? (unsubscribedCount / sentCount) * 100 : 0,
   }
 }
 
