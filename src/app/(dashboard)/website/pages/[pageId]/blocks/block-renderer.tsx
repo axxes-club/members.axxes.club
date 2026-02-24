@@ -397,7 +397,11 @@ function HeroBlock({ content, isEditing }: { content: HeroBlockContent; isEditin
 }
 
 // Text Block
-function TextBlock({ content }: { content: TextBlockContent }) {
+interface TextBlockProps {
+  content: TextBlockContent;
+  isEditing: boolean;
+}
+function TextBlock({ content, isEditing }: TextBlockProps) {
   return (
     <div
       className={cn(
@@ -411,7 +415,11 @@ function TextBlock({ content }: { content: TextBlockContent }) {
 }
 
 // Heading Block
-function HeadingBlock({ content }: { content: HeadingBlockContent }) {
+interface HeadingBlockProps {
+  content: HeadingBlockContent;
+  isEditing: boolean;
+}
+function HeadingBlock({ content, isEditing }: HeadingBlockProps) {
   const Tag = content.level || "h2"
   const sizes: Record<string, string> = {
     h1: "text-4xl font-bold",
@@ -475,8 +483,11 @@ function ImageBlock({ content, isEditing }: { content: ImageBlockContent; isEdit
   return imageContent
 }
 
-// Gallery Block
-function GalleryBlock({ content }: { content: GalleryBlockContent }) {
+interface GalleryBlockProps {
+  content: GalleryBlockContent;
+  isEditing: boolean;
+}
+function GalleryBlock({ content, isEditing }: GalleryBlockProps) {
   const images = content.images || []
   const columns = content.columns || 3
   const layout = content.layout || "grid"
@@ -603,8 +614,11 @@ function SpacerBlock({ content, isEditing }: { content: SpacerBlockContent; isEd
   )
 }
 
-// Divider Block
-function DividerBlock({ content }: { content: DividerBlockContent }) {
+interface DividerBlockProps {
+  content: DividerBlockContent;
+  isEditing: boolean;
+}
+function DividerBlock({ content, isEditing }: DividerBlockProps) {
   const widths: Record<string, string> = {
     full: "w-full",
     half: "w-1/2",
@@ -668,8 +682,11 @@ function CTABlock({ content, isEditing }: { content: CTABlockContent; isEditing:
 // ARTIST/TALENT BLOCKS
 // ============================================
 
-// Artist Bio Block
-function ArtistBioBlock({ content }: { content: ArtistBioBlockContent }) {
+interface ArtistBioBlockProps {
+  content: ArtistBioBlockContent;
+  isEditing: boolean;
+}
+function ArtistBioBlock({ content, isEditing }: ArtistBioBlockProps) {
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -877,8 +894,11 @@ function TourDatesBlock({ content, isEditing }: { content: TourDatesBlockContent
   )
 }
 
-// Music Player Block
-function MusicPlayerBlock({ content }: { content: MusicPlayerBlockContent }) {
+interface MusicPlayerBlockProps {
+  content: MusicPlayerBlockContent;
+  isEditing: boolean;
+}
+function MusicPlayerBlock({ content, isEditing }: MusicPlayerBlockProps) {
   if (!content.embedId) {
     return (
       <div className="flex items-center justify-center p-8 border-y border-dashed bg-muted/30">
@@ -1107,8 +1127,11 @@ function EventCardBlock({ content, isEditing }: { content: EventCardBlockContent
   )
 }
 
-// Countdown Block
-function CountdownBlock({ content }: { content: CountdownBlockContent }) {
+interface CountdownBlockProps {
+  content: CountdownBlockContent;
+  isEditing: boolean;
+}
+function CountdownBlock({ content, isEditing }: CountdownBlockProps) {
   const targetDate = content.targetDate ? new Date(content.targetDate) : new Date(REFERENCE_DATE.getTime() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
   const diff = targetDate.getTime() - now.getTime()
@@ -1262,8 +1285,11 @@ function ProductCardBlock({ content, isEditing }: { content: ProductCardBlockCon
   )
 }
 
-// Featured Products Block
-function FeaturedProductsBlock({ content }: { content: FeaturedProductsBlockContent }) {
+interface FeaturedProductsBlockProps {
+  content: FeaturedProductsBlockContent;
+  isEditing: boolean;
+}
+function FeaturedProductsBlock({ content, isEditing }: FeaturedProductsBlockProps) {
   const layout = content.layout || "grid"
   const productIds = content.productIds || []
 
@@ -1458,8 +1484,11 @@ function MapBlock({ content, isEditing }: { content: MapBlockContent; isEditing:
   )
 }
 
-// FAQ Block
-function FAQBlock({ content }: { content: FAQBlockContent }) {
+interface FAQBlockProps {
+  content: FAQBlockContent;
+  isEditing: boolean;
+}
+function FAQBlock({ content, isEditing }: FAQBlockProps) {
   const items = content.items || [
     { question: "Sample question 1?", answer: "Sample answer 1." },
     { question: "Sample question 2?", answer: "Sample answer 2." },
@@ -1491,8 +1520,11 @@ function FAQBlock({ content }: { content: FAQBlockContent }) {
   )
 }
 
-// Testimonials Block
-function TestimonialsBlock({ content }: { content: TestimonialsBlockContent }) {
+interface TestimonialsBlockProps {
+  content: TestimonialsBlockContent;
+  isEditing: boolean;
+}
+function TestimonialsBlock({ content, isEditing }: TestimonialsBlockProps) {
   const items = content.items || []
   const layout = content.layout || "grid"
 

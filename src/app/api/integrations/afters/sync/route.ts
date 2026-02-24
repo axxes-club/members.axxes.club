@@ -28,14 +28,15 @@ async function getSessionWithTenant() {
   return { userId: session.user.id, tenantId }
 }
 
-export async function POST({ json }: NextRequest) {
+export async function POST(request: NextRequest) {
+  const { json } = request;
   try {
     const context = await getSessionWithTenant()
     if (!context) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({}))
+    const body = await json().catch(() => ({}))
     const { entityType, fullSync } = body
 
     // Get the integration
