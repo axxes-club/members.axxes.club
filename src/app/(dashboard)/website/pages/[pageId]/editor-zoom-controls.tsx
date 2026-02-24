@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Minus, Plus, Maximize, ChevronDown } from "lucide-react"
-import { useEditorZoom, ZOOM_LEVELS, ZOOM_LABELS, type ZoomLevel } from "./editor-zoom-context"
+import { useEditorZoom, ZOOM_LEVELS, ZOOM_LABELS } from "./editor-zoom-context"
 
 export function EditorZoomControls() {
   const {

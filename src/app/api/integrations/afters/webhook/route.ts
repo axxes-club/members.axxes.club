@@ -22,10 +22,10 @@ function verifySignature(payload: string, signature: string, secret: string): bo
   return signature === expectedSignature
 }
 
-export async function POST(request: NextRequest) {
+export async function POST({ text, headers }: NextRequest) {
   try {
-    const body = await request.text()
-    const signature = request.headers.get("x-afters-signature") || ""
+    const body = await text()
+    const signature = headers.get("x-afters-signature") || ""
     
     // Verify webhook signature if secret is configured
     if (AFTERS_WEBHOOK_SECRET && !verifySignature(body, signature, AFTERS_WEBHOOK_SECRET)) {
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Health check endpoint
-export async function GET(request: NextRequest) {
+export async function GET() {
   return NextResponse.json({ 
     status: "ok", 
     endpoint: "afters-webhook",

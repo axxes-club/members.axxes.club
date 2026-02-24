@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { orders, orderItems } from "@/lib/db/schema"
+import { orders } from "@/lib/db/schema"
 import { eq, and, desc, sql, ilike, or } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getAuthContext } from "@/lib/auth"

@@ -6,7 +6,6 @@ import { eq, and, ilike, desc, asc, sql, or, inArray, isNull, gt, gte, lte, lt }
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getAuthContext } from "@/lib/auth"
-import { nanoid } from "nanoid"
 
 const contactSchema = z.object({
   firstName: z.string().min(1, "First name is required"),

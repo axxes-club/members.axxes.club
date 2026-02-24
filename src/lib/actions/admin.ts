@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { inviteCodes, user, tenants, tenantMemberships, loginActivity } from "@/lib/db/schema"
-import { eq, desc, count, sql } from "drizzle-orm"
+import { eq, desc, count } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { auth } from "@/lib/auth"

@@ -122,12 +122,6 @@ export async function inviteTeamMember(data: InvitationData) {
   const parsed = invitationSchema.parse(data)
 
   // Check if user is already a member
-  const existingMembership = await db.query.tenantMemberships.findFirst({
-    where: and(
-      eq(tenantMemberships.tenantId, tenantId),
-      sql`${tenantMemberships.deletedAt} IS NULL`
-    ),
-  })
 
   // Check if there's already a pending invitation
   const existingInvitation = await db.query.tenantInvitations.findFirst({
@@ -336,13 +330,6 @@ export async function acceptInvitation(token: string) {
   }
 
   // Check if already a member
-  const existingMembership = await db.query.tenantMemberships.findFirst({
-    where: and(
-      eq(tenantMemberships.tenantId, invitation.tenantId),
-      eq(tenantMemberships.userId, session.user.id),
-      sql`${tenantMemberships.deletedAt} IS NULL`
-    ),
-  })
 
   if (existingMembership) {
     // Update invitation status anyway

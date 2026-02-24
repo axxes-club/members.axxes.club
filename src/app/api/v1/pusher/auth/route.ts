@@ -7,7 +7,6 @@ import { conversationParticipants, tenantMemberships } from "@/lib/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
 
 async function getSession() {
-  const headersList = await headers()
   const cookieStore = await cookies()
 
   const cookieHeader = cookieStore

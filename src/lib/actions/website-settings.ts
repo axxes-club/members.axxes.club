@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { websiteSettings, type NewWebsiteSettings } from "@/lib/db/schema"
+import { websiteSettings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"

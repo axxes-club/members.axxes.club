@@ -28,7 +28,7 @@ export default function EditContactPage() {
       try {
         const data = await getContact(id)
         setContact(data)
-      } catch (_err) {
+      } catch {
         setError("Contact not found")
       } finally {
         setIsFetching(false)

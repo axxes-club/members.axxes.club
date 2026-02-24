@@ -28,7 +28,7 @@ async function getSessionWithTenant() {
   return { userId: session.user.id, tenantId }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST({ json }: NextRequest) {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET sync status
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const context = await getSessionWithTenant()
     if (!context) {

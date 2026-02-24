@@ -1,6 +1,7 @@
 "use client"
 
 import { BlockRenderer } from "@/app/(dashboard)/website/pages/[pageId]/blocks/block-renderer"
+import Image from "next/image"
 import { generateBrandCSSString } from "@/lib/brand/brand-styles"
 import type { Page, PageBlock, Tenant, BrandProfile } from "@/lib/db/schema"
 
@@ -30,9 +31,11 @@ export function PublicPageRenderer({
             <div className="container flex h-16 items-center justify-between">
               <div className="flex items-center gap-4">
                 {brandProfile?.logoUrl ? (
-                  <img
+                  <Image
                     src={brandProfile.logoUrl}
                     alt={tenant.name}
+                    height={32}
+                    width={100} // or a sufficiently large width
                     className="h-8 w-auto"
                   />
                 ) : (
@@ -74,9 +77,11 @@ export function PublicPageRenderer({
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   {brandProfile?.logoIconUrl ? (
-                    <img
+                    <Image
                       src={brandProfile.logoIconUrl}
                       alt={tenant.name}
+                      height={24}
+                      width={24}
                       className="h-6 w-6"
                     />
                   ) : null}

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { assets, type NewAsset, type Asset } from "@/lib/db/schema"
 import { getAuthContext } from "@/lib/auth"
-import { eq, and, ilike, or, desc, sql } from "drizzle-orm"
+import { eq, and, desc, sql } from "drizzle-orm"
 
 export interface AssetFilters {
   search?: string

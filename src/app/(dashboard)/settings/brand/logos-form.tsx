@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateBrandLogos } from "@/lib/actions/brand"
-import { Upload, Image as ImageIcon } from "lucide-react"
+import { Image as ImageIcon } from "lucide-react"
 import type { BrandProfile } from "@/lib/db/schema"
 
 interface LogosFormProps {
@@ -34,7 +35,7 @@ function LogoUploadField({
       <div className="flex gap-4">
         <div className="h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/50 shrink-0 overflow-hidden">
           {url ? (
-            <img src={url} alt={label} className="h-full w-full object-contain" />
+            <Image src={url} alt={label} className="object-contain" fill />
           ) : (
             <ImageIcon className="h-8 w-8 text-muted-foreground" />
           )}

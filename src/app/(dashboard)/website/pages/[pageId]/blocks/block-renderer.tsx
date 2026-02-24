@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 import type {
   PageBlock,
   BlockContent,
@@ -396,7 +397,7 @@ function HeroBlock({ content, isEditing }: { content: HeroBlockContent; isEditin
 }
 
 // Text Block
-function TextBlock({ content, isEditing }: { content: TextBlockContent; isEditing: boolean }) {
+function TextBlock({ content }: { content: TextBlockContent }) {
   return (
     <div
       className={cn(
@@ -410,7 +411,7 @@ function TextBlock({ content, isEditing }: { content: TextBlockContent; isEditin
 }
 
 // Heading Block
-function HeadingBlock({ content, isEditing }: { content: HeadingBlockContent; isEditing: boolean }) {
+function HeadingBlock({ content }: { content: HeadingBlockContent }) {
   const Tag = content.level || "h2"
   const sizes: Record<string, string> = {
     h1: "text-4xl font-bold",
@@ -451,11 +452,14 @@ function ImageBlock({ content, isEditing }: { content: ImageBlockContent; isEdit
 
   const imageContent = (
     <figure className="p-6">
-      <img
-        src={content.url}
-        alt={content.alt || ""}
-        className={cn("mx-auto rounded-lg", sizes[content.size || "large"])}
-      />
+      <div className={cn("relative mx-auto aspect-video", sizes[content.size || "large"])}>
+        <Image
+          src={content.url}
+          alt={content.alt || ""}
+          className="rounded-lg object-cover"
+          fill
+        />
+      </div>
       {content.caption && (
         <figcaption className="mt-2 text-center text-sm text-muted-foreground">
           {content.caption}
@@ -472,7 +476,7 @@ function ImageBlock({ content, isEditing }: { content: ImageBlockContent; isEdit
 }
 
 // Gallery Block
-function GalleryBlock({ content, isEditing }: { content: GalleryBlockContent; isEditing: boolean }) {
+function GalleryBlock({ content }: { content: GalleryBlockContent }) {
   const images = content.images || []
   const columns = content.columns || 3
   const layout = content.layout || "grid"
@@ -490,9 +494,8 @@ function GalleryBlock({ content, isEditing }: { content: GalleryBlockContent; is
       <div className="relative p-6">
         <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
           {images.map((img, idx) => (
-            <div key={idx} className="flex-none w-80 snap-center">
-              <img src={img.url} alt={img.alt || ""} className="rounded-lg w-full aspect-video object-cover" />
-              {img.caption && <p className="mt-2 text-sm text-muted-foreground">{img.caption}</p>}
+            <div key={idx} className="flex-none w-80 snap-center relative aspect-video">
+              <Image src={img.url} alt={img.alt || ""} className="rounded-lg object-cover" fill />
             </div>
           ))}
         </div>
@@ -517,8 +520,8 @@ function GalleryBlock({ content, isEditing }: { content: GalleryBlockContent; is
         style={layout === "grid" ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined}
       >
         {images.map((img, idx) => (
-          <div key={idx} className={cn(layout === "masonry" && "break-inside-avoid")}>
-            <img src={img.url} alt={img.alt || ""} className="rounded-lg w-full object-cover" />
+          <div key={idx} className={cn(layout === "masonry" && "break-inside-avoid", "relative w-full aspect-video")}>
+            <Image src={img.url} alt={img.alt || ""} className="rounded-lg object-cover" fill />
             {img.caption && <p className="mt-2 text-sm text-muted-foreground">{img.caption}</p>}
           </div>
         ))}
@@ -601,7 +604,7 @@ function SpacerBlock({ content, isEditing }: { content: SpacerBlockContent; isEd
 }
 
 // Divider Block
-function DividerBlock({ content, isEditing }: { content: DividerBlockContent; isEditing: boolean }) {
+function DividerBlock({ content }: { content: DividerBlockContent }) {
   const widths: Record<string, string> = {
     full: "w-full",
     half: "w-1/2",
@@ -666,15 +669,17 @@ function CTABlock({ content, isEditing }: { content: CTABlockContent; isEditing:
 // ============================================
 
 // Artist Bio Block
-function ArtistBioBlock({ content, isEditing }: { content: ArtistBioBlockContent; isEditing: boolean }) {
+function ArtistBioBlock({ content }: { content: ArtistBioBlockContent }) {
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {content.image ? (
-          <img
+          <Image
             src={content.image}
             alt={content.name || "Artist"}
-            className="w-48 h-48 rounded-full object-cover flex-shrink-0"
+            width={192} // equivalent to w-48
+            height={192} // equivalent to h-48
+            className="rounded-full object-cover flex-shrink-0"
           />
         ) : (
           <div className="w-48 h-48 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -873,7 +878,7 @@ function TourDatesBlock({ content, isEditing }: { content: TourDatesBlockContent
 }
 
 // Music Player Block
-function MusicPlayerBlock({ content, isEditing }: { content: MusicPlayerBlockContent; isEditing: boolean }) {
+function MusicPlayerBlock({ content }: { content: MusicPlayerBlockContent }) {
   if (!content.embedId) {
     return (
       <div className="flex items-center justify-center p-8 border-y border-dashed bg-muted/30">
@@ -1103,7 +1108,7 @@ function EventCardBlock({ content, isEditing }: { content: EventCardBlockContent
 }
 
 // Countdown Block
-function CountdownBlock({ content, isEditing }: { content: CountdownBlockContent; isEditing: boolean }) {
+function CountdownBlock({ content }: { content: CountdownBlockContent }) {
   const targetDate = content.targetDate ? new Date(content.targetDate) : new Date(REFERENCE_DATE.getTime() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
   const diff = targetDate.getTime() - now.getTime()
@@ -1258,7 +1263,7 @@ function ProductCardBlock({ content, isEditing }: { content: ProductCardBlockCon
 }
 
 // Featured Products Block
-function FeaturedProductsBlock({ content, isEditing }: { content: FeaturedProductsBlockContent; isEditing: boolean }) {
+function FeaturedProductsBlock({ content }: { content: FeaturedProductsBlockContent }) {
   const layout = content.layout || "grid"
   const productIds = content.productIds || []
 
@@ -1454,7 +1459,7 @@ function MapBlock({ content, isEditing }: { content: MapBlockContent; isEditing:
 }
 
 // FAQ Block
-function FAQBlock({ content, isEditing }: { content: FAQBlockContent; isEditing: boolean }) {
+function FAQBlock({ content }: { content: FAQBlockContent }) {
   const items = content.items || [
     { question: "Sample question 1?", answer: "Sample answer 1." },
     { question: "Sample question 2?", answer: "Sample answer 2." },
@@ -1487,7 +1492,7 @@ function FAQBlock({ content, isEditing }: { content: FAQBlockContent; isEditing:
 }
 
 // Testimonials Block
-function TestimonialsBlock({ content, isEditing }: { content: TestimonialsBlockContent; isEditing: boolean }) {
+function TestimonialsBlock({ content }: { content: TestimonialsBlockContent }) {
   const items = content.items || []
   const layout = content.layout || "grid"
 

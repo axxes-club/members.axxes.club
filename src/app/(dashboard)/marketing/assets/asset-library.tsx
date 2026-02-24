@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,7 +39,6 @@ import type { Asset } from "@/lib/db/schema"
 interface AssetLibraryProps {
   assets: Asset[]
   folders: string[]
-  tags: string[]
   filters: {
     search?: string
     category?: string
@@ -61,7 +61,7 @@ function getCategoryIcon(category: string | null) {
   }
 }
 
-export function AssetLibrary({ assets, folders, tags, filters }: AssetLibraryProps) {
+export function AssetLibrary({ assets, folders, filters }: AssetLibraryProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
@@ -170,10 +170,11 @@ export function AssetLibrary({ assets, folders, tags, filters }: AssetLibraryPro
               <Card key={asset.id} className="group overflow-hidden">
                 <div className="relative aspect-video bg-muted">
                   {isImage ? (
-                    <img
+                    <Image
                       src={asset.url}
                       alt={asset.altText || asset.name}
-                      className="h-full w-full object-cover"
+                      className="object-cover"
+                      fill
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -234,10 +235,11 @@ export function AssetLibrary({ assets, folders, tags, filters }: AssetLibraryPro
                 <CardContent className="flex items-center gap-4 p-4">
                   <div className="h-16 w-16 flex-shrink-0 rounded-md bg-muted overflow-hidden">
                     {isImage ? (
-                      <img
+                      <Image
                         src={asset.url}
                         alt={asset.altText || asset.name}
-                        className="h-full w-full object-cover"
+                        className="object-cover"
+                        fill
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">

@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { products, productCategories, productVariants } from "@/lib/db/schema"
+import { products, productCategories } from "@/lib/db/schema"
 import { eq, and, desc, asc, sql, ilike, or } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
