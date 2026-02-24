@@ -93,7 +93,7 @@ export default function UnsubscribePage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="reason">
-                We'd love to know why you unsubscribed (optional)
+                We&apos;d love to know why you unsubscribed (optional)
               </Label>
               <Textarea
                 id="reason"
