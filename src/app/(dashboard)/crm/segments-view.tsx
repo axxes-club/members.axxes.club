@@ -39,14 +39,16 @@ interface SegmentWithCount extends CustomerSegment {
   memberCount: number
 }
 
+interface FilterMetadata {
+  leadSources: string[]
+  tags: string[]
+  types: string[]
+  leadStatuses: string[]
+}
+
 interface SegmentsViewProps {
   initialSegments: SegmentWithCount[]
-  filterMetadata: {
-    leadSources: string[]
-    tags: string[]
-    types: string[]
-    leadStatuses: string[]
-  }
+  filterMetadata: FilterMetadata
 }
 
 const colorOptions = [
@@ -58,7 +60,7 @@ const colorOptions = [
   { name: "Cyan", value: "bg-cyan-500" },
 ]
 
-export function SegmentsView({ initialSegments }: SegmentsViewProps) {
+export function SegmentsView({ initialSegments, filterMetadata: _filterMetadata }: SegmentsViewProps) {
   const [segments, setSegments] = useState<SegmentWithCount[]>(initialSegments)
   const [isPending, startTransition] = useTransition()
   const [isCreateOpen, setIsCreateOpen] = useState(false)

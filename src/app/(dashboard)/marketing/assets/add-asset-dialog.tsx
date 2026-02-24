@@ -29,7 +29,7 @@ interface AddAssetDialogProps {
   tags?: string[]
 }
 
-export function AddAssetDialog({ folders, tags: _tags = [] }: AddAssetDialogProps) {
+export function AddAssetDialog({ folders, tags: _tags }: AddAssetDialogProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)

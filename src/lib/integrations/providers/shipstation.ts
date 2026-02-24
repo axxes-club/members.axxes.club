@@ -269,7 +269,7 @@ export class ShipStationIntegration extends BaseIntegration {
     return []
   }
 
-  async fetchExternalOrders(accessToken: string, params?: {
+  async fetchExternalOrders(_accessToken: string, _params?: {
     since?: Date
     limit?: number
     offset?: number
