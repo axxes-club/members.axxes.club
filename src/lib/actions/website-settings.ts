@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { websiteSettings, type NewWebsiteSettings } from "@/lib/db/schema"
+import { websiteSettings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
@@ -107,8 +107,6 @@ export async function updateSubdomain(subdomain: string) {
 }
 
 export async function updateCustomDomain(customDomain: string | null) {
-  const { tenantId } = await getTenantId()
-
   if (customDomain) {
     // Basic domain validation
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i

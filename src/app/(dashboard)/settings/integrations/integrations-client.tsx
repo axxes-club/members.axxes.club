@@ -400,7 +400,7 @@ function IntegrationsContent() {
       </div>
 
       {/* Connected Services Summary */}
-      {Object.entries(connectionStates).some(([_, state]) => state.connected) && (
+      {Object.entries(connectionStates).some(([, state]) => state.connected) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">Connected Services</CardTitle>

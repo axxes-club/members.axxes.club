@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { brandProfiles, type NewBrandProfile } from "@/lib/db/schema"
 import { getAuthContext } from "@/lib/auth"
-import { eq, and } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 
 export async function getBrandProfile() {
   const { tenantId } = await getAuthContext()

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateBrandLogos } from "@/lib/actions/brand"
-import { Upload, Image as ImageIcon } from "lucide-react"
+import { Image as ImageIcon } from "lucide-react"
 import type { BrandProfile } from "@/lib/db/schema"
 
 interface LogosFormProps {

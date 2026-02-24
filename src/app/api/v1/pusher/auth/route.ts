@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPusherServer } from "@/lib/pusher/server"
 import { auth } from "@/lib/auth"
-import { headers, cookies } from "next/headers"
+import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { conversationParticipants, tenantMemberships } from "@/lib/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
 
 async function getSession() {
-  const headersList = await headers()
   const cookieStore = await cookies()
 
   const cookieHeader = cookieStore

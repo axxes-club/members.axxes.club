@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"
 
 import { SectionHeader } from "@/components/layout/section-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Instagram, Twitter, Facebook, Linkedin, Share2 } from "lucide-react"
 import { getSocialAccounts, getSocialStats, getScheduledPosts } from "@/lib/actions/social"

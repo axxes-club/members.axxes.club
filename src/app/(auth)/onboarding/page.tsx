@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Building2, ArrowRight, Check } from "lucide-react"
+import { Building2, ArrowRight } from "lucide-react"
 
 interface Tenant {
   id: string
@@ -56,7 +56,7 @@ export default function OnboardingPage() {
         const data = await response.json()
         setError(data.error || "Failed to select business")
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
@@ -85,7 +85,7 @@ export default function OnboardingPage() {
         const data = await response.json()
         setError(data.error || "Failed to create business")
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)

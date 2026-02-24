@@ -121,14 +121,6 @@ export async function inviteTeamMember(data: InvitationData) {
 
   const parsed = invitationSchema.parse(data)
 
-  // Check if user is already a member
-  const existingMembership = await db.query.tenantMemberships.findFirst({
-    where: and(
-      eq(tenantMemberships.tenantId, tenantId),
-      sql`${tenantMemberships.deletedAt} IS NULL`
-    ),
-  })
-
   // Check if there's already a pending invitation
   const existingInvitation = await db.query.tenantInvitations.findFirst({
     where: and(

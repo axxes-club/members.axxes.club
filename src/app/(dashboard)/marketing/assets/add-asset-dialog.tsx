@@ -26,10 +26,10 @@ import { createAsset, fetchUrlMetadata } from "@/lib/actions/assets"
 
 interface AddAssetDialogProps {
   folders: string[]
-  tags: string[]
+  tags?: string[]
 }
 
-export function AddAssetDialog({ folders, tags }: AddAssetDialogProps) {
+export function AddAssetDialog({ folders, tags: _tags = [] }: AddAssetDialogProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)

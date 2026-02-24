@@ -3,11 +3,6 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sparkles,
@@ -38,7 +33,7 @@ import {
   X,
 } from "lucide-react"
 import { createBlock, updateBlock } from "@/lib/actions/pages"
-import { BLOCK_TYPES, type PageBlock, type BlockType, type BlockContent, type BlockSettings } from "@/lib/db/schema"
+import { type PageBlock, type BlockType, type BlockContent, type BlockSettings } from "@/lib/db/schema"
 import { BlockSettingsEditor } from "./blocks/block-settings-editor"
 import type { BrandProfileForEditor } from "@/lib/brand/brand-styles"
 

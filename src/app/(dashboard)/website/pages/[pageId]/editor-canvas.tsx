@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Plus, GripVertical, Trash2, Copy, Eye, EyeOff } from "lucide-react"
-import { createBlock, deleteBlock, reorderBlocks, duplicateBlock, toggleBlockVisibility } from "@/lib/actions/pages"
+import { deleteBlock, reorderBlocks, duplicateBlock, toggleBlockVisibility } from "@/lib/actions/pages"
 import { BlockRenderer } from "./blocks/block-renderer"
 import { useEditorZoom } from "./editor-zoom-context"
-import type { PageBlock, BlockType } from "@/lib/db/schema"
+import type { PageBlock } from "@/lib/db/schema"
 
 interface EditorCanvasProps {
   pageId: string
@@ -30,7 +30,6 @@ export function EditorCanvas({
 }: EditorCanvasProps) {
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null)
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
-  const [isAddingBlock, setIsAddingBlock] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
   const {
