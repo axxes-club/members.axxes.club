@@ -401,7 +401,7 @@ interface TextBlockProps {
   content: TextBlockContent;
   isEditing: boolean;
 }
-function TextBlock({ content, isEditing }: TextBlockProps) {
+function TextBlock({ content, isEditing: _isEditing }: TextBlockProps) {
   return (
     <div
       className={cn(
@@ -419,7 +419,7 @@ interface HeadingBlockProps {
   content: HeadingBlockContent;
   isEditing: boolean;
 }
-function HeadingBlock({ content, isEditing }: HeadingBlockProps) {
+function HeadingBlock({ content, isEditing: _isEditing }: HeadingBlockProps) {
   const Tag = content.level || "h2"
   const sizes: Record<string, string> = {
     h1: "text-4xl font-bold",
@@ -487,7 +487,7 @@ interface GalleryBlockProps {
   content: GalleryBlockContent;
   isEditing: boolean;
 }
-function GalleryBlock({ content, isEditing }: GalleryBlockProps) {
+function GalleryBlock({ content, isEditing: _isEditing }: GalleryBlockProps) {
   const images = content.images || []
   const columns = content.columns || 3
   const layout = content.layout || "grid"
@@ -618,7 +618,7 @@ interface DividerBlockProps {
   content: DividerBlockContent;
   isEditing: boolean;
 }
-function DividerBlock({ content, isEditing }: DividerBlockProps) {
+function DividerBlock({ content, isEditing: _isEditing }: DividerBlockProps) {
   const widths: Record<string, string> = {
     full: "w-full",
     half: "w-1/2",
@@ -686,7 +686,7 @@ interface ArtistBioBlockProps {
   content: ArtistBioBlockContent;
   isEditing: boolean;
 }
-function ArtistBioBlock({ content, isEditing }: ArtistBioBlockProps) {
+function ArtistBioBlock({ content, isEditing: _isEditing }: ArtistBioBlockProps) {
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -898,7 +898,7 @@ interface MusicPlayerBlockProps {
   content: MusicPlayerBlockContent;
   isEditing: boolean;
 }
-function MusicPlayerBlock({ content, isEditing }: MusicPlayerBlockProps) {
+function MusicPlayerBlock({ content, isEditing: _isEditing }: MusicPlayerBlockProps) {
   if (!content.embedId) {
     return (
       <div className="flex items-center justify-center p-8 border-y border-dashed bg-muted/30">
@@ -1131,7 +1131,7 @@ interface CountdownBlockProps {
   content: CountdownBlockContent;
   isEditing: boolean;
 }
-function CountdownBlock({ content, isEditing }: CountdownBlockProps) {
+function CountdownBlock({ content, isEditing: _isEditing }: CountdownBlockProps) {
   const targetDate = content.targetDate ? new Date(content.targetDate) : new Date(REFERENCE_DATE.getTime() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
   const diff = targetDate.getTime() - now.getTime()
@@ -1289,7 +1289,7 @@ interface FeaturedProductsBlockProps {
   content: FeaturedProductsBlockContent;
   isEditing: boolean;
 }
-function FeaturedProductsBlock({ content, isEditing }: FeaturedProductsBlockProps) {
+function FeaturedProductsBlock({ content, isEditing: _isEditing }: FeaturedProductsBlockProps) {
   const layout = content.layout || "grid"
   const productIds = content.productIds || []
 
@@ -1488,7 +1488,7 @@ interface FAQBlockProps {
   content: FAQBlockContent;
   isEditing: boolean;
 }
-function FAQBlock({ content, isEditing }: FAQBlockProps) {
+function FAQBlock({ content, isEditing: _isEditing }: FAQBlockProps) {
   const items = content.items || [
     { question: "Sample question 1?", answer: "Sample answer 1." },
     { question: "Sample question 2?", answer: "Sample answer 2." },
@@ -1524,7 +1524,7 @@ interface TestimonialsBlockProps {
   content: TestimonialsBlockContent;
   isEditing: boolean;
 }
-function TestimonialsBlock({ content, isEditing }: TestimonialsBlockProps) {
+function TestimonialsBlock({ content, isEditing: _isEditing }: TestimonialsBlockProps) {
   const items = content.items || []
   const layout = content.layout || "grid"
 
