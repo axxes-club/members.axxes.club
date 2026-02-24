@@ -232,12 +232,12 @@ export const newsletterEvents = pgTable("newsletter_events", {
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
-  index("events_tenant_idx").on(table.tenantId),
-  index("events_campaign_idx").on(table.campaignId),
-  index("events_send_idx").on(table.sendId),
-  index("events_contact_idx").on(table.contactId),
-  index("events_event_idx").on(table.event),
-  index("events_occurred_idx").on(table.occurredAt),
+  index("newsletter_events_tenant_idx").on(table.tenantId),
+  index("newsletter_events_campaign_idx").on(table.campaignId),
+  index("newsletter_events_send_idx").on(table.sendId),
+  index("newsletter_events_contact_idx").on(table.contactId),
+  index("newsletter_events_event_idx").on(table.event),
+  index("newsletter_events_occurred_idx").on(table.occurredAt),
 ])
 
 // Newsletter Settings (per tenant)
