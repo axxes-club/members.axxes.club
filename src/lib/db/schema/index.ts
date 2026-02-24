@@ -40,5 +40,8 @@ export * from "./activity"
 // Messaging
 export * from "./messaging"
 
+// Newsletter
+export * from "./newsletter"
+
 // Integrations
 export * from "./integrations"
