@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const publicRoutes = ["/", "/sign-in", "/sign-up", "/api/auth", "/p/"]
+const publicRoutes = ["/", "/sign-in", "/sign-up", "/api/auth", "/p/", "/api/dev-auth"]
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, searchParams } = request.nextUrl
+
+  // Handle dev auth bypass: /?devauth or /sign-in?devauth
+  if (searchParams.has("devauth")) {
+    const devAuthUrl = new URL("/api/dev-auth", request.url)
+    // Preserve redirect param if present
+    const redirect = searchParams.get("redirect")
+    if (redirect) {
+      devAuthUrl.searchParams.set("redirect", redirect)
+    }
+    return NextResponse.redirect(devAuthUrl)
+  }
 
   // Allow public routes
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
