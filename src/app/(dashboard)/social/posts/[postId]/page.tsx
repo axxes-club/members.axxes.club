@@ -27,7 +27,7 @@ export default async function PostPage({ params }: PostPageProps) {
         heading="Edit Post"
         description="Modify your social media post"
       />
-      <PostDetailView post={post} accounts={accounts} />
+      <PostDetailView post={post as any} accounts={accounts as any} />
     </div>
   )
 }

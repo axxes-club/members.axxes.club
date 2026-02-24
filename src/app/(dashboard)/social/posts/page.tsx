@@ -181,16 +181,16 @@ function PostList({
           <Card interactive className="p-4">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                {post.socialAccount
-                  ? getPlatformIcon(post.socialAccount.platform)
+                {post.socialAccount && !Array.isArray(post.socialAccount)
+                  ? getPlatformIcon((post.socialAccount as { platform: string }).platform)
                   : <Share2 className="h-4 w-4" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   {getStatusBadge(post.status)}
-                  {post.socialAccount && (
+                  {post.socialAccount && !Array.isArray(post.socialAccount) && (
                     <span className="text-sm text-muted-foreground">
-                      @{post.socialAccount.username}
+                      @{(post.socialAccount as { username?: string }).username || "account"}
                     </span>
                   )}
                 </div>

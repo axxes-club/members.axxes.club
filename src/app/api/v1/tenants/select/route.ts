@@ -58,9 +58,9 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       data: {
-        id: membership.tenant.id,
-        name: membership.tenant.name,
-        slug: membership.tenant.slug,
+        id: (membership.tenant as { id: string }).id,
+        name: (membership.tenant as { name: string }).name,
+        slug: (membership.tenant as { slug: string }).slug,
       },
     })
 

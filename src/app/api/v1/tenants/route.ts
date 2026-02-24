@@ -116,9 +116,9 @@ export async function GET() {
     })
 
     const userTenants = memberships.map((m) => ({
-      id: m.tenant.id,
-      name: m.tenant.name,
-      slug: m.tenant.slug,
+      id: (m.tenant as { id: string }).id,
+      name: (m.tenant as { name: string }).name,
+      slug: (m.tenant as { slug: string }).slug,
       role: m.role,
     }))
 

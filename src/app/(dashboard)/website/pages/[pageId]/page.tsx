@@ -23,5 +23,5 @@ export default async function PageEditorPage({ params }: PageEditorPageProps) {
   }
 
   const brandForEditor = extractBrandProfileForEditor(brandProfile ?? null)
-  return <PageEditor page={page} brandProfile={brandForEditor} />
+  return <PageEditor page={page as any} brandProfile={brandForEditor} />
 }

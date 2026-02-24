@@ -238,15 +238,15 @@ export async function getLoginActivity(limit: number = 50) {
     ipAddress: activity.ipAddress,
     userAgent: activity.userAgent,
     createdAt: activity.createdAt,
-    user: activity.user ? {
-      id: activity.user.id,
-      name: activity.user.name,
-      email: activity.user.email,
-      image: activity.user.image,
+    user: activity.user && !Array.isArray(activity.user) ? {
+      id: (activity.user as { id: string }).id,
+      name: (activity.user as { name?: string }).name || "Unknown",
+      email: (activity.user as { email: string }).email,
+      image: (activity.user as { image?: string | null }).image || null,
     } : null,
-    tenant: activity.tenant ? {
-      id: activity.tenant.id,
-      name: activity.tenant.name,
+    tenant: activity.tenant && !Array.isArray(activity.tenant) ? {
+      id: (activity.tenant as { id: string }).id,
+      name: (activity.tenant as { name: string }).name,
     } : null,
   }))
 }

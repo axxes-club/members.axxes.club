@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
         if (!acc[p.conversationId]) acc[p.conversationId] = []
         acc[p.conversationId].push({
           userId: p.userId,
-          name: p.user?.name || "Unknown",
-          image: p.user?.image,
+          name: (p.user as { name?: string } | null)?.name || "Unknown",
+          image: (p.user as { image?: string | null } | null)?.image || null,
           isAdmin: p.isAdmin,
         })
         return acc

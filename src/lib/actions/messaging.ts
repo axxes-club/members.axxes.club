@@ -81,8 +81,8 @@ export async function getConversations() {
       if (!acc[p.conversationId]) acc[p.conversationId] = []
       acc[p.conversationId].push({
         userId: p.userId,
-        name: p.user?.name || "Unknown",
-        image: p.user?.image,
+        name: (p.user as { name?: string } | null)?.name || "Unknown",
+        image: (p.user as { image?: string | null } | null)?.image || null,
         isAdmin: p.isAdmin,
       })
       return acc
@@ -141,13 +141,27 @@ export async function getConversation(conversationId: string) {
     throw new Error("Conversation not found or access denied")
   }
 
+  const conversation = participant.conversation as {
+    id: string
+    type: string
+    name: string | null
+    avatarUrl: string | null
+    lastMessageAt: Date | null
+    lastMessagePreview: string | null
+    participants: Array<{
+      userId: string
+      user: { name?: string | null; image?: string | null } | null
+      isAdmin: boolean | null
+    }>
+  }
+  
   return {
-    ...participant.conversation,
+    ...conversation,
     unreadCount: participant.unreadCount,
-    participants: participant.conversation.participants.map((p) => ({
+    participants: conversation.participants.map((p) => ({
       userId: p.userId,
       name: p.user?.name || "Unknown",
-      image: p.user?.image,
+      image: p.user?.image || null,
       isAdmin: p.isAdmin,
     })),
   }
@@ -412,9 +426,9 @@ export async function getTeamMembersForMessaging() {
 
   return memberships.map((m) => ({
     id: m.userId,
-    name: m.user?.name || "Unknown",
-    email: m.user?.email || "",
-    image: m.user?.image,
+    name: (m.user as { name?: string | null } | null)?.name || "Unknown",
+    email: (m.user as { email?: string | null } | null)?.email || "",
+    image: (m.user as { image?: string | null } | null)?.image || null,
     role: m.role,
   }))
 }

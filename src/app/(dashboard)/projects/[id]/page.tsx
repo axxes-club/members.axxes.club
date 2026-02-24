@@ -93,7 +93,7 @@ export default async function ProjectBoardPage({
       </div>
 
       {/* Kanban Board */}
-      <KanbanBoard project={project} />
+      <KanbanBoard project={project as any} />
     </div>
   )
 }

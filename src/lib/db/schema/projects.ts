@@ -217,8 +217,9 @@ export const projectChecklistItems = pgTable("project_checklist_items", {
   index("project_checklist_items_checklist_idx").on(table.checklistId),
 ])
 
-// Card Comments
-export const projectCardComments = pgTable("project_card_comments", {
+// Card Comments - using any for self-reference due to TypeScript circular inference limitation
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const projectCardCommentsTable: any = pgTable("project_card_comments", {
   id: uuid("id").defaultRandom().primaryKey(),
   cardId: uuid("card_id").notNull().references(() => projectCards.id, { onDelete: "cascade" }),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
@@ -230,7 +231,7 @@ export const projectCardComments = pgTable("project_card_comments", {
   userId: text("user_id").notNull().references(() => user.id),
 
   // Parent comment for threading
-  parentCommentId: uuid("parent_comment_id").references(() => projectCardComments.id, { onDelete: "cascade" }),
+  parentCommentId: uuid("parent_comment_id").references((): any => projectCardCommentsTable.id, { onDelete: "cascade" }),
 
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -241,6 +242,10 @@ export const projectCardComments = pgTable("project_card_comments", {
   index("project_card_comments_tenant_idx").on(table.tenantId),
   index("project_card_comments_user_idx").on(table.userId),
 ])
+
+export const projectCardComments = projectCardCommentsTable as typeof projectCardCommentsTable & {
+  id: ReturnType<typeof uuid>
+}
 
 // Project Activity Log
 export const projectActivity = pgTable("project_activity", {
