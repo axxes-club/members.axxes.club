@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { eq, and, desc, inArray, sql, isNull } from "drizzle-orm"
+import { eq, and, desc, sql, isNull } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { db } from "@/lib/db"
 import { getAuthContext } from "@/lib/auth"
@@ -14,11 +14,6 @@ import {
   newsletterEvents,
   newsletterSettings,
   trackedLinks,
-  contacts,
-  type NewSubscriberList,
-  type NewEmailTemplate,
-  type NewNewsletterCampaign,
-  type NewNewsletterSettings,
 } from "@/lib/db/schema"
 import { z } from "zod"
 
