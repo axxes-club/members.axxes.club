@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -103,24 +103,6 @@ export function AdvancedFilters({ filters, onFiltersChange, metadata }: Advanced
         [key]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value],
       }
     })
-  }
-
-  const removeFilter = (key: keyof FilterState, value?: string) => {
-    if (value !== undefined) {
-      // Remove specific value from array
-      setLocalFilters((prev) => ({
-        ...prev,
-        [key]: (prev[key] as string[]).filter((v) => v !== value),
-      }))
-      onFiltersChange({
-        ...filters,
-        [key]: (filters[key] as string[]).filter((v) => v !== value),
-      })
-    } else {
-      // Clear entire filter
-      setLocalFilters((prev) => ({ ...prev, [key]: key.startsWith("has") ? undefined : [] }))
-      onFiltersChange({ ...filters, [key]: key.startsWith("has") ? undefined : [] } as FilterState)
-    }
   }
 
   return (

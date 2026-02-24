@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { events, venues, ticketTypes, attendees } from "@/lib/db/schema"
+import { events, venues, attendees } from "@/lib/db/schema"
 import { eq, and, desc, asc, sql, gte, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"

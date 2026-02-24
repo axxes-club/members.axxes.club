@@ -10,7 +10,7 @@ import { relations } from "drizzle-orm"
 import { tenants } from "./tenants"
 import { user } from "./users"
 import { products, productVariants, inventoryLocations } from "./inventory"
-import { suppliers, supplierParts, purchaseOrders, salesOrders, stockItems, bomItems, buildOrders } from "./inventree"
+import { suppliers, supplierParts, purchaseOrders, stockItems, buildOrders } from "./inventree"
 
 // ============= ENUMS =============
 

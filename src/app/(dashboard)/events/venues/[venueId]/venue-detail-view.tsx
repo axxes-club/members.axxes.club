@@ -32,7 +32,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { updateVenue, deleteVenue } from "@/lib/actions/events"
-import { Loader2, Trash2, MapPin, Calendar, ExternalLink } from "lucide-react"
+import { Loader2, Trash2, Calendar, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
 import type { Venue, Event } from "@/lib/db/schema"
 

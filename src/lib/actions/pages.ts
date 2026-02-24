@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { pages, pageBlocks, type NewPage, type BlockContent, type BlockSettings, type BlockType } from "@/lib/db/schema"
+import { pages, pageBlocks, type BlockContent, type BlockSettings, type BlockType } from "@/lib/db/schema"
 import { eq, and, asc, desc, sql, not } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"

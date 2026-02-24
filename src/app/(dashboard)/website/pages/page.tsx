@@ -5,16 +5,9 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, FileText, Home, ExternalLink, Pencil, MoreVertical } from "lucide-react"
+import { Plus, FileText, Home } from "lucide-react"
 import { getPages, getPageStats } from "@/lib/actions/pages"
 import { format } from "date-fns"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { PageActions } from "./page-actions"
 
 export default async function WebsitePagesPage() {

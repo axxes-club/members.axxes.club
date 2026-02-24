@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/providers/sidebar-provider"
 import { BrandThemeProvider } from "@/providers/brand-theme-provider"
 import { ThemeProvider } from "@/providers/theme-provider"
 import { Sidebar, MobileSidebar, MobileSidebarTrigger } from "@/components/layout/sidebar"
+import { VersionBadge } from "@/components/ui/version-badge"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { user, brandProfiles, themeSettings, tenants } from "@/lib/db/schema"
@@ -103,6 +104,7 @@ export default async function DashboardLayout({
               </main>
               <Toaster position="top-center" richColors />
             </div>
+            <VersionBadge />
           </div>
         </BrandThemeProvider>
       </SidebarProvider>

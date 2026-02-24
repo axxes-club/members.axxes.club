@@ -51,7 +51,7 @@ export function AcceptInviteContent() {
         } else {
           setInvitation(data)
         }
-      } catch (_e) {
+      } catch {
         setError("Failed to load invitation")
       } finally {
         setLoading(false)

@@ -4,7 +4,6 @@ export const dynamic = "force-dynamic"
 import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Plus, Users, UserPlus, LayoutGrid, List, Folders } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getContacts, getContactStats, getLeadPipeline, getSegments, getContactFilterMetadata } from "@/lib/actions/contacts"
@@ -20,7 +19,6 @@ export default async function CRMPage({
   const params = await searchParams
   const search = params.search
   const page = params.page ? parseInt(params.page) : 1
-  const view = params.view || "list"
 
   const [{ contacts, total, totalPages }, stats, pipeline, segments, filterMetadata] = await Promise.all([
     getContacts({ search, page }),

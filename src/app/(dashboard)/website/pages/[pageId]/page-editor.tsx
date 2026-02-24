@@ -11,9 +11,7 @@ import {
   Eye,
   EyeOff,
   Save,
-  Settings,
   Loader2,
-  ExternalLink,
 } from "lucide-react"
 import { EditorCanvas } from "./editor-canvas"
 import { EditorSidebar } from "./editor-sidebar"
@@ -21,7 +19,7 @@ import { EditorZoomProvider, useEditorZoom } from "./editor-zoom-context"
 import { EditorZoomControls } from "./editor-zoom-controls"
 import { EditorMinimap } from "./editor-minimap"
 import { updatePage, publishPage, unpublishPage } from "@/lib/actions/pages"
-import type { Page, PageBlock, BlockType, BlockContent, BlockSettings } from "@/lib/db/schema"
+import type { Page, PageBlock } from "@/lib/db/schema"
 import type { BrandProfileForEditor } from "@/lib/brand/brand-styles"
 
 interface PageEditorProps {

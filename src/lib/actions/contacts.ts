@@ -2,11 +2,10 @@
 
 import { db } from "@/lib/db"
 import { contacts, customerSegments, segmentMemberships, contactInteractions } from "@/lib/db/schema"
-import { eq, and, ilike, desc, asc, sql, or, inArray, isNull, gt, gte, lte, lt } from "drizzle-orm"
+import { eq, and, ilike, desc, asc, sql, or, inArray, isNull, gte, lte } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getAuthContext } from "@/lib/auth"
-import { nanoid } from "nanoid"
 
 const contactSchema = z.object({
   firstName: z.string().min(1, "First name is required"),

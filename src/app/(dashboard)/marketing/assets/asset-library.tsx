@@ -38,7 +38,7 @@ import type { Asset } from "@/lib/db/schema"
 interface AssetLibraryProps {
   assets: Asset[]
   folders: string[]
-  tags: string[]
+  tags?: string[]
   filters: {
     search?: string
     category?: string
@@ -61,7 +61,7 @@ function getCategoryIcon(category: string | null) {
   }
 }
 
-export function AssetLibrary({ assets, folders, tags, filters }: AssetLibraryProps) {
+export function AssetLibrary({ assets, folders, filters }: AssetLibraryProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")

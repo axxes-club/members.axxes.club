@@ -7,7 +7,7 @@ import { SectionHeader } from "@/components/layout/section-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Package, Pencil, DollarSign, BarChart3 } from "lucide-react"
+import { ArrowLeft, Package, Pencil } from "lucide-react"
 import { getProduct } from "@/lib/actions/inventory"
 import { ProductActions } from "./product-actions"
 

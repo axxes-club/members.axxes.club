@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,7 +29,6 @@ import {
   Trash2,
   Users,
   Loader2,
-  Palette,
 } from "lucide-react"
 import { createSegment, deleteSegment } from "@/lib/actions/contacts"
 import { toast } from "sonner"
@@ -60,7 +58,7 @@ const colorOptions = [
   { name: "Cyan", value: "bg-cyan-500" },
 ]
 
-export function SegmentsView({ initialSegments, filterMetadata }: SegmentsViewProps) {
+export function SegmentsView({ initialSegments }: SegmentsViewProps) {
   const [segments, setSegments] = useState<SegmentWithCount[]>(initialSegments)
   const [isPending, startTransition] = useTransition()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -87,7 +85,7 @@ export function SegmentsView({ initialSegments, filterMetadata }: SegmentsViewPr
         setNewSegment({ name: "", description: "", color: "bg-blue-500" })
         setIsCreateOpen(false)
         toast.success("Segment created")
-      } catch (error) {
+      } catch {
         toast.error("Failed to create segment")
       }
     })
@@ -99,7 +97,7 @@ export function SegmentsView({ initialSegments, filterMetadata }: SegmentsViewPr
         await deleteSegment(segmentId)
         setSegments((prev) => prev.filter((s) => s.id !== segmentId))
         toast.success("Segment deleted")
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete segment")
       }
     })
