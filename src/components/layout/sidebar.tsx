@@ -52,6 +52,8 @@ import {
   MapPin,
   CalendarDays,
   MessageSquare,
+  Mail,
+  Send,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -100,6 +102,18 @@ const navigation: NavItem[] = [
     ],
   },
   { name: "Messages", href: "/messages", icon: MessageSquare },
+  {
+    name: "Newsletter",
+    href: "/newsletter",
+    icon: Mail,
+    subsections: [
+      { name: "Overview", href: "/newsletter", icon: LayoutDashboard },
+      { name: "Campaigns", href: "/newsletter/campaigns", icon: Send },
+      { name: "Lists", href: "/newsletter/lists", icon: Users },
+      { name: "Templates", href: "/newsletter/templates", icon: FileText },
+      { name: "Settings", href: "/newsletter/settings", icon: Settings },
+    ],
+  },
   {
     name: "Marketing",
     href: "/marketing",
