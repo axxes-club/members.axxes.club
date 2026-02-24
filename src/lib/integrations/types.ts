@@ -44,13 +44,14 @@ export type IntegrationCategory =
   | "marketing"
   | "crm"
 
-export type IntegrationFeature = 
-  | "events" 
-  | "tickets" 
-  | "orders" 
+export type IntegrationFeature =
+  | "events"
+  | "tickets"
+  | "orders"
   | "venues"
   | "contacts"
   | "assets"
+  | "shipping"
   | "sync"
 
 // Connection State (for UI)
@@ -91,6 +92,7 @@ export type SyncEntityType =
   | "orders" 
   | "venues"
   | "contacts"
+  | "assets"
   | "all"
 
 export interface SyncError {

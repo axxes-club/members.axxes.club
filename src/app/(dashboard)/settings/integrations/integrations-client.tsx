@@ -67,7 +67,6 @@ interface Integration {
   icon: string
   website: string
   authType: "oauth" | "apikey"
-  comingSoon?: boolean
   features: string[]
 }
 
@@ -111,7 +110,6 @@ const integrations: Integration[] = [
     icon: "Building2",
     website: "https://qortr.com",
     authType: "apikey",
-    comingSoon: true,
     features: ["venues"],
   },
   {
@@ -122,7 +120,6 @@ const integrations: Integration[] = [
     icon: "Building2",
     website: "https://peerspace.com",
     authType: "apikey",
-    comingSoon: true,
     features: ["venues"],
   },
   {
@@ -133,7 +130,6 @@ const integrations: Integration[] = [
     icon: "Package",
     website: "https://orders.co",
     authType: "apikey",
-    comingSoon: true,
     features: ["orders"],
   },
   {
@@ -144,7 +140,6 @@ const integrations: Integration[] = [
     icon: "Truck",
     website: "https://shipstation.com",
     authType: "apikey",
-    comingSoon: true,
     features: ["orders", "shipping"],
   },
   {
@@ -155,7 +150,6 @@ const integrations: Integration[] = [
     icon: "FolderOpen",
     website: "https://dropbox.com",
     authType: "oauth",
-    comingSoon: true,
     features: ["assets"],
   },
 ]
@@ -203,8 +197,9 @@ function IntegrationsContent() {
   }, [searchParams])
 
   const loadAllConnections = React.useCallback(async () => {
-    // Load Afters connection
-    await refreshConnectionState("afters")
+    // Load all integration connections
+    const providerIds = ["afters", "qortr", "peerspace", "orders-co", "shipstation", "dropbox"]
+    await Promise.all(providerIds.map(id => refreshConnectionState(id)))
     setInitialLoading(false)
   }, [])
 
@@ -229,11 +224,6 @@ function IntegrationsContent() {
   }
 
   const handleConnect = async (integration: Integration) => {
-    if (integration.comingSoon) {
-      toast.info(`${integration.name} integration coming soon!`)
-      return
-    }
-
     if (integration.authType === "oauth") {
       setLoadingStates(prev => ({ ...prev, [integration.id]: true }))
       
@@ -450,8 +440,7 @@ function IntegrationsContent() {
                 <Card
                   key={integration.id}
                   className={cn(
-                    state.connected && "border-club/50",
-                    integration.comingSoon && "opacity-60"
+                    state.connected && "border-club/50"
                   )}
                 >
                   <CardContent className="p-6">
@@ -470,9 +459,6 @@ function IntegrationsContent() {
                               <Badge variant="club" className="text-[10px]">Connected</Badge>
                               {getHealthBadge(state.health)}
                             </>
-                          )}
-                          {integration.comingSoon && (
-                            <Badge variant="outline" className="text-[10px]">Coming Soon</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2">
@@ -575,7 +561,7 @@ function IntegrationsContent() {
                           className="ml-auto"
                           size="sm"
                           onClick={() => handleConnect(integration)}
-                          disabled={isLoading || integration.comingSoon}
+                          disabled={isLoading}
                         >
                           {isLoading ? (
                             <>
