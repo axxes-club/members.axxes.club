@@ -54,6 +54,18 @@ import {
   MessageSquare,
   X,
   type LucideIcon,
+  // Inventory icons
+  Boxes,
+  Building2,
+  Truck,
+  ArrowLeftRight,
+  Factory,
+  RotateCcw,
+  Tag,
+  CheckSquare,
+  ClipboardCheck,
+  BarChart3,
+  Layers,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
@@ -79,7 +91,27 @@ const navigation: NavItem[] = [
       { name: "Venues", href: "/events/venues", icon: MapPin },
     ],
   },
-  { name: "Inventory", href: "/inventory", icon: Package },
+  {
+    name: "Inventory",
+    href: "/inventory",
+    icon: Package,
+    subsections: [
+      { name: "Products", href: "/inventory", icon: Package },
+      { name: "Categories", href: "/inventory/categories", icon: Layers },
+      { name: "Stock Items", href: "/inventory/stock", icon: Boxes },
+      { name: "Locations", href: "/inventory/locations", icon: Building2 },
+      { name: "Suppliers", href: "/inventory/suppliers", icon: Truck },
+      { name: "Purchase Orders", href: "/inventory/purchase-orders", icon: ShoppingCart },
+      { name: "Sales Orders", href: "/inventory/sales-orders", icon: FileText },
+      { name: "Transfers", href: "/inventory/transfers", icon: ArrowLeftRight },
+      { name: "Build Orders", href: "/inventory/build-orders", icon: Factory },
+      { name: "Returns", href: "/inventory/returns", icon: RotateCcw },
+      { name: "Price Lists", href: "/inventory/price-lists", icon: Tag },
+      { name: "Quality Control", href: "/inventory/quality", icon: CheckSquare },
+      { name: "Audits", href: "/inventory/audits", icon: ClipboardCheck },
+      { name: "Analytics", href: "/inventory/analytics", icon: BarChart3 },
+    ],
+  },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   {
     name: "Social Media",
