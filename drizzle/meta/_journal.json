@@ -15,6 +15,13 @@
       "when": 1770922800000,
       "tag": "0001_newsletter_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740436800000,
+      "tag": "0002_add_matrix_tables",
+      "breakpoints": true
     }
   ]
 }
