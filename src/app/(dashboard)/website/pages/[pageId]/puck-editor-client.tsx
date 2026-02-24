@@ -9,7 +9,6 @@ import { puckConfig } from "@/lib/puck/config"
 import { pageToPuckData } from "@/lib/puck/adapter"
 import { savePuckData, loadPuckData } from "@/lib/puck/actions"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft,

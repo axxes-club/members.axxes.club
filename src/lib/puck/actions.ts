@@ -7,7 +7,6 @@ import { revalidatePath } from "next/cache"
 import { getAuthContext } from "@/lib/auth"
 import { puckDataToBlocks, puckDataToPageUpdates } from "./adapter"
 import type { Data } from "@puckeditor/core"
-import type { BlockContent, BlockSettings, BlockType } from "@/lib/db/schema"
 
 /**
  * Save Puck data to the database

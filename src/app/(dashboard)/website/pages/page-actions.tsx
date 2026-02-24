@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreVertical, Pencil, Home, Trash2, Eye, EyeOff, Sparkles, LayoutGrid } from "lucide-react"
+import { MoreVertical, Home, Trash2, Eye, EyeOff, Sparkles, LayoutGrid } from "lucide-react"
 import { deletePage, publishPage, unpublishPage, setHomepage } from "@/lib/actions/pages"
 import type { Page } from "@/lib/db/schema"
 

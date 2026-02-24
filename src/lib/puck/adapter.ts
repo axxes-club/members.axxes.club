@@ -86,16 +86,12 @@ export function blockToProps(block: PageBlock): Record<string, unknown> {
  * Convert Puck component props back to block content
  */
 export function propsToBlockContent(
-  type: BlockType,
+  _type: BlockType,
   props: Record<string, unknown>
 ): BlockContent {
   // Remove non-content fields
-  const {
-    className,
-    hideOnMobile,
-    hideOnDesktop,
-    ...content
-  } = props
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { className: _className, hideOnMobile: _hideOnMobile, hideOnDesktop: _hideOnDesktop, ...content } = props
   
   return content as BlockContent
 }

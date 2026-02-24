@@ -531,19 +531,20 @@ export function MusicPlayerBlock({
 // EVENT BLOCKS
 // ============================================
 
+// Fixed reference date for placeholder events (March 15, 2026)
+const PLACEHOLDER_EVENT_DATE = new Date(2026, 2, 15)
+
 export function EventsListBlock({
-  filter = "upcoming",
   limit = 6,
   layout = "cards",
 }: {
-  filter?: "upcoming" | "past" | "all"
   limit?: number
   layout?: "list" | "grid" | "cards"
 }) {
   const events = Array.from({ length: Math.min(limit, 4) }).map((_, idx) => ({
     id: idx,
     title: `Event ${idx + 1}`,
-    date: new Date(Date.now() + idx * 7 * 24 * 60 * 60 * 1000),
+    date: new Date(PLACEHOLDER_EVENT_DATE.getTime() + idx * 7 * 24 * 60 * 60 * 1000),
     venue: `Venue ${idx + 1}`,
     location: "City, Country",
   }))
@@ -605,15 +606,13 @@ export function EventsListBlock({
 }
 
 export function EventCardBlock({
-  eventId,
   style = "full",
 }: {
-  eventId?: string
   style?: "full" | "compact" | "minimal"
 }) {
   const event = {
     title: "Sample Event",
-    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    date: new Date(PLACEHOLDER_EVENT_DATE.getTime() + 7 * 24 * 60 * 60 * 1000),
     venue: "Sample Venue",
     location: "City, Country",
     description: "Event description goes here...",
@@ -680,7 +679,8 @@ export function CountdownBlock({
   targetDate?: string
   title?: string
 }) {
-  const target = targetDate ? new Date(targetDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  // Default to 30 days from fixed reference date
+  const target = targetDate ? new Date(targetDate) : new Date(PLACEHOLDER_EVENT_DATE.getTime() + 30 * 24 * 60 * 60 * 1000)
   const now = new Date()
   const diff = Math.max(0, target.getTime() - now.getTime())
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -761,10 +761,8 @@ export function ProductsGridBlock({
 }
 
 export function ProductCardBlock({
-  productId,
   style = "full",
 }: {
-  productId?: string
   style?: "full" | "compact" | "minimal"
 }) {
   const product = {
@@ -820,10 +818,8 @@ export function ProductCardBlock({
 }
 
 export function FeaturedProductsBlock({
-  productIds,
   layout = "grid",
 }: {
-  productIds?: string
   layout?: "grid" | "slider" | "list"
 }) {
   const products = Array.from({ length: 3 }).map((_, idx) => ({
@@ -1023,7 +1019,7 @@ export function TestimonialsBlock({
         {items.map((item, idx) => (
           <div key={idx} className="overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-6">
-              <span className="text-3xl text-primary/30 mb-4 block">"</span>
+              <span className="text-3xl text-primary/30 mb-4 block">&ldquo;</span>
               <p className="italic text-muted-foreground">{item.quote}</p>
               <div className="flex items-center gap-3 mt-4">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
