@@ -1,11 +1,13 @@
+/**
+ * Afters OAuth Callback
+ * Handles the OAuth callback from Afters.am
+ */
+
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { integrationConnection } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
-
-const AFTERS_CLIENT_ID = process.env.AFTERS_CLIENT_ID!
-const AFTERS_CLIENT_SECRET = process.env.AFTERS_CLIENT_SECRET!
-const AFTERS_OAUTH_URL = process.env.AFTERS_OAUTH_URL || "https://afters.am"
+import { getIntegration } from "@/lib/integrations"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Decode state
-  let stateData: { tenantId: string; userId: string; timestamp: number }
+  let stateData: { tenantId: string; userId: string; provider: string; timestamp: number }
   try {
     stateData = JSON.parse(Buffer.from(state, "base64url").toString())
   } catch {
@@ -41,50 +43,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?error=Authorization request expired`)
   }
 
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/afters/callback`
+  // Verify provider
+  if (stateData.provider !== "afters") {
+    return NextResponse.redirect(`${settingsUrl}?error=Invalid provider`)
+  }
 
   try {
-    // Exchange code for tokens
-    const tokenResponse = await fetch(`${AFTERS_OAUTH_URL}/api/oauth/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code,
-        client_id: AFTERS_CLIENT_ID,
-        client_secret: AFTERS_CLIENT_SECRET,
-        redirect_uri: redirectUri,
-      }),
-    })
-
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json().catch(() => ({}))
-      console.error("Token exchange failed:", errorData)
-      return NextResponse.redirect(
-        `${settingsUrl}?error=${encodeURIComponent(errorData.error_description || "Failed to exchange authorization code")}`
-      )
+    // Get the integration
+    const integration = getIntegration("afters")
+    if (!integration) {
+      return NextResponse.redirect(`${settingsUrl}?error=Integration not found`)
     }
 
-    const tokens = await tokenResponse.json()
-    const { access_token, refresh_token, expires_in, scope } = tokens
+    // Exchange code for tokens
+    const tokens = await integration.exchangeCodeForTokens(code)
 
     // Get user info from Afters
-    let userInfo: { sub?: string; email?: string; name?: string } = {}
-    try {
-      const userInfoResponse = await fetch(`${AFTERS_OAUTH_URL}/api/oauth/userinfo`, {
-        headers: { Authorization: `Bearer ${access_token}` },
-      })
-      if (userInfoResponse.ok) {
-        userInfo = await userInfoResponse.json()
-      }
-    } catch {
-      // Continue without user info
-    }
+    const userInfo = await integration.getUserInfo(tokens.accessToken)
 
     // Calculate token expiration
-    const accessTokenExpiresAt = expires_in
-      ? new Date(Date.now() + expires_in * 1000)
-      : null
+    const accessTokenExpiresAt = tokens.expiresAt || null
 
     // Check for existing connection
     const existingConnection = await db.query.integrationConnection.findFirst({
@@ -98,14 +76,18 @@ export async function GET(request: NextRequest) {
       // Update existing connection
       await db.update(integrationConnection)
         .set({
-          accessToken: access_token,
-          refreshToken: refresh_token,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
           accessTokenExpiresAt: accessTokenExpiresAt,
-          scope: scope,
-          externalUserId: userInfo.sub,
+          scope: tokens.scope,
+          externalUserId: userInfo.id,
           externalUserEmail: userInfo.email,
           externalUserName: userInfo.name,
           isActive: true,
+          metadata: {
+            syncEnabled: true,
+            syncFrequency: "hourly",
+          },
           updatedAt: new Date(),
         })
         .where(eq(integrationConnection.id, existingConnection.id))
@@ -115,20 +97,25 @@ export async function GET(request: NextRequest) {
         tenantId: stateData.tenantId,
         userId: stateData.userId,
         provider: "afters",
-        accessToken: access_token,
-        refreshToken: refresh_token,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
         accessTokenExpiresAt: accessTokenExpiresAt,
-        scope: scope,
-        externalUserId: userInfo.sub,
+        scope: tokens.scope,
+        externalUserId: userInfo.id,
         externalUserEmail: userInfo.email,
         externalUserName: userInfo.name,
         isActive: true,
+        metadata: {
+          syncEnabled: true,
+          syncFrequency: "hourly",
+        },
       })
     }
 
     return NextResponse.redirect(`${settingsUrl}?success=afters`)
   } catch (error) {
     console.error("Error in Afters OAuth callback:", error)
-    return NextResponse.redirect(`${settingsUrl}?error=Failed to complete authorization`)
+    const message = error instanceof Error ? error.message : "Failed to complete authorization"
+    return NextResponse.redirect(`${settingsUrl}?error=${encodeURIComponent(message)}`)
   }
 }

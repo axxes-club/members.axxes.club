@@ -1,6 +1,9 @@
 import { Suspense } from "react"
 import { AcceptInviteContent } from "./accept-invite-content"
 
+// Force dynamic rendering to prevent prerendering issues with client-side hooks
+export const dynamic = "force-dynamic"
+
 export default function AcceptInvitePage() {
   return (
     <Suspense fallback={<AcceptInviteLoading />}>
