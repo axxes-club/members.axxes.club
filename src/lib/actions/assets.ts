@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
-import { assets, type NewAsset, type Asset } from "@/lib/db/schema"
+import { assets, type NewAsset } from "@/lib/db/schema"
 import { getAuthContext } from "@/lib/auth"
 import { eq, and, desc, sql } from "drizzle-orm"
 

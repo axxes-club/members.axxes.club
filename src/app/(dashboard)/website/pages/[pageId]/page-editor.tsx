@@ -6,7 +6,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Eye, EyeOff, Save, Loader2 } from "lucide-react"
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Save,
+  Loader2,
+} from "lucide-react"
 import { EditorCanvas } from "./editor-canvas"
 import { EditorSidebar } from "./editor-sidebar"
 import { EditorZoomProvider, useEditorZoom } from "./editor-zoom-context"

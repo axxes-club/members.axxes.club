@@ -39,6 +39,7 @@ import type { Asset } from "@/lib/db/schema"
 interface AssetLibraryProps {
   assets: Asset[]
   folders: string[]
+  tags?: string[]
   filters: {
     search?: string
     category?: string

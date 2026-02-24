@@ -400,7 +400,8 @@ function IntegrationsContent() {
       </div>
 
       {/* Connected Services Summary */}
-                    {Object.entries(connectionStates).some(([_key, state]) => state.connected) && (        <Card>
+      {Object.entries(connectionStates).some(([, state]) => state.connected) && (
+        <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">Connected Services</CardTitle>
           </CardHeader>
@@ -425,7 +426,7 @@ function IntegrationsContent() {
       )}
 
       {/* Integration Categories */}
-      {Object.entries(groupedIntegrations).map(([_category, categoryIntegrations]) => (
+      {Object.entries(groupedIntegrations).map(([category, categoryIntegrations]) => (
         <div key={category} className="space-y-4">
           <h2 className="text-lg font-semibold">{categoryLabels[category]}</h2>
           <div className="grid gap-4 md:grid-cols-2">

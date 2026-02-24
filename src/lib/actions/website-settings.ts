@@ -107,8 +107,6 @@ export async function updateSubdomain(subdomain: string) {
 }
 
 export async function updateCustomDomain(customDomain: string | null) {
-  const { tenantId } = await getTenantId()
-
   if (customDomain) {
     // Basic domain validation
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i

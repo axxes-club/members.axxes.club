@@ -149,7 +149,9 @@ export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSu
     setMounted(true)
   }, [])
 
-  const allNavigation = isSuperadmin ? [...navigation, ...adminNavigation] : navigation
+  const isAdminTenant = tenantId === "40119de9-ef87-4e41-b479-7a28ec8e3d66"
+  const showAdminMenu = isSuperadmin && (process.env.NODE_ENV !== "production" || isAdminTenant)
+  const allNavigation = showAdminMenu ? [...navigation, ...adminNavigation] : navigation
 
   return (
     <aside
@@ -400,7 +402,9 @@ export function MobileSidebar({ tenantId, tenantName = "My Business", tenantLogo
     setMobileOpen(false)
   }, [pathname, setMobileOpen])
 
-  const allNavigation = isSuperadmin ? [...navigation, ...adminNavigation] : navigation
+  const isAdminTenant = tenantId === "40119de9-ef87-4e41-b479-7a28ec8e3d66"
+  const showAdminMenu = isSuperadmin && (process.env.NODE_ENV !== "production" || isAdminTenant)
+  const allNavigation = showAdminMenu ? [...navigation, ...adminNavigation] : navigation
 
   if (!isMobileOpen) return null
 
