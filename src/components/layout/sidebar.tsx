@@ -66,6 +66,8 @@ import {
   ClipboardCheck,
   BarChart3,
   Layers,
+  // Projects icon
+  Kanban,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
@@ -82,6 +84,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Contacts", href: "/crm", icon: Users },
+  { name: "Projects", href: "/projects", icon: Kanban },
   {
     name: "Events",
     href: "/events",

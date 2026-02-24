@@ -42,3 +42,6 @@ export * from "./messaging"
 
 // Integrations
 export * from "./integrations"
+
+// Projects (Kanban)
+export * from "./projects"
