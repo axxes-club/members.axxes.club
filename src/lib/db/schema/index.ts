@@ -9,8 +9,9 @@ export * from "./contacts"
 // Events
 export * from "./events"
 
-// Inventory
+// Inventory (InvenTree-inspired)
 export * from "./inventory"
+export * from "./inventree"
 
 // Orders
 export * from "./orders"

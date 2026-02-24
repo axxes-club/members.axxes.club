@@ -2,6 +2,14 @@
  * Development Auto-Auth
  * Automatically authenticates a demo user in development environments only.
  * Access: /?devauth or /sign-in?devauth
+ *
+ * Creates two users:
+ * - admin@axxes.club / admin (Superadmin access)
+ * - demo@axxes.club (Regular demo user)
+ *
+ * Usage:
+ * - http://localhost:3000/?devauth (demo user)
+ * - http://localhost:3000/?devauth&type=admin (admin user)
  */
 
 import { NextRequest, NextResponse } from "next/server"
@@ -35,51 +43,72 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Find or create demo user
-    const demoEmail = "demo@axxes.club"
-    console.log("[dev-auth] Looking for user:", demoEmail)
+    // Get user type from query param (admin or demo)
+    const searchParams = request.nextUrl.searchParams
+    const userType = searchParams.get("type") || "demo"
+    const isAdmin = userType === "admin"
+
+    const userEmail = isAdmin ? "admin@axxes.club" : "demo@axxes.club"
+    const userName = isAdmin ? "Admin User" : "Demo User"
+    const tenantName = isAdmin ? "Admin Company" : "Demo Company"
+    const tenantSlug = isAdmin ? "admin" : "demo"
+    const userRole = isAdmin ? "owner" : "owner"
+
+    console.log("[dev-auth] Looking for user:", userEmail, "type:", userType)
 
     let userRecord = await db.query.user.findFirst({
-      where: eq(user.email, demoEmail),
+      where: eq(user.email, userEmail),
     })
 
     if (!userRecord) {
-      console.log("[dev-auth] Creating new demo user")
-      // Create demo user
+      console.log("[dev-auth] Creating new user:", userName)
+      // Create user
       const userId = nanoid()
+
       const [newUser] = await db.insert(user).values({
         id: userId,
-        email: demoEmail,
-        name: "Demo User",
+        email: userEmail,
+        name: userName,
         emailVerified: true,
+        isSuperadmin: isAdmin,
       }).returning()
       userRecord = newUser
+
       console.log("[dev-auth] Created user:", userRecord.id)
     } else {
       console.log("[dev-auth] Found existing user:", userRecord.id)
+
+      // Update superadmin status if admin
+      if (isAdmin && !userRecord.isSuperadmin) {
+        await db.update(user)
+          .set({ isSuperadmin: true })
+          .where(eq(user.id, userRecord.id))
+        console.log("[dev-auth] Updated user to superadmin")
+      }
     }
 
-    // Find or create demo tenant
+    // Find or create tenant
     let tenant = await db.query.tenants.findFirst({
-      where: eq(tenants.slug, "demo"),
+      where: eq(tenants.slug, tenantSlug),
     })
 
     if (!tenant) {
-      console.log("[dev-auth] Creating demo tenant")
-      // Create demo tenant
+      console.log("[dev-auth] Creating tenant:", tenantName)
+      // Create tenant
       const [newTenant] = await db.insert(tenants).values({
-        name: "Demo Company",
-        slug: "demo",
+        name: tenantName,
+        slug: tenantSlug,
         ownerId: userRecord.id,
         status: "active",
+        type: isAdmin ? "promoter" : "business",
       }).returning()
       tenant = newTenant
 
-      // Add user as owner of demo tenant
+      // Add user as owner of tenant
       await db.insert(tenantMemberships).values({
         tenantId: tenant.id,
         userId: userRecord.id,
-        role: "owner",
+        role: userRole,
       })
       console.log("[dev-auth] Created tenant:", tenant.id)
     } else {
@@ -95,7 +124,7 @@ export async function GET(request: NextRequest) {
         await db.insert(tenantMemberships).values({
           tenantId: tenant.id,
           userId: userRecord.id,
-          role: "owner",
+          role: userRole,
         })
       }
     }
