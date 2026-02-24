@@ -43,5 +43,8 @@ export * from "./messaging"
 // Matrix Chat
 export * from "./matrix"
 
+// Newsletter
+export * from "./newsletter"
+
 // Integrations
 export * from "./integrations"
