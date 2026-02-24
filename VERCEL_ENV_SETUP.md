@@ -10,6 +10,12 @@
 
 ### Need to Add ⚠️
 
+#### Matrix Messaging (Required for chat feature)
+```
+MATRIX_ENCRYPTION_KEY=<32+ character encryption key for Matrix access tokens>
+```
+Generate with: `openssl rand -base64 32`
+
 #### Dropbox Integration
 ```
 DROPBOX_CLIENT_ID=<your-dropbox-app-key>
