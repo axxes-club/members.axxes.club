@@ -1,5 +1,5 @@
 import * as Matrix from "matrix-js-sdk"
-import { type MatrixClient, type Room, type RoomEvent, type MatrixEvent, type EventTimeline } from "matrix-js-sdk"
+import { type MatrixClient, type Room, type MatrixEvent } from "matrix-js-sdk"
 
 // Matrix configuration
 const HOMESERVER_URL = "https://matrix.org"
@@ -320,7 +320,6 @@ export async function sendTextMessage(
 
   // Handle reply
   if (options?.replyTo) {
-    const replyEvent = client.fetchRoomEvent(roomId, options.replyTo)
     content = {
       ...content,
       "m.relates_to": {
@@ -406,9 +405,10 @@ export async function getRoomMessages(
   const timelineSet = room.getUnfilteredTimelineSet()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events: any[] = (timelineSet as any).getEvents() || []
-  
-  let filteredEvents = events.filter((e: any) => e.getType() === "m.room.message")
-  
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filteredEvents = events.filter((e: any) => e.getType() === "m.room.message")
+
   if (options?.from) {
     // Handle pagination - for now, return from memory
     // In production, you'd use client.createMessagesRequest for proper pagination
@@ -664,6 +664,7 @@ export async function searchMessages(
   
   return results.map((result: { result: { events: MatrixEvent[] } }) => {
     const event = result.result.events[0]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return transformMessage(event, (event as any).room_id || "")
   })
 }

@@ -7,7 +7,6 @@ import {
   initializeMatrixClient,
   stopMatrixClient,
   getRooms,
-  getRoomsByType,
   getRoom,
   type MatrixRoomData,
   type MatrixMessage,
@@ -145,7 +144,9 @@ export function MatrixProvider({
       const timelineSet = roomObj.getUnfilteredTimelineSet()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const events: any[] = (timelineSet as any).getEvents() || []
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const messageEvents = events.filter((e: any) => e.getType() === "m.room.message")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const roomMessages = messageEvents.map((e: any) => transformMessage(e, roomId))
       setMessages(roomMessages)
     }
