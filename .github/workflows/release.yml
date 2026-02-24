@@ -1,0 +1,90 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git describe --tags --abbrev=0 ${TAG}^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --oneline ${TAG})
+          else
+            COMMITS=$(git log --oneline ${PREV_TAG}..${TAG})
+          fi
+          
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.release_notes.outputs.tag }}
+          body: |
+            ## Changes
+            
+            ${{ steps.release_notes.outputs.commits }}
+            
+            ## Installation
+            
+            ```bash
+            git clone https://github.com/axxes-club/members.axxes.club.git
+            cd members.axxes.club
+            pnpm install
+            pnpm build
+            ```
+            
+            ## Database Migrations
+            
+            ```bash
+            pnpm drizzle-kit migrate
+            ```
+            
+            ## Full Changelog
+            
+            See [CHANGELOG.md](./CHANGELOG.md) and [HISTORY.md](./HISTORY.md) for details.
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Deploy to Vercel (Production)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./

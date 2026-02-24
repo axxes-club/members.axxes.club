@@ -1,12 +1,16 @@
 {
   "name": "members.axxes.club",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "version": "./scripts/version.sh",
+    "release": "pnpm build && ./scripts/version.sh minor && git push origin main --tags",
+    "release:major": "pnpm build && ./scripts/version.sh major && git push origin main --tags",
+    "release:patch": "pnpm build && ./scripts/version.sh patch && git push origin main --tags"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
