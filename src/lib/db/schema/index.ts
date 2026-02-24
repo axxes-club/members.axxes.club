@@ -37,8 +37,11 @@ export * from "./website-settings"
 // Activity / Audit
 export * from "./activity"
 
-// Messaging
+// Messaging (Legacy - will be replaced by Matrix)
 export * from "./messaging"
+
+// Matrix Chat
+export * from "./matrix"
 
 // Integrations
 export * from "./integrations"
