@@ -12,11 +12,13 @@ import { toast } from "sonner"
 import { Loader2, Save, Settings } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+type EmailProvider = "smtp" | "resend" | "sendgrid" | "mailgun"
+
 export default function NewsletterSettingsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [settings, setSettings] = useState<{
-    emailProvider: "smtp" | "resend" | "sendgrid" | "mailgun"
+    emailProvider: EmailProvider
     defaultFromName: string
     defaultFromEmail: string
     defaultReplyTo: string
@@ -58,7 +60,7 @@ export default function NewsletterSettingsPage() {
       try {
         const data = await getNewsletterSettings()
         setSettings({
-          emailProvider: data.emailProvider || "smtp",
+          emailProvider: (data.emailProvider as EmailProvider) || "smtp",
           defaultFromName: data.defaultFromName || "",
           defaultFromEmail: data.defaultFromEmail || "",
           defaultReplyTo: data.defaultReplyTo || "",
@@ -152,7 +154,7 @@ export default function NewsletterSettingsPage() {
                 <Label>Provider</Label>
                 <Select
                   value={settings.emailProvider}
-                  onValueChange={(value) =>
+                  onValueChange={(value: EmailProvider) =>
                     setSettings((prev) => ({ ...prev, emailProvider: value }))
                   }
                 >
