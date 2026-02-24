@@ -52,6 +52,7 @@ import {
   MapPin,
   CalendarDays,
   MessageSquare,
+  X,
   type LucideIcon,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
@@ -370,5 +371,167 @@ export function MobileSidebarTrigger() {
     >
       <Menu className="h-5 w-5" />
     </Button>
+  )
+}
+
+interface MobileSidebarProps {
+  tenantId?: string
+  tenantName?: string
+  tenantLogo?: string
+  isSuperadmin?: boolean
+  unreadMessagesCount?: number
+}
+
+export function MobileSidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: MobileSidebarProps) {
+  const { isMobileOpen, setMobileOpen } = useSidebar()
+  const pathname = usePathname()
+  const router = useRouter()
+  const { data: session } = useSession()
+  const user = session?.user
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Close mobile sidebar on route change
+  React.useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname, setMobileOpen])
+
+  const allNavigation = isSuperadmin ? [...navigation, ...adminNavigation] : navigation
+
+  if (!isMobileOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* Mobile Sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-50 w-[280px] bg-background shadow-lg lg:hidden flex flex-col">
+        {/* Header */}
+        <div className="flex h-16 shrink-0 items-center justify-between border-b px-4">
+          <TenantSwitcher
+            currentTenantId={tenantId}
+            currentTenantName={tenantName}
+            currentTenantLogo={tenantLogo}
+            isCollapsed={false}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
+          {allNavigation.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+            const hasSubsections = item.subsections && item.subsections.length > 0
+
+            if (hasSubsections) {
+              return (
+                <NavItemWithSubsections
+                  key={item.name}
+                  item={item}
+                  pathname={pathname}
+                />
+              )
+            }
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-[13px] transition-colors",
+                  isActive
+                    ? "text-foreground bg-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{item.name}</span>
+                {item.name === "Messages" && (
+                  <UnreadBadge initialCount={unreadMessagesCount} />
+                )}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* User Menu */}
+        <div className="border-t p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start gap-2 px-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.image || undefined} />
+                  <AvatarFallback>
+                    {user?.name?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-sm font-medium">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {user?.email}
+                  </span>
+                </div>
+                <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[240px]">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                Theme
+              </DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                <Sun className="mr-2 h-4 w-4" />
+                Light
+                {mounted && theme === "light" && <span className="ml-auto text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <Moon className="mr-2 h-4 w-4" />
+                Dark
+                {mounted && theme === "dark" && <span className="ml-auto text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                <Monitor className="mr-2 h-4 w-4" />
+                System
+                {mounted && theme === "system" && <span className="ml-auto text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={async () => {
+                  await signOut()
+                  router.push("/sign-in")
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </aside>
+    </>
   )
 }
