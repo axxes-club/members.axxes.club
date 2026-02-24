@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Building2, Star, Package } from "lucide-react"
+import { Search, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Building2, Star } from "lucide-react"
 import { useCallback, useState, useTransition } from "react"
 import type { InventoryLocation } from "@/lib/db/schema"
 
@@ -99,7 +99,7 @@ export function LocationList({ locations, total, page, totalPages, search }: Loc
             {locations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
-                  <p className="text-muted-foreground">No locations found matching "{search}"</p>
+                  <p className="text-muted-foreground">{`No locations found matching "${search}"`}</p>
                   <Button
                     variant="link"
                     onClick={() => {

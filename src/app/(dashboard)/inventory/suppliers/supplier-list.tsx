@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -105,7 +104,7 @@ export function SupplierList({ suppliers, total, page, totalPages, search }: Sup
             {suppliers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8">
-                  <p className="text-muted-foreground">No suppliers found matching "{search}"</p>
+                  <p className="text-muted-foreground">{`No suppliers found matching "${search}"`}</p>
                   <Button
                     variant="link"
                     onClick={() => {
