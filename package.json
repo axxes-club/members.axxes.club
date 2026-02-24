@@ -5,8 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "drizzle-kit push --force",
     "start": "next start",
     "lint": "eslint",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
     "version": "./scripts/version.sh",
     "release": "pnpm build && ./scripts/version.sh minor && git push origin main --tags",
     "release:major": "pnpm build && ./scripts/version.sh major && git push origin main --tags",
