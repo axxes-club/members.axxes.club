@@ -57,9 +57,12 @@ const sizeField = {
 // PUCK CONFIGURATION
 // ============================================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _anyRender = (fn: any) => fn
+
 export const puckConfig: Config = {
   root: {
-    render: (props) => props.children,
+    render: _anyRender((props: { children: React.ReactNode }) => props.children),
   },
   components: {
     // Layout Blocks
@@ -75,13 +78,13 @@ export const puckConfig: Config = {
         overlayOpacity: { type: "number", min: 0, max: 100 },
         alignment: alignmentField,
       },
-      render: HeroBlock,
+      render: _anyRender(HeroBlock),
     },
     SpacerBlock: {
       fields: {
         height: { type: "number", min: 16, max: 500 },
       },
-      render: SpacerBlock,
+      render: _anyRender(SpacerBlock),
     },
     DividerBlock: {
       fields: {
@@ -102,7 +105,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: DividerBlock,
+      render: _anyRender(DividerBlock),
     },
     // Content Blocks
     TextBlock: {
@@ -110,7 +113,7 @@ export const puckConfig: Config = {
         html: { type: "textarea" },
         alignment: alignmentField,
       },
-      render: TextBlock,
+      render: _anyRender(TextBlock),
     },
     HeadingBlock: {
       fields: {
@@ -128,7 +131,7 @@ export const puckConfig: Config = {
         },
         alignment: alignmentField,
       },
-      render: HeadingBlock,
+      render: _anyRender(HeadingBlock),
     },
     ImageBlock: {
       fields: {
@@ -138,7 +141,7 @@ export const puckConfig: Config = {
         link: { type: "text" },
         size: sizeField,
       },
-      render: ImageBlock,
+      render: _anyRender(ImageBlock),
     },
     GalleryBlock: {
       fields: {
@@ -160,7 +163,7 @@ export const puckConfig: Config = {
         },
         columns: { type: "number", min: 2, max: 6 },
       },
-      render: GalleryBlock,
+      render: _anyRender(GalleryBlock),
     },
     VideoBlock: {
       fields: {
@@ -169,7 +172,7 @@ export const puckConfig: Config = {
         muted: { type: "checkbox" },
         loop: { type: "checkbox" },
       },
-      render: VideoBlock,
+      render: _anyRender(VideoBlock),
     },
     CTABlock: {
       fields: {
@@ -194,7 +197,7 @@ export const puckConfig: Config = {
         },
         alignment: alignmentField,
       },
-      render: CTABlock,
+      render: _anyRender(CTABlock),
     },
     // Artist Blocks
     ArtistBioBlock: {
@@ -204,7 +207,7 @@ export const puckConfig: Config = {
         bio: { type: "textarea" },
         image: { type: "text" },
       },
-      render: ArtistBioBlock,
+      render: _anyRender(ArtistBioBlock),
     },
     MusicLinksBlock: {
       fields: {
@@ -224,7 +227,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: MusicLinksBlock,
+      render: _anyRender(MusicLinksBlock),
     },
     SocialLinksBlock: {
       fields: {
@@ -243,14 +246,14 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: SocialLinksBlock,
+      render: _anyRender(SocialLinksBlock),
     },
     TourDatesBlock: {
       fields: {
         limit: { type: "number", min: 1, max: 20 },
         showPast: { type: "checkbox" },
       },
-      render: TourDatesBlock,
+      render: _anyRender(TourDatesBlock),
     },
     MusicPlayerBlock: {
       fields: {
@@ -273,7 +276,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: MusicPlayerBlock,
+      render: _anyRender(MusicPlayerBlock),
     },
     // Event Blocks
     EventsListBlock: {
@@ -296,7 +299,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: EventsListBlock,
+      render: _anyRender(EventsListBlock),
     },
     EventCardBlock: {
       fields: {
@@ -310,14 +313,14 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: EventCardBlock,
+      render: _anyRender(EventCardBlock),
     },
     CountdownBlock: {
       fields: {
         targetDate: { type: "text" },
         title: { type: "text" },
       },
-      render: CountdownBlock,
+      render: _anyRender(CountdownBlock),
     },
     // Product Blocks
     ProductsGridBlock: {
@@ -326,7 +329,7 @@ export const puckConfig: Config = {
         limit: { type: "number", min: 1, max: 24 },
         columns: { type: "number", min: 2, max: 6 },
       },
-      render: ProductsGridBlock,
+      render: _anyRender(ProductsGridBlock),
     },
     ProductCardBlock: {
       fields: {
@@ -340,7 +343,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: ProductCardBlock,
+      render: _anyRender(ProductCardBlock),
     },
     FeaturedProductsBlock: {
       fields: {
@@ -354,7 +357,7 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: FeaturedProductsBlock,
+      render: _anyRender(FeaturedProductsBlock),
     },
     // Utility Blocks
     ContactFormBlock: {
@@ -378,21 +381,21 @@ export const puckConfig: Config = {
         },
         submitText: { type: "text" },
       },
-      render: ContactFormBlock,
+      render: _anyRender(ContactFormBlock),
     },
     NewsletterBlock: {
       fields: {
         title: { type: "text" },
         description: { type: "textarea" },
       },
-      render: NewsletterBlock,
+      render: _anyRender(NewsletterBlock),
     },
     MapBlock: {
       fields: {
         address: { type: "text" },
         zoom: { type: "number", min: 1, max: 20 },
       },
-      render: MapBlock,
+      render: _anyRender(MapBlock),
     },
     FAQBlock: {
       fields: {
@@ -404,7 +407,7 @@ export const puckConfig: Config = {
           },
         },
       },
-      render: FAQBlock,
+      render: _anyRender(FAQBlock),
     },
     TestimonialsBlock: {
       fields: {
@@ -425,13 +428,13 @@ export const puckConfig: Config = {
           ],
         },
       },
-      render: TestimonialsBlock,
+      render: _anyRender(TestimonialsBlock),
     },
     HTMLBlock: {
       fields: {
         code: { type: "textarea" },
       },
-      render: HTMLBlock,
+      render: _anyRender(HTMLBlock),
     },
   },
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import React from "react"
 
 // ============================================
 // LAYOUT BLOCKS
@@ -122,7 +122,6 @@ export function HeadingBlock({
   level?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
   alignment?: "left" | "center" | "right"
 }) {
-  const Tag = level as keyof JSX.IntrinsicElements
   const sizes: Record<string, string> = {
     h1: "text-4xl font-bold",
     h2: "text-3xl font-bold",
@@ -132,9 +131,20 @@ export function HeadingBlock({
     h6: "text-base font-medium",
   }
   const alignClass = alignment === "center" ? "text-center" : alignment === "right" ? "text-right" : ""
+  
+  const headingProps = {
+    className: sizes[level],
+    children: text,
+  }
+  
   return (
     <div className={`p-6 ${alignClass}`}>
-      <Tag className={sizes[Tag]}>{text}</Tag>
+      {level === "h1" && <h1 {...headingProps} />}
+      {level === "h2" && <h2 {...headingProps} />}
+      {level === "h3" && <h3 {...headingProps} />}
+      {level === "h4" && <h4 {...headingProps} />}
+      {level === "h5" && <h5 {...headingProps} />}
+      {level === "h6" && <h6 {...headingProps} />}
     </div>
   )
 }
