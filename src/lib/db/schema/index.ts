@@ -12,6 +12,7 @@ export * from "./events"
 // Inventory (InvenTree-inspired)
 export * from "./inventory"
 export * from "./inventree"
+export * from "./inventory-advanced"
 
 // Orders
 export * from "./orders"
