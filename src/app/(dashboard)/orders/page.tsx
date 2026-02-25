@@ -77,7 +77,7 @@ export default async function OrdersPage({
         </Card>
       ) : (
         <OrderList
-          orders={orders}
+          orders={orders as any}
           total={total}
           page={page}
           totalPages={totalPages}

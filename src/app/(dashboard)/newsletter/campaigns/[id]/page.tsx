@@ -244,16 +244,18 @@ export default async function CampaignDetailPage({
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.recentOpens.map((open) => (
+                  {stats.recentOpens.map((open) => {
+                    const contact = open.contact as { email?: string; firstName?: string; lastName?: string } | null
+                    return (
                     <div key={open.id} className="flex items-center justify-between text-sm">
                       <div>
                         <span className="font-medium">
-                          {open.contact?.email || "Unknown"}
+                          {contact?.email || "Unknown"}
                         </span>
-                        {open.contact?.firstName && (
+                        {contact?.firstName && (
                           <span className="text-muted-foreground">
                             {" "}
-                            ({open.contact.firstName} {open.contact.lastName})
+                            ({contact.firstName} {contact.lastName})
                           </span>
                         )}
                       </div>
@@ -261,7 +263,7 @@ export default async function CampaignDetailPage({
                         {formatDistanceToNow(new Date(open.occurredAt), { addSuffix: true })}
                       </span>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </CardContent>
             </Card>

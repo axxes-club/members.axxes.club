@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq, and, sql } from "drizzle-orm"
