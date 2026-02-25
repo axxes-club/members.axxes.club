@@ -90,7 +90,7 @@ export function propsToBlockContent(
   props: Record<string, unknown>
 ): BlockContent {
   // Remove non-content fields
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const { className: _className, hideOnMobile: _hideOnMobile, hideOnDesktop: _hideOnDesktop, ...content } = props
   
   return content as BlockContent
