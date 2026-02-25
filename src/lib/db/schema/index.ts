@@ -48,3 +48,6 @@ export * from "./newsletter"
 
 // Integrations
 export * from "./integrations"
+
+// Projects (Kanban)
+export * from "./projects"

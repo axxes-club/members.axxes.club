@@ -41,8 +41,8 @@ export function PuckEditorClient({ pageId }: PuckEditorClientProps) {
     async function loadPage() {
       try {
         const pageData = await loadPuckData(pageId)
-        setPage(pageData)
-        setData(pageToPuckData(pageData))
+        setPage(pageData as any)
+        setData(pageToPuckData(pageData as any))
       } catch (err) {
         console.error("Failed to load page:", err)
         setError("Failed to load page")

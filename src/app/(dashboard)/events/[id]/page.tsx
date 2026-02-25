@@ -102,17 +102,17 @@ export default async function EventDetailPage({
                   </div>
                 </div>
 
-                {event.venue && (
+                {event.venue && !Array.isArray(event.venue) && (
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                       <MapPin className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Venue</p>
-                      <p className="font-medium">{event.venue.name}</p>
-                      {event.venue.city && (
+                      <p className="font-medium">{(event.venue as { name: string }).name}</p>
+                      {(event.venue as { city?: string; state?: string }).city && (
                         <p className="text-sm text-muted-foreground">
-                          {[event.venue.city, event.venue.state].filter(Boolean).join(", ")}
+                          {[(event.venue as { city?: string }).city, (event.venue as { state?: string }).state].filter(Boolean).join(", ")}
                         </p>
                       )}
                     </div>

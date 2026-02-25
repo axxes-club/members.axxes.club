@@ -16,6 +16,7 @@ export default async function OrdersPage({
   const search = params.search
   const page = params.page ? parseInt(params.page) : 1
   const status = params.status || "all"
+  const filter = status === "all" ? undefined : status
 
   const [{ orders, total, totalPages }, stats] = await Promise.all([
     getOrders({ search, page, status }),
@@ -77,7 +78,7 @@ export default async function OrdersPage({
         </Card>
       ) : (
         <OrderList
-          orders={orders}
+          orders={orders as any}
           total={total}
           page={page}
           totalPages={totalPages}

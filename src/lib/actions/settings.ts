@@ -97,9 +97,9 @@ export async function getTeamMembers() {
 
   const membersWithDetails = memberships.map((membership) => ({
     ...membership,
-    name: membership.user?.name || "Unknown User",
-    email: membership.user?.email || "",
-    imageUrl: membership.user?.image || null,
+    name: (membership.user as { name?: string | null } | null)?.name || "Unknown User",
+    email: (membership.user as { email?: string | null } | null)?.email || "",
+    imageUrl: (membership.user as { image?: string | null } | null)?.image || null,
   }))
 
   return membersWithDetails
@@ -270,14 +270,14 @@ export async function getInvitationByToken(token: string) {
     return null
   }
 
-  return {
+    return {
     id: invitation.id,
     email: invitation.email,
     role: invitation.role,
     status: invitation.status,
+    tenantName: (invitation.tenant as { name?: string } | null)?.name || "Unknown",
+    invitedByName: (invitation.invitedBy as { name?: string | null } | null)?.name || "Unknown",
     expiresAt: invitation.expiresAt,
-    tenantName: invitation.tenant?.name || "Unknown",
-    invitedByName: invitation.invitedBy?.name || "Unknown",
   }
 }
 
