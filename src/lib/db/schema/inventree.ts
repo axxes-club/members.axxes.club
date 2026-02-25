@@ -172,7 +172,7 @@ export const bomItems = pgTable("bom_items", {
 
   // Validation
   validatedAt: timestamp("validated_at", { withTimezone: true }),
-  validatedBy: uuid("validated_by").references(() => user.id),
+  validatedBy: text("validated_by").references(() => user.id),
 
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -209,7 +209,7 @@ export const buildOrders = pgTable("build_orders", {
   completedDate: timestamp("completed_date", { withTimezone: true }),
 
   // Attribution
-  assignedTo: uuid("assigned_to").references(() => user.id),
+  assignedTo: text("assigned_to").references(() => user.id),
   locationId: uuid("location_id").references(() => inventoryLocations.id),
 
   // BOM snapshot (JSON copy of BOM at time of build)
@@ -291,7 +291,7 @@ export const purchaseOrders = pgTable("purchase_orders", {
   internalNotes: text("internal_notes"),
 
   // Attribution
-  orderedBy: uuid("ordered_by").references(() => user.id),
+  orderedBy: text("ordered_by").references(() => user.id),
 
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
@@ -402,7 +402,7 @@ export const salesOrders = pgTable("sales_orders", {
   internalNotes: text("internal_notes"),
 
   // Attribution
-  salespersonId: uuid("salesperson_id").references(() => user.id),
+  salespersonId: text("salesperson_id").references(() => user.id),
 
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
@@ -534,7 +534,7 @@ export const stockItemTracking = pgTable("stock_item_tracking", {
   referenceId: uuid("reference_id"),
 
   // Attribution
-  userId: uuid("user_id").references(() => user.id),
+  userId: text("user_id").references(() => user.id),
 
   // Notes
   notes: text("notes"),
@@ -584,7 +584,7 @@ export const returnOrders = pgTable("return_orders", {
   internalNotes: text("internal_notes"),
 
   // Attribution
-  processedBy: uuid("processed_by").references(() => user.id),
+  processedBy: text("processed_by").references(() => user.id),
 
   // Metadata
   metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
@@ -639,7 +639,7 @@ export const returnOrderItems = pgTable("return_order_items", {
 export const apiTokens = pgTable("api_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
 
   // Token info
   name: text("name").notNull(),
