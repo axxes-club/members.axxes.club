@@ -196,7 +196,7 @@ export function ImageBlock({
 
 export function GalleryBlock({
   images = [],
-  layout: _layout = "grid",
+  layout = "grid",
   columns = 3,
 }: {
   images?: Array<{ url: string; alt?: string; caption?: string }>
@@ -385,7 +385,7 @@ export function ArtistBioBlock({
 
 export function MusicLinksBlock({
   platforms = [],
-  style: _style = "buttons",
+  style = "buttons",
 }: {
   platforms?: Array<{ name: string; url: string }>
   style?: "icons" | "buttons" | "list"
@@ -417,7 +417,7 @@ export function MusicLinksBlock({
 
 export function SocialLinksBlock({
   platforms = [],
-  style: _style = "icons",
+  style = "icons",
 }: {
   platforms?: Array<{ name: string; url: string }>
   style?: "icons" | "buttons"
@@ -536,7 +536,7 @@ const PLACEHOLDER_EVENT_DATE = new Date(2026, 2, 15)
 
 export function EventsListBlock({
   limit = 6,
-  layout: _layout = "cards",
+  layout = "cards",
 }: {
   limit?: number
   layout?: "list" | "grid" | "cards"
@@ -549,7 +549,7 @@ export function EventsListBlock({
     location: "City, Country",
   }))
 
-  if (_layout === "cards") {
+  if (layout === "cards") {
     return (
       <div className="p-6">
         <div className="grid gap-6 md:grid-cols-2">
@@ -818,7 +818,7 @@ export function ProductCardBlock({
 }
 
 export function FeaturedProductsBlock({
-  layout: _layout = "grid",
+  layout = "grid",
 }: {
   layout?: "grid" | "slider" | "list"
 }) {
@@ -1000,7 +1000,7 @@ export function FAQBlock({
 
 export function TestimonialsBlock({
   items = [],
-  layout: _layout = "grid",
+  layout = "grid",
 }: {
   items?: Array<{ quote: string; author: string; role?: string; image?: string }>
   layout?: "grid" | "slider" | "list"

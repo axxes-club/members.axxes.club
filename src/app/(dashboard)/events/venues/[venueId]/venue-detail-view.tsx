@@ -34,7 +34,14 @@ import {
 import { updateVenue, deleteVenue } from "@/lib/actions/events"
 import { Loader2, Trash2, Calendar, ExternalLink } from "lucide-react"
 import { format } from "date-fns"
-import type { Venue, Event } from "@/lib/db/schema"
+import type { Venue } from "@/lib/db/schema"
+
+type EventWithRequiredFields = {
+  id: string
+  name: string
+  startsAt: Date
+  status: string
+}
 
 const formSchema = z.object({
   name: z.string().min(1, "Venue name is required"),
@@ -67,10 +74,12 @@ type FormData = {
 }
 
 interface VenueDetailViewProps {
-  venue: Venue & { events: Event[] }
+  venue: Venue & { events: { id: string; name: string; startsAt: Date; status: string }[] }
 }
 
 export function VenueDetailView({ venue }: VenueDetailViewProps) {
+  // Cast events to ensure proper typing
+  const events = (venue.events || []) as EventWithRequiredFields[]
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)

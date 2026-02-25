@@ -52,8 +52,24 @@ import {
   MapPin,
   CalendarDays,
   MessageSquare,
+  Mail,
+  Send,
   X,
   type LucideIcon,
+  // Inventory icons
+  Boxes,
+  Building2,
+  Truck,
+  ArrowLeftRight,
+  Factory,
+  RotateCcw,
+  Tag,
+  CheckSquare,
+  ClipboardCheck,
+  BarChart3,
+  Layers,
+  // Projects icon
+  Kanban,
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
@@ -70,6 +86,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Contacts", href: "/crm", icon: Users },
+  { name: "Projects", href: "/projects", icon: Kanban },
   {
     name: "Events",
     href: "/events",
@@ -79,7 +96,27 @@ const navigation: NavItem[] = [
       { name: "Venues", href: "/events/venues", icon: MapPin },
     ],
   },
-  { name: "Inventory", href: "/inventory", icon: Package },
+  {
+    name: "Inventory",
+    href: "/inventory",
+    icon: Package,
+    subsections: [
+      { name: "Products", href: "/inventory", icon: Package },
+      { name: "Categories", href: "/inventory/categories", icon: Layers },
+      { name: "Stock Items", href: "/inventory/stock", icon: Boxes },
+      { name: "Locations", href: "/inventory/locations", icon: Building2 },
+      { name: "Suppliers", href: "/inventory/suppliers", icon: Truck },
+      { name: "Purchase Orders", href: "/inventory/purchase-orders", icon: ShoppingCart },
+      { name: "Sales Orders", href: "/inventory/sales-orders", icon: FileText },
+      { name: "Transfers", href: "/inventory/transfers", icon: ArrowLeftRight },
+      { name: "Build Orders", href: "/inventory/build-orders", icon: Factory },
+      { name: "Returns", href: "/inventory/returns", icon: RotateCcw },
+      { name: "Price Lists", href: "/inventory/price-lists", icon: Tag },
+      { name: "Quality Control", href: "/inventory/quality", icon: CheckSquare },
+      { name: "Audits", href: "/inventory/audits", icon: ClipboardCheck },
+      { name: "Analytics", href: "/inventory/analytics", icon: BarChart3 },
+    ],
+  },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   {
     name: "Social Media",
@@ -100,6 +137,18 @@ const navigation: NavItem[] = [
     ],
   },
   { name: "Messages", href: "/messages", icon: MessageSquare },
+  {
+    name: "Newsletter",
+    href: "/newsletter",
+    icon: Mail,
+    subsections: [
+      { name: "Overview", href: "/newsletter", icon: LayoutDashboard },
+      { name: "Campaigns", href: "/newsletter/campaigns", icon: Send },
+      { name: "Lists", href: "/newsletter/lists", icon: Users },
+      { name: "Templates", href: "/newsletter/templates", icon: FileText },
+      { name: "Settings", href: "/newsletter/settings", icon: Settings },
+    ],
+  },
   {
     name: "Marketing",
     href: "/marketing",

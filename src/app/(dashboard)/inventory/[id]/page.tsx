@@ -107,9 +107,9 @@ export default async function ProductDetailPage({
 
                   <div>
                     <h2 className="text-2xl font-bold">{product.name}</h2>
-                    {product.category && (
+                    {product.category && typeof product.category === 'object' && !Array.isArray(product.category) && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        Category: {product.category.name}
+                        Category: {(product.category as { name: string }).name}
                       </p>
                     )}
                   </div>
