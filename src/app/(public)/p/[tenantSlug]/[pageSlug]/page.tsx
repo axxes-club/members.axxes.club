@@ -47,7 +47,7 @@ export default async function PublicPage({ params }: PublicPageProps) {
 
   return (
     <PublicPageRenderer
-      page={page}
+      page={page as any}
       tenant={tenant}
       brandProfile={brandProfile ?? null}
     />

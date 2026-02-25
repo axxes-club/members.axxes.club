@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreVertical, Pencil, Home, Trash2, Eye, EyeOff } from "lucide-react"
+import { MoreVertical, Home, Trash2, Eye, EyeOff, Sparkles, LayoutGrid } from "lucide-react"
 import { deletePage, publishPage, unpublishPage, setHomepage } from "@/lib/actions/pages"
 import type { Page } from "@/lib/db/schema"
 
@@ -77,9 +77,13 @@ export function PageActions({ page }: PageActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => router.push(`/website/pages/${page.id}/puck`)}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Visual Editor
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push(`/website/pages/${page.id}`)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Page
+            <LayoutGrid className="mr-2 h-4 w-4" />
+            Block Editor
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handlePublish}>
             {page.isPublished ? (
