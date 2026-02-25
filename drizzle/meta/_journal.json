@@ -8,6 +8,20 @@
       "when": 1770921808524,
       "tag": "0000_last_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770922800000,
+      "tag": "0001_newsletter_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740436800000,
+      "tag": "0002_add_matrix_tables",
+      "breakpoints": true
     }
   ]
 }
