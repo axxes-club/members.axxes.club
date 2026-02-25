@@ -116,10 +116,10 @@ export default async function EventsPage() {
                         <Calendar className="h-4 w-4" />
                         {format(new Date(event.startsAt), "MMM d, yyyy 'at' h:mm a")}
                       </div>
-                      {event.venue && (
+                      {event.venue && typeof event.venue === 'object' && !Array.isArray(event.venue) && (
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          {event.venue.name}
+                          {(event.venue as { name: string }).name}
                         </div>
                       )}
                     </div>
