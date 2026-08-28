@@ -5,11 +5,12 @@ import { eq, desc } from "drizzle-orm";
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const tenant = await db.query.tenants.findFirst({
-      where: eq(tenants.slug, params.slug),
+      where: eq(tenants.slug, slug),
     });
 
     if (!tenant) {
