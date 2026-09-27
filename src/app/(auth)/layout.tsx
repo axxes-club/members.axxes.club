@@ -24,8 +24,9 @@ export default function AuthLayout({
         </div>
         <div className="flex gap-8 text-sm opacity-40">
           <span>Events</span>
-          <span>Inventory</span>
+          <span>Simple Inventory</span>
           <span>CRM</span>
+          <span>Website Builder</span>
         </div>
       </div>
 
