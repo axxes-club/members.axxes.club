@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New public landing page showcasing AXXES as "The Operating System for the Entertainment Industry"
+- Features, Testimonials, and Pricing sections on the public site
+- External navigation support in the dashboard sidebar
+
+### Changed
+- Replaced the root (`/`) redirect with the new landing page
+- Sidebar "Inventory" module is now "Simple Inventory" and links to the standalone Netlify web app
+
 ### Planned
 - Mobile apps (iOS/Android)
 - Barcode scanning implementation

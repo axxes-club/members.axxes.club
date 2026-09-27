@@ -80,6 +80,7 @@ interface NavItem {
   name: string
   href: string
   icon: LucideIcon
+  external?: boolean
   subsections?: { name: string; href: string; icon: LucideIcon }[]
 }
 
@@ -97,25 +98,10 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: "Inventory",
-    href: "/inventory",
+    name: "Simple Inventory",
+    href: "https://demb-inventory-pr.netlify.app",
+    external: true,
     icon: Package,
-    subsections: [
-      { name: "Products", href: "/inventory", icon: Package },
-      { name: "Categories", href: "/inventory/categories", icon: Layers },
-      { name: "Stock Items", href: "/inventory/stock", icon: Boxes },
-      { name: "Locations", href: "/inventory/locations", icon: Building2 },
-      { name: "Suppliers", href: "/inventory/suppliers", icon: Truck },
-      { name: "Purchase Orders", href: "/inventory/purchase-orders", icon: ShoppingCart },
-      { name: "Sales Orders", href: "/inventory/sales-orders", icon: FileText },
-      { name: "Transfers", href: "/inventory/transfers", icon: ArrowLeftRight },
-      { name: "Build Orders", href: "/inventory/build-orders", icon: Factory },
-      { name: "Returns", href: "/inventory/returns", icon: RotateCcw },
-      { name: "Price Lists", href: "/inventory/price-lists", icon: Tag },
-      { name: "Quality Control", href: "/inventory/quality", icon: CheckSquare },
-      { name: "Audits", href: "/inventory/audits", icon: ClipboardCheck },
-      { name: "Analytics", href: "/inventory/analytics", icon: BarChart3 },
-    ],
   },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   {
@@ -239,6 +225,8 @@ export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSu
             <Link
               key={item.name}
               href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 text-[13px] transition-colors",
                 isActive
@@ -504,6 +492,8 @@ export function MobileSidebar({ tenantId, tenantName = "My Business", tenantLogo
               <Link
                 key={item.name}
                 href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-[13px] transition-colors",
                   isActive
