@@ -17,9 +17,17 @@ pnpm drizzle-kit migrate    # Apply migrations
 pnpm drizzle-kit studio     # Open Drizzle Studio GUI
 ```
 
-## Architecture
+## Architecture & Ecosystem Context
 
-**Multi-tenant SaaS platform** for managing members, events, inventory, and marketing - built with Next.js 16 App Router.
+**AXXES** is the parent SaaS company. Users log in to AXXES to access the various specialized tools they subscribe to.
+
+The AXXES product ecosystem consists of:
+1. **Landing Page** (`axxes.club`): The public-facing marketing site.
+2. **Portal Product Dashboard** (`members.axxes.club`): This repository. The central multi-tenant SaaS platform built with Next.js 16 App Router where users authenticate and manage their subscriptions.
+3. **Inventory System** (`demb-inventory`): A specialized product hosted externally on Netlify.
+4. **Event Ticketing Platform**: Another standalone product in the AXXES suite.
+
+While `demb-inventory` and other tools might run on separate infrastructure, they are all products of AXXES, and the `members.axxes.club` dashboard serves as the central hub linking out to these external applications.
 
 ### Multi-Tenancy Model
 - Tenants represent businesses (promoters, venues, agencies, brands)

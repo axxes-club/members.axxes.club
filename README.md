@@ -17,7 +17,9 @@
 
 ## 🎯 Overview
 
-A comprehensive business management platform built for the nightlife and entertainment industry. Manage members, events, inventory, marketing, and more — all in one place.
+**AXXES** is a parent SaaS company providing a comprehensive suite of tools for the nightlife and entertainment industry. 
+
+This repository (`members.axxes.club`) serves as the **Portal Product Dashboard**. It acts as the central hub where users log in to manage their accounts, memberships, and navigate to the various specialized AXXES products they subscribe to, including our standalone Event Ticketing platform and our dedicated Inventory System (`demb-inventory`).
 
 ### ✨ Core Features
 
