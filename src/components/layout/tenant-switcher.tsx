@@ -33,7 +33,7 @@ interface TenantSwitcherProps {
 
 export function TenantSwitcher({
   currentTenantId,
-  currentTenantName = "My Business",
+  currentTenantName = "My Organization",
   currentTenantLogo,
   isCollapsed = false,
 }: TenantSwitcherProps) {
@@ -44,12 +44,12 @@ export function TenantSwitcher({
 
   // Fetch user's tenants on mount and check for pending switch notification
   React.useEffect(() => {
-    // Check for pending business switch notification
-    const switchedTo = sessionStorage.getItem("switched_business")
+    // Check for pending organization switch notification
+    const switchedTo = sessionStorage.getItem("switched_organization")
     if (switchedTo) {
-      sessionStorage.removeItem("switched_business")
+      sessionStorage.removeItem("switched_organization")
       toast.warning(`Switched to ${switchedTo}`, {
-        description: "You are now viewing a different business",
+        description: "You are now viewing a different organization",
       })
     }
 
@@ -84,7 +84,7 @@ export function TenantSwitcher({
       if (response.ok) {
         // Store the switch notification for after redirect
         if (targetTenant) {
-          sessionStorage.setItem("switched_business", targetTenant.name)
+          sessionStorage.setItem("switched_organization", targetTenant.name)
         }
         // Refresh the page to load new tenant context
         router.refresh()
@@ -97,7 +97,7 @@ export function TenantSwitcher({
     }
   }
 
-  const handleCreateBusiness = () => {
+  const handleCreateOrganization = () => {
     router.push("/onboarding?new=true")
   }
 
@@ -144,7 +144,7 @@ export function TenantSwitcher({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[280px]">
-        <DropdownMenuLabel>Your Businesses</DropdownMenuLabel>
+        <DropdownMenuLabel>Your Organizationes</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         {isLoading ? (
@@ -153,7 +153,7 @@ export function TenantSwitcher({
           </div>
         ) : tenants.length === 0 ? (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-            No businesses found
+            No organizationes found
           </div>
         ) : (
           tenants.map((tenant) => (
@@ -183,9 +183,9 @@ export function TenantSwitcher({
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCreateBusiness}>
+        <DropdownMenuItem onClick={handleCreateOrganization}>
           <Plus className="mr-2 h-4 w-4" />
-          Create New Business
+          Create New Organization
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

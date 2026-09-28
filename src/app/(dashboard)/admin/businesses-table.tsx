@@ -10,7 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { updateTenantStatus } from "@/lib/actions/admin"
+import { updateTenantStatus, updateTenantFoldersAccess } from "@/lib/actions/admin"
+import { Switch } from "@/components/ui/switch"
 import { MoreHorizontal, CheckCircle, XCircle, Clock, Ban, Users } from "lucide-react"
 
 interface TenantWithDetails {
@@ -27,6 +28,7 @@ interface TenantWithDetails {
     image: string | null
   } | null
   memberCount: number
+  foldersAccess?: boolean
 }
 
 interface BusinessesTableProps {
@@ -42,6 +44,7 @@ const statusConfig = {
 
 export function BusinessesTable({ businesses }: BusinessesTableProps) {
   const [loading, setLoading] = useState<string | null>(null)
+  const [foldersLoading, setFoldersLoading] = useState<string | null>(null)
 
   async function handleStatusChange(id: string, status: "active" | "suspended" | "pending" | "cancelled") {
     setLoading(id)
@@ -52,6 +55,18 @@ export function BusinessesTable({ businesses }: BusinessesTableProps) {
       alert(error instanceof Error ? error.message : "Failed to update status")
     } finally {
       setLoading(null)
+    }
+  }
+
+  async function handleFoldersAccessChange(id: string, enabled: boolean) {
+    setFoldersLoading(id)
+    try {
+      await updateTenantFoldersAccess(id, enabled)
+    } catch (error) {
+      console.error("Failed to update folders access:", error)
+      alert(error instanceof Error ? error.message : "Failed to update folders access")
+    } finally {
+      setFoldersLoading(null)
     }
   }
 
@@ -72,6 +87,7 @@ export function BusinessesTable({ businesses }: BusinessesTableProps) {
             <th className="pb-3 font-medium">Owner</th>
             <th className="pb-3 font-medium">Status</th>
             <th className="pb-3 font-medium">Members</th>
+            <th className="pb-3 font-medium">Folders App</th>
             <th className="pb-3 font-medium">Created</th>
             <th className="pb-3 font-medium text-right">Actions</th>
           </tr>
@@ -121,6 +137,16 @@ export function BusinessesTable({ businesses }: BusinessesTableProps) {
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Users className="h-3.5 w-3.5" />
                     {business.memberCount}
+                  </div>
+                </td>
+                <td className="py-3">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={business.foldersAccess || false}
+                      disabled={foldersLoading === business.id}
+                      onCheckedChange={(checked) => handleFoldersAccessChange(business.id, checked)}
+                    />
+                    <span className="text-xs text-muted-foreground">{business.foldersAccess ? "Enabled" : "Disabled"}</span>
                   </div>
                 </td>
                 <td className="py-3 text-sm text-muted-foreground">

@@ -82,27 +82,30 @@ interface NavItem {
   icon: LucideIcon
   external?: boolean
   subsections?: { name: string; href: string; icon: LucideIcon }[]
+  subtitle?: string
 }
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Contacts", href: "/crm", icon: Users },
   { name: "Projects", href: "/projects", icon: Kanban },
-  { name: "Assets", href: "/assets", icon: FileImage },
+  { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
   {
     name: "Events",
     href: "/events",
     icon: Calendar,
+    subtitle: "Powered by afters.am",
     subsections: [
       { name: "Events", href: "/events", icon: CalendarDays },
       { name: "Venues", href: "/events/venues", icon: MapPin },
     ],
   },
   {
-    name: "Krates",
+    name: "Inventory",
     href: "https://kr8s.axxes.club",
     external: true,
     icon: Package,
+    subtitle: "Powered by Krates",
   },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   {
@@ -171,7 +174,7 @@ interface SidebarProps {
   unreadMessagesCount?: number
 }
 
-export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: SidebarProps) {
+export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
@@ -239,7 +242,12 @@ export function Sidebar({ tenantId, tenantName = "My Business", tenantLogo, isSu
               <item.icon className="h-4 w-4 shrink-0" />
               {!isCollapsed && (
                 <>
-                  <span className="flex-1">{item.name}</span>
+                  <div className="flex-1 flex flex-col">
+                    <span>{item.name}</span>
+                    {item.subtitle && (
+                      <span className="text-[10px] text-muted-foreground/70 leading-tight">{item.subtitle}</span>
+                    )}
+                  </div>
                   {item.name === "Messages" && (
                     <UnreadBadge initialCount={unreadMessagesCount} />
                   )}
@@ -363,7 +371,12 @@ function NavItemWithSubsections({
           )}
         >
           <item.icon className="h-4 w-4 shrink-0" />
-          <span className="flex-1 text-left">{item.name}</span>
+          <div className="flex-1 flex flex-col text-left">
+            <span>{item.name}</span>
+            {item.subtitle && (
+              <span className="text-[10px] text-muted-foreground/70 leading-tight font-normal">{item.subtitle}</span>
+            )}
+          </div>
           <ChevronRight
             className={cn(
               "h-3.5 w-3.5 shrink-0 transition-transform opacity-50",
@@ -421,7 +434,7 @@ interface MobileSidebarProps {
   unreadMessagesCount?: number
 }
 
-export function MobileSidebar({ tenantId, tenantName = "My Business", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: MobileSidebarProps) {
+export function MobileSidebar({ tenantId, tenantName = "My Organization", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: MobileSidebarProps) {
   const { isMobileOpen, setMobileOpen } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()

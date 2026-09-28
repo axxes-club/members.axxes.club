@@ -213,6 +213,7 @@ export async function getAllTenants() {
         ...tenant,
         owner: owner ? { id: owner.id, name: owner.name, email: owner.email, image: owner.image } : null,
         memberCount: memberCount[0]?.count || 0,
+        foldersAccess: tenant.settings?.features?.folders === true,
       }
     })
   )
@@ -268,6 +269,39 @@ export async function updateTenantStatus(tenantId: string, status: "active" | "s
   if (!updated) {
     throw new Error("Tenant not found")
   }
+
+  revalidatePath("/admin")
+  return updated
+}
+
+export async function updateTenantFoldersAccess(tenantId: string, enabled: boolean) {
+  await requireSuperadmin()
+
+  const tenant = await db.query.tenants.findFirst({
+    where: eq(tenants.id, tenantId),
+  })
+
+  if (!tenant) {
+    throw new Error("Tenant not found")
+  }
+
+  const settings = tenant.settings || {}
+  const features = settings.features || {}
+  
+  const [updated] = await db
+    .update(tenants)
+    .set({
+      settings: {
+        ...settings,
+        features: {
+          ...features,
+          folders: enabled,
+        }
+      },
+      updatedAt: new Date(),
+    })
+    .where(eq(tenants.id, tenantId))
+    .returning()
 
   revalidatePath("/admin")
   return updated

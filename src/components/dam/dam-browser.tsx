@@ -18,6 +18,7 @@ import {
   FolderOpen,
   FolderPen,
   FolderPlus,
+  Smartphone,
   Image as ImageIcon,
   Inbox,
   Info,
@@ -65,6 +66,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useUploadThing } from "@/lib/uploadthing/client"
 import { duplicateDamAsset, listDamTags, moveDamAssets } from "@/lib/actions/dam"
+import { PhotoHandoffDialog } from "./photo-handoff-dialog"
 import { DAM_FOLDER_HEADER } from "@/lib/dam/upload-headers"
 import {
   DAM_UNFILED,
@@ -170,6 +172,7 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
   const [anchorId, setAnchorId] = React.useState<string | null>(null)
   const [detailsOpen, setDetailsOpen] = React.useState(true)
   const [previewIndex, setPreviewIndex] = React.useState<number | null>(null)
+  const [handoffOpen, setHandoffOpen] = React.useState(false)
   const [dialog, setDialog] = React.useState<DamDialogState>(null)
   const [menuTarget, setMenuTarget] = React.useState<MenuTarget>({ kind: "background" })
   const [folderMenu, setFolderMenu] = React.useState<string | null>(null)
@@ -779,9 +782,14 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
                   body={q ? "Try a different search or clear filters." : canWrite ? "Drag files here, or right-click for more options." : undefined}
                 >
                   {canWrite && !q && (
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                      <Upload /> Upload files
-                    </Button>
+                    <>
+                      <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                        <Upload /> Upload files
+                      </Button>
+                      <Button variant="outline" className="ml-2" onClick={() => setHandoffOpen(true)}>
+                        <Smartphone className="mr-2 h-4 w-4" /> Upload from phone
+                      </Button>
+                    </>
                   )}
                 </EmptyState>
               ) : (
@@ -853,6 +861,9 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
               <>
                 <ContextMenuItem disabled={!canWrite} onSelect={() => fileInputRef.current?.click()}>
                   <Upload /> Upload files…
+                </ContextMenuItem>
+                <ContextMenuItem disabled={!canWrite} onSelect={() => setHandoffOpen(true)}>
+                  <Smartphone /> Upload from phone
                 </ContextMenuItem>
                 <ContextMenuItem disabled={!canWrite} onSelect={() => setDialog({ kind: "add-url", folder: uploadFolder })}>
                   <Link2 /> Add from URL…
@@ -979,6 +990,7 @@ function NewMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
         <DropdownMenuItem onSelect={onUpload} className="gap-2"><Upload className="h-4 w-4" /> Upload files</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setHandoffOpen(true)} className="gap-2"><Smartphone className="h-4 w-4" /> Upload from phone</DropdownMenuItem>
         <DropdownMenuItem onSelect={onAddUrl} className="gap-2"><Link2 className="h-4 w-4" /> Add from URL</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onNewFolder} className="gap-2"><FolderPlus className="h-4 w-4" /> New folder</DropdownMenuItem>
@@ -1210,6 +1222,9 @@ function AssetMenuItems({
           </ContextMenuItem>
           <ContextMenuItem onSelect={() => onDetails(asset.id)}>
             <Info /> Details
+          </ContextMenuItem>
+          <ContextMenuItem onSelect={() => window.open(`https://folders.axxes.club?folder=${encodeURIComponent(asset.folder || "")}`, "_blank", "noopener,noreferrer")}>
+            <ExternalLink /> Open in Folders
           </ContextMenuItem>
           <ContextMenuItem onSelect={() => window.open(asset.url, "_blank", "noopener,noreferrer")}>
             <ExternalLink /> Open in new tab
