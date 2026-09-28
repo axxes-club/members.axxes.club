@@ -963,6 +963,10 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
       />
 
       <DamPreview assets={assets} index={previewIndex} onIndexChange={setPreviewIndex} onClose={() => setPreviewIndex(null)} />
+
+      {handoffOpen && (
+        <PhotoHandoffDialog folder={uploadFolder} onDone={reload} onClose={() => setHandoffOpen(false)} />
+      )}
     </div>
   )
 }

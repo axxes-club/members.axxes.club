@@ -1,141 +1,138 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Smartphone, Loader2, AlertTriangle, RefreshCw, Check } from "lucide-react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import * as React from "react"
+import { AlertTriangle, Check, Loader2, RefreshCw, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { createUploadSession, pollUploadSession, deleteUploadSession } from "@/lib/actions/upload-session"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { createUploadSession, deleteUploadSession } from "@/lib/actions/upload-session"
 
 type Handoff = { token: string; url: string; qr: string; expiresAt: string }
 
+const POLL_MS = 2000
+
+/**
+ * Desk-to-pocket upload: a short-lived session shown as a QR code. Photos taken on
+ * the phone land in the current folder and appear here as they arrive; closing the
+ * dialog ends the session.
+ */
 export function PhotoHandoffDialog({
   folder,
-  onAttach,
-  onClose
+  onDone,
+  onClose,
 }: {
   folder: string | null
-  onAttach: (urls: string[]) => void
+  onDone: () => void
   onClose: () => void
 }) {
-  const [handoff, setHandoff] = useState<Handoff | null>(null)
-  const [photos, setPhotos] = useState<string[]>([])
-  const [failed, setFailed] = useState(false)
-  const [expired, setExpired] = useState(false)
-  const [attaching, setAttaching] = useState(false)
-  const [minutesLeft, setMinutesLeft] = useState(0)
-  const started = useRef(false)
+  const [handoff, setHandoff] = React.useState<Handoff | null>(null)
+  const [photos, setPhotos] = React.useState<string[]>([])
+  const [failed, setFailed] = React.useState(false)
+  const [expired, setExpired] = React.useState(false)
+  const [minutesLeft, setMinutesLeft] = React.useState<number | null>(null)
 
-  const start = async () => {
+  const start = React.useCallback(async () => {
     setFailed(false)
     setExpired(false)
     setPhotos([])
+    setHandoff(null)
     try {
-      const res = await createUploadSession(folder, window.location.origin)
-      setHandoff(res)
+      setHandoff(await createUploadSession(folder))
     } catch {
       setFailed(true)
     }
-  }
+  }, [folder])
 
-  useEffect(() => {
-    if (started.current) return
-    started.current = true
+  React.useEffect(() => {
     start()
-  }, [])
+  }, [start])
 
-  useEffect(() => {
-    if (!handoff) return
+  React.useEffect(() => {
+    if (!handoff || expired) return
     const timer = setInterval(async () => {
       try {
-        const data = await pollUploadSession(handoff.token)
-        if (data.error) return
-        setPhotos(data.photos?.map((p: any) => p.url) || [])
-        if (data.expiresAt) {
-          setMinutesLeft(Math.max(0, Math.round((new Date(data.expiresAt).getTime() - Date.now()) / 60000)))
-        }
+        const res = await fetch(`/api/dam/upload-sessions/${handoff.token}`, { cache: "no-store" })
+        if (!res.ok) return
+        const data = await res.json()
+        setPhotos(data.photos)
+        setMinutesLeft(Math.max(0, Math.round((new Date(data.expiresAt).getTime() - Date.now()) / 60000)))
         if (data.expired) setExpired(true)
-      } catch {}
-    }, 2000)
+      } catch {
+        // A dropped poll isn't worth reporting; the next one will catch up.
+      }
+    }, POLL_MS)
     return () => clearInterval(timer)
-  }, [handoff])
+  }, [handoff, expired])
 
-  const finish = async () => {
-    if (photos.length === 0) return
-    setAttaching(true)
-    try {
-      await onAttach(photos)
-      if (handoff) await deleteUploadSession(handoff.token)
-      onClose()
-    } finally {
-      setAttaching(false)
-    }
+  const close = () => {
+    if (handoff) deleteUploadSession(handoff.token).catch(() => {})
+    if (photos.length) onDone()
+    onClose()
   }
 
-  useEffect(() => {
-    if (photos.length > 0 && !attaching) {
-      const t = setTimeout(() => finish(), 0)
-      return () => clearTimeout(t)
-    }
-  }, [photos, attaching])
-
   return (
-    <Dialog open onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open onOpenChange={(open) => !open && close()}>
+      <DialogContent className="sm:max-w-md" onContextMenu={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Smartphone className="size-5 text-primary" /> Upload from Phone
+            <Smartphone className="h-5 w-5" /> Upload from phone
           </DialogTitle>
           <DialogDescription>
-            Point your phone's camera at this QR code to upload photos directly to this folder.
+            Scan this code with your phone&apos;s camera to add photos to {folder ? `“${folder}”` : "the library"}. No app or
+            sign-in needed.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-5 py-5">
-          {failed ? (
-            <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <AlertTriangle className="size-6 text-destructive" />
-              <p className="text-sm font-semibold">Connection failed</p>
-              <Button variant="outline" onClick={start}><RefreshCw className="mr-2 size-4" /> Try again</Button>
-            </div>
-          ) : !handoff ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div
-                className="rounded-lg border bg-white p-3"
-                dangerouslySetInnerHTML={{ __html: handoff.qr }}
-              />
-              <p className="text-xs text-muted-foreground">
-                {expired ? "QR Code expired" : `Expires in \${minutesLeft || 30} minutes`}
-              </p>
-              <div className="mt-2 w-full rounded-md border bg-muted/50 p-3">
-                <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                  {photos.length === 0 ? (
-                    <><Loader2 className="size-3 animate-spin" /> Waiting for phone...</>
-                  ) : (
-                    <><Check className="size-3 text-emerald-500" /> `\${photos.length} photos arrived`</>
-                  )}
-                </p>
-                {photos.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {photos.map(url => (
-                      <img key={url} src={url} alt="" className="aspect-square w-full rounded-md object-cover border" />
-                    ))}
-                  </div>
+        {failed ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+            <p className="text-[13px] font-medium">Couldn&apos;t start a phone session</p>
+            <Button variant="outline" onClick={start}>
+              <RefreshCw /> Try again
+            </Button>
+          </div>
+        ) : !handoff ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <div className="border bg-white p-3" dangerouslySetInnerHTML={{ __html: handoff.qr }} />
+            <p className="text-xs text-muted-foreground">
+              {expired ? (
+                <>
+                  <span className="text-destructive">This code expired. </span>
+                  <button type="button" className="underline" onClick={start}>Get a new code</button>
+                </>
+              ) : (
+                `Expires in ${minutesLeft ?? 30} minutes`
+              )}
+            </p>
+            <details className="w-full text-center">
+              <summary className="cursor-pointer text-xs text-muted-foreground">Or copy the link</summary>
+              <p className="mt-1 select-all break-all font-mono text-xs">{handoff.url}</p>
+            </details>
+            <div className="w-full border bg-muted/40 p-3">
+              <p className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                {photos.length === 0 ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> Waiting for photos…</>
+                ) : (
+                  <><Check className="h-3 w-3" /> {photos.length} photo{photos.length === 1 ? "" : "s"} added</>
                 )}
-              </div>
+              </p>
+              {photos.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {photos.map((url) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={url} src={url} alt="" className="aspect-square w-full border object-cover" />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <DialogFooter className="sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="button" onClick={finish} disabled={photos.length === 0 || attaching}>
-            {attaching ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Check className="mr-2 size-4" />}
-            {attaching ? "Attaching..." : `Attach \${photos.length} files`}
-          </Button>
+        <DialogFooter>
+          <Button onClick={close}>{photos.length ? "Done" : "Close"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
