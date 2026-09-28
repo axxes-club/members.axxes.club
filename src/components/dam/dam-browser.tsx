@@ -518,6 +518,7 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
           >
             <div className="border-b p-3">
               <NewMenu
+                onHandoff={() => setHandoffOpen(true)}
                 canWrite={canWrite}
                 onUpload={() => fileInputRef.current?.click()}
                 onAddUrl={() => setDialog({ kind: "add-url", folder: uploadFolder })}
@@ -642,6 +643,7 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
         <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
           <div className="md:hidden">
             <NewMenu
+              onHandoff={() => setHandoffOpen(true)}
               compact
               canWrite={canWrite}
               onUpload={() => fileInputRef.current?.click()}
@@ -971,12 +973,14 @@ function NewMenu({
   canWrite,
   compact,
   onUpload,
+  onHandoff,
   onAddUrl,
   onNewFolder,
 }: {
   canWrite: boolean
   compact?: boolean
   onUpload: () => void
+  onHandoff: () => void
   onAddUrl: () => void
   onNewFolder: () => void
 }) {
@@ -990,7 +994,7 @@ function NewMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
         <DropdownMenuItem onSelect={onUpload} className="gap-2"><Upload className="h-4 w-4" /> Upload files</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setHandoffOpen(true)} className="gap-2"><Smartphone className="h-4 w-4" /> Upload from phone</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onHandoff} className="gap-2"><Smartphone className="h-4 w-4" /> Upload from phone</DropdownMenuItem>
         <DropdownMenuItem onSelect={onAddUrl} className="gap-2"><Link2 className="h-4 w-4" /> Add from URL</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onNewFolder} className="gap-2"><FolderPlus className="h-4 w-4" /> New folder</DropdownMenuItem>

@@ -29,7 +29,6 @@ export * from "./assets"
 
 // Theme
 export * from "./theme-settings"
-
 // Website / Page Builder
 export * from "./pages"
 export * from "./website-settings"
@@ -51,3 +50,4 @@ export * from "./integrations"
 
 // Projects (Kanban)
 export * from "./projects"
+export * from "./upload-sessions"

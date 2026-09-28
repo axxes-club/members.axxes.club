@@ -1,3 +1,4 @@
+import { pgTable, uuid, text, timestamp, jsonb } from "drizzle-orm/pg-core"
 
 // Handoff Sessions (for QR code camera uploads)
 export const uploadSessions = pgTable("upload_sessions", {

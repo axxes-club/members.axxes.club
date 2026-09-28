@@ -8,7 +8,7 @@ import QRCode from "qrcode"
 import { eq } from "drizzle-orm"
 
 export async function createUploadSession(folder: string | null, baseUrl: string) {
-  const { tenant, user, role } = await requireTenantAccess()
+  const { tenantId, userId, role } = await requireTenantAccess()
   if (!["owner", "admin", "manager", "member"].includes(role)) {
     throw new Error("Unauthorized")
   }
@@ -18,9 +18,9 @@ export async function createUploadSession(folder: string | null, baseUrl: string
 
   await db.insert(uploadSessions).values({
     token,
-    tenantId: tenant.id,
+    tenantId,
     folder,
-    createdById: user.id,
+    createdById: userId,
     expiresAt,
   })
 
@@ -52,7 +52,7 @@ export async function pollUploadSession(token: string) {
 }
 
 export async function deleteUploadSession(token: string) {
-  const { user } = await requireTenantAccess()
+  await requireTenantAccess()
   await db.delete(uploadSessions).where(eq(uploadSessions.token, token))
   return { success: true }
 }
