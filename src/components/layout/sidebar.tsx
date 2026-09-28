@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/collapsible"
 import {
   LayoutDashboard,
+  LayoutGrid,
   Users,
   Calendar,
   Package,
@@ -87,8 +88,14 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  {
+    name: "Apps",
+    href: "/apps",
+    icon: LayoutGrid,
+    subtitle: "Every AXXES app in one place",
+  },
   { name: "Contacts", href: "/crm", icon: Users },
-  { name: "Projects", href: "/projects", icon: Kanban },
+  { name: "Projects", href: "/projects", icon: Kanban, subtitle: "Powered by Lanes" },
   { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
   {
     name: "Events",

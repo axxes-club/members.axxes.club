@@ -51,3 +51,9 @@ export * from "./integrations"
 // Projects (Kanban)
 export * from "./projects"
 export * from "./upload-sessions"
+
+// AXXES Office (documents, sheets, slides + the link to DAM assets)
+export * from "./office"
+
+// The AXXES product catalog (shared by every app)
+export * from "./products"
