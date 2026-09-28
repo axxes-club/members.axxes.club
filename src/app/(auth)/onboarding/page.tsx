@@ -168,7 +168,7 @@ export default function OnboardingPage() {
       <div className="space-y-2 text-center">
         <h1 className="text-display-sm">Set up your business</h1>
         <p className="text-body-md text-muted-foreground">
-          Let&apos;s get your business set up on members.axxes.<span className="text-purple-500">club</span>
+          Let&apos;s get your business set up on axxes.<span className="text-purple-500">club</span>
         </p>
       </div>
 

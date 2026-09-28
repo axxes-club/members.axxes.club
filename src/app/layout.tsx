@@ -9,8 +9,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "members.axxes.club",
-    template: "%s | members.axxes.club",
+    default: "AXXES",
+    template: "%s | AXXES",
   },
   description: "The all-in-one platform for event ticketing, merchandise, and customer management.",
   keywords: ["events", "ticketing", "CRM", "merchandise", "event management"],

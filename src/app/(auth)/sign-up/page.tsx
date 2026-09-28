@@ -72,7 +72,7 @@ export default function SignUpPage() {
       <div className="space-y-2 text-center">
         <h1 className="text-display-sm">Create an account</h1>
         <p className="text-body-md text-muted-foreground">
-          Get started with members.axxes.club
+          Get started with axxes.club
         </p>
       </div>
 

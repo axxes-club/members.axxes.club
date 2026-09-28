@@ -9,7 +9,7 @@ export default function AuthLayout({
       <div className="hidden lg:flex lg:w-1/2 bg-primary text-primary-foreground flex-col justify-between p-12">
         <div>
           <span className="text-2xl font-bold tracking-tight">
-            members.axxes.<span className="text-purple-400">club</span>
+            axxes.<span className="text-purple-400">club</span>
           </span>
         </div>
         <div className="space-y-6">
@@ -25,6 +25,7 @@ export default function AuthLayout({
         <div className="flex gap-8 text-sm opacity-40">
           <span>Events</span>
           <span>Simple Inventory</span>
+          <span>Vendor Tracking</span>
           <span>CRM</span>
           <span>Website Builder</span>
         </div>
