@@ -98,8 +98,8 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    name: "Simple Inventory",
-    href: "https://demb-inventory-pr.netlify.app",
+    name: "Krates",
+    href: "https://kr8s.axxes.club",
     external: true,
     icon: Package,
   },
