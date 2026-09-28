@@ -638,7 +638,7 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
       </ContextMenu>
 
       {/* Main column */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         {/* Toolbar */}
         <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
           <div className="md:hidden">
@@ -967,6 +967,17 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
       {handoffOpen && (
         <PhotoHandoffDialog folder={uploadFolder} onDone={reload} onClose={() => setHandoffOpen(false)} />
       )}
+
+      {/* The file manager underneath this page is folders.axxes.club. It gets the
+          credit, quietly, in the corner — never in the way of the work. */}
+      <a
+        href="https://folders.axxes.club"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pointer-events-none absolute bottom-2 right-3 z-10 hidden select-none items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground/45 transition-colors hover:text-muted-foreground/80 focus-visible:pointer-events-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring lg:flex"
+      >
+        Powered by folders.axxes.club
+      </a>
     </div>
   )
 }
