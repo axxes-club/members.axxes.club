@@ -88,6 +88,7 @@ const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Contacts", href: "/crm", icon: Users },
   { name: "Projects", href: "/projects", icon: Kanban },
+  { name: "Assets", href: "/assets", icon: FileImage },
   {
     name: "Events",
     href: "/events",
@@ -141,7 +142,6 @@ const navigation: NavItem[] = [
     icon: Megaphone,
     subsections: [
       { name: "SEO", href: "/marketing/seo", icon: Search },
-      { name: "Assets", href: "/marketing/assets", icon: FileImage },
     ],
   },
   {

@@ -1,5 +1,10 @@
 packages:
   - "."
+allowBuilds:
+  esbuild: false
+  msgpackr-extract: false
+  sharp: false
+  unrs-resolver: false
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
