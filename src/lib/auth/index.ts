@@ -6,8 +6,17 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { sendPasswordResetEmail } from "@/lib/email"
 
+// With Handshake (handshake.axxes.club), every *.axxes.club app shares one session cookie
+const cookieDomain = process.env.AUTH_COOKIE_DOMAIN
+const parentDomain = (cookieDomain || "axxes.club").replace(/^\./, "")
+
+// Central AXXES sign-in; when unset the portal uses its own sign-in pages
+export const HANDSHAKE_URL = process.env.HANDSHAKE_URL?.replace(/\/$/, "") || null
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL || "http://localhost:3000",
+  trustedOrigins: [`https://${parentDomain}`, `https://*.${parentDomain}`],
+  advanced: cookieDomain ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } } : undefined,
   database: drizzleAdapter(db, {
     provider: "pg",
   }),

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/providers/sidebar-provider"
 import { Button } from "@/components/ui/button"
@@ -71,7 +71,7 @@ import {
   // Projects icon
   Kanban,
 } from "lucide-react"
-import { useSession, signOut } from "@/lib/auth/client"
+import { useSession } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
 import { TenantSwitcher } from "./tenant-switcher"
 import { UnreadBadge } from "./unread-badge"
@@ -177,7 +177,6 @@ interface SidebarProps {
 export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: SidebarProps) {
   const { isCollapsed, toggle } = useSidebar()
   const pathname = usePathname()
-  const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user
   const { theme, setTheme } = useTheme()
@@ -320,9 +319,8 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={async () => {
-                await signOut()
-                router.push("/sign-in")
+              onClick={() => {
+                window.location.href = "/sign-out"
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -437,7 +435,6 @@ interface MobileSidebarProps {
 export function MobileSidebar({ tenantId, tenantName = "My Organization", tenantLogo, isSuperadmin = false, unreadMessagesCount = 0 }: MobileSidebarProps) {
   const { isMobileOpen, setMobileOpen } = useSidebar()
   const pathname = usePathname()
-  const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user
   const { theme, setTheme } = useTheme()
@@ -576,9 +573,8 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={async () => {
-                  await signOut()
-                  router.push("/sign-in")
+                onClick={() => {
+                  window.location.href = "/sign-out"
                 }}
               >
                 <LogOut className="mr-2 h-4 w-4" />
