@@ -44,7 +44,7 @@ export default function SignUpPage() {
       // Then create the account
       const result = await signUp.email({
         name,
-        email,
+        email: email.trim().toLowerCase(),
         password,
       })
 

@@ -7,7 +7,8 @@ export async function requestPasswordReset(email: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (auth.api as any).forgetPassword({
       body: {
-        email,
+        // Stored lowercased, so fold before looking the account up.
+        email: email.trim().toLowerCase(),
         redirectTo: "/reset-password",
       },
     })
