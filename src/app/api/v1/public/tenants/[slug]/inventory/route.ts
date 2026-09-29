@@ -42,6 +42,34 @@ export async function GET(
       return NextResponse.json(rows.map((r) => r.slug).filter(Boolean));
     }
 
+    // Artist-index mode: only what an artist page needs to list that artist's
+    // works — the title prefix and one thumbnail. The full inventory payload is
+    // ~8MB for this tenant, which exceeds Next.js's 2MB data-cache ceiling, so
+    // it is re-fetched on every request and a 591-page build crawls. This shape
+    // is small enough to cache and costs a few hundred KB for the whole
+    // collection.
+    if (fields === "artistIndex") {
+      const rows = await db
+        .select({
+          slug: products.slug,
+          name: products.name,
+          image: products.images,
+        })
+        .from(products)
+        .where(and(...conditions));
+
+      return NextResponse.json(
+        rows.map((r) => {
+          const first = Array.isArray(r.image)
+            ? r.image.find(
+                (i) => i && typeof i === "object" && typeof i.url === "string"
+              )?.url ?? null
+            : null;
+          return { slug: r.slug, title: r.name ?? "", image: first };
+        })
+      );
+    }
+
     const inventory = await db.query.products.findMany({
       where: and(...conditions),
       orderBy: [desc(products.createdAt)],
