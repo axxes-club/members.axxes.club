@@ -93,6 +93,26 @@ VALUES
    'https://tollbooth.axxes.club', '#a78bfa', 'Commerce', 'beta', true, 'CreditCard', NULL, true, 22),
 
   -- ------------------------------------------------------------ Developers --
+  -- Keel is registered but deliberately NOT surfaced.
+  --
+  -- The key is reserved here rather than at launch on purpose: `key` is
+  -- permanent and is referenced by developer.axxes.club's plan catalog,
+  -- Handshake's OIDC clients, the integrations providers and lanes' suite
+  -- registry. Reserving it now means the name cannot be lost to a later
+  -- decision, and adding a row is a data change with no deploy.
+  --
+  -- `soon` and `surface_in_members = false` because Keel is not deployed: no
+  -- DNS record, no domain. "Ship or hide" is the standing rule, and this row
+  -- keeps the key without putting an unreachable tile in anyone's launcher.
+  --
+  -- CATEGORY IS PROVISIONAL. Work vs Developers is an open decision on the
+  -- Keel board ("DECISION: which catalog category does Keel ship under").
+  -- Developers is the honest placeholder for source control; change it when
+  -- that decision is made. Unlike `key`, category is safe to change.
+  ('keel',      'Keel', 'Every change explains itself',
+   'Source control for people who did not choose source control. Checkpoints in plain language, a timeline you can scrub, and an undo that cannot lose your work — tied to the AXXES records a change actually affects, so you can always answer what was live when the numbers stopped adding up.',
+   'https://keel.axxes.club', '#d8a657', 'Developers', 'soon', true, 'Anchor', NULL, false, 32),
+
   ('api',     'AXXES for Builders', 'Put your event on AXXES',
    'Events, ticket types, orders and check-ins as an API, plus webhooks. Built for teams shipping their own product on top of ours.',
    'https://api.axxes.club', '#94a3b8', 'Developers', 'live', false, 'Code', NULL, true, 30),
