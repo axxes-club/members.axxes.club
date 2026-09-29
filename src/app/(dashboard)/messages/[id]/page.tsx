@@ -17,5 +17,5 @@ export default async function ConversationPage({ params }: ConversationPageProps
     notFound()
   }
 
-  return <ConversationView conversation={conversation as any} />
+  return <ConversationView conversation={conversation} />
 }

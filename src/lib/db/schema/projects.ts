@@ -1,5 +1,5 @@
-// @ts-nocheck
 import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, index, boolean } from "drizzle-orm/pg-core"
+import type { AnyPgColumn } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import { tenants } from "./tenants"
 import { user } from "./users"
@@ -231,7 +231,7 @@ export const projectCardComments = pgTable("project_card_comments", {
   userId: text("user_id").notNull().references(() => user.id),
 
   // Parent comment for threading
-  parentCommentId: uuid("parent_comment_id").references(() => projectCardComments.id, { onDelete: "cascade" }),
+  parentCommentId: uuid("parent_comment_id").references((): AnyPgColumn => projectCardComments.id, { onDelete: "cascade" }),
 
   // Audit
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

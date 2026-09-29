@@ -93,7 +93,7 @@ export default async function InventoryPage({
         </Card>
       ) : (
         <ProductList
-          products={products as any}
+          products={products}
           total={total}
           page={page}
           totalPages={totalPages}

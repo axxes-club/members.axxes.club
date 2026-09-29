@@ -61,7 +61,7 @@ export default async function SuppliersPage({
         </Card>
       ) : (
         <SupplierList
-          suppliers={suppliers as any}
+          suppliers={suppliers}
           total={total}
           page={page}
           totalPages={totalPages}
