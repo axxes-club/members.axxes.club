@@ -1,8 +1,8 @@
 import { and, count, eq, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { assets } from "@/lib/db/schema"
+import { assetAppLinks, assets } from "@/lib/db/schema"
 import { DAM_PAGE_SIZE, DAM_TYPES, damOrderBy, damTypeCondition, toDamAsset } from "./assets"
-import { DAM_UNFILED, type DamOverview, type DamPage, type DamQuery } from "./types"
+import { DAM_UNFILED, type DamAppLink, type DamOverview, type DamPage, type DamQuery } from "./types"
 
 export async function queryDamAssets(tenantId: string, query: DamQuery): Promise<DamPage> {
   const conditions: SQL[] = [eq(assets.tenantId, tenantId)]
@@ -28,7 +28,21 @@ export async function queryDamAssets(tenantId: string, query: DamQuery): Promise
 
   const [rows, [{ total }]] = await Promise.all([
     db
-      .select()
+      .select({
+        row: assets,
+        // An asset can be attached to several apps at once, so the links come
+        // back as a json array rather than a second row per app. Scoped to the
+        // workspace: a link row is not permission to read another tenant's file.
+        appLinks: sql<
+          { appKey: string; recordId: string }[] | null
+        >`(select coalesce(json_agg(json_build_object(
+              'appKey', ${assetAppLinks.appKey},
+              'recordId', ${assetAppLinks.recordId}::text
+            )), '[]'::json)
+            from ${assetAppLinks}
+            where ${assetAppLinks.assetId} = ${assets.id}
+              and ${assetAppLinks.tenantId} = ${tenantId})`,
+      })
       .from(assets)
       .where(where)
       .orderBy(...damOrderBy(query.sort))
@@ -38,7 +52,7 @@ export async function queryDamAssets(tenantId: string, query: DamQuery): Promise
   ])
 
   return {
-    assets: rows.map(toDamAsset),
+    assets: rows.map((r) => toDamAsset(r.row, (r.appLinks ?? []) as DamAppLink[])),
     total,
     nextOffset: offset + rows.length < total ? offset + rows.length : null,
   }
@@ -68,4 +82,13 @@ export async function queryDamOverview(tenantId: string): Promise<DamOverview> {
     folders: folders.map((f) => ({ name: f.name!, count: f.count })),
     counts,
   }
+}
+
+/** The app records attached to one file, for "Open in …" in a folder. */
+export async function linksForAsset(tenantId: string, assetId: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(assetId)) return [];
+  return db
+    .select({ appKey: assetAppLinks.appKey, recordId: assetAppLinks.recordId })
+    .from(assetAppLinks)
+    .where(and(eq(assetAppLinks.tenantId, tenantId), eq(assetAppLinks.assetId, assetId)));
 }

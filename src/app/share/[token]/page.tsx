@@ -27,7 +27,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   let items: DamAsset[]
   if (payload.k === "asset") {
     const rows = await db.select().from(assets).where(and(eq(assets.id, payload.id), eq(assets.tenantId, payload.t)))
-    items = rows.map(toDamAsset)
+    items = rows.map((row) => toDamAsset(row))
   } else {
     const rows = await db
       .select()
@@ -35,7 +35,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
       .where(and(eq(assets.tenantId, payload.t), eq(assets.folder, payload.f)))
       .orderBy(asc(assets.name))
       .limit(FOLDER_LIMIT)
-    items = rows.map(toDamAsset)
+    items = rows.map((row) => toDamAsset(row))
   }
   if (payload.k === "asset" && !items.length) return <Expired />
 

@@ -97,6 +97,7 @@ const navigation: NavItem[] = [
   { name: "Contacts", href: "/crm", icon: Users },
   { name: "Projects", href: "/projects", icon: Kanban, subtitle: "Powered by Lanes" },
   { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
+  { name: "Office", href: "/office", icon: FileText, subtitle: "AXXES Office · Quill, Tally, Stage" },
   {
     name: "Events",
     href: "/events",

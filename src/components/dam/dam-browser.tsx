@@ -12,6 +12,7 @@ import {
   Download,
   ExternalLink,
   Eye,
+  FilePen,
   FileText,
   Folder,
   FolderInput,
@@ -68,6 +69,7 @@ import { useUploadThing } from "@/lib/uploadthing/client"
 import { duplicateDamAsset, listDamTags, moveDamAssets } from "@/lib/actions/dam"
 import { PhotoHandoffDialog } from "./photo-handoff-dialog"
 import { DAM_FOLDER_HEADER } from "@/lib/dam/upload-headers"
+import { appTarget } from "@/lib/dam/app-links"
 import {
   DAM_UNFILED,
   type DamAsset,
@@ -84,6 +86,21 @@ import { DamDetails, DamPreview } from "./dam-details"
 
 const DRAG_MIME = "application/x-dam-ids"
 const VIEW_KEY = "dam:view"
+
+const officeTarget = appTarget("office")
+
+/**
+ * Whether a file is worth offering to open in Office.
+ *
+ * Documents and spreadsheets, because those are what Office edits. A video or
+ * a photo is not something Quill can usefully turn into a document, and
+ * offering it anyway would be a menu item that produces an empty file.
+ */
+function canOpenInOffice(asset: DamAsset): boolean {
+  if (asset.type !== "document") return false
+  const mime = asset.mimeType ?? ""
+  return !mime.startsWith("video/") && !mime.startsWith("audio/")
+}
 
 const TYPE_VIEWS: { type: DamAssetType; label: string; icon: React.ElementType }[] = [
   { type: "image", label: "Images", icon: ImageIcon },
@@ -106,6 +123,8 @@ interface DamBrowserProps {
   permissions: DamPermissions
   initialFolder: string | null
   initialType: DamAssetType | null
+  /** Carried into every Office deep link, so one opens in the right workspace. */
+  tenantId?: string
 }
 
 function useDebounced<T>(value: T, delay: number) {
@@ -143,7 +162,7 @@ function plural(n: number, word: string) {
   return `${n.toLocaleString()} ${word}${n === 1 ? "" : "s"}`
 }
 
-export function DamBrowser({ permissions, initialFolder, initialType }: DamBrowserProps) {
+export function DamBrowser({ permissions, initialFolder, initialType, tenantId }: DamBrowserProps) {
   const { canWrite, canDelete } = permissions
 
   // ── View state ──
@@ -858,6 +877,7 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
                 onTag={openTagDialog}
                 onDuplicate={duplicate}
                 onDelete={askDelete}
+                tenantId={tenantId}
               />
             ) : (
               <>
@@ -962,7 +982,13 @@ export function DamBrowser({ permissions, initialFolder, initialType }: DamBrows
         }}
       />
 
-      <DamPreview assets={assets} index={previewIndex} onIndexChange={setPreviewIndex} onClose={() => setPreviewIndex(null)} />
+      <DamPreview
+        assets={assets}
+        index={previewIndex}
+        onIndexChange={setPreviewIndex}
+        onClose={() => setPreviewIndex(null)}
+        tenantId={tenantId}
+      />
 
       {handoffOpen && (
         <PhotoHandoffDialog folder={uploadFolder} onDone={reload} onClose={() => setHandoffOpen(false)} />
@@ -1211,9 +1237,11 @@ function AssetMenuItems({
   onTag,
   onDuplicate,
   onDelete,
+  tenantId,
 }: {
   ids: string[]
   asset: DamAsset | null
+  tenantId?: string
   folders: string[]
   currentFolder: string | null
   canWrite: boolean
@@ -1242,6 +1270,36 @@ function AssetMenuItems({
           <ContextMenuItem onSelect={() => onDetails(asset.id)}>
             <Info /> Details
           </ContextMenuItem>
+          {asset.appLinks?.map((link) => {
+            const target = appTarget(link.appKey)
+            if (!target) return null
+            return (
+              <ContextMenuItem
+                key={link.appKey}
+                onSelect={() =>
+                  window.open(target.url(link.recordId, tenantId), "_blank", "noopener,noreferrer")
+                }
+              >
+                <FilePen /> Open in {target.name}
+              </ContextMenuItem>
+            )
+          })}
+          {officeTarget && !(asset.appLinks ?? []).some((l) => l.appKey === "office") && canOpenInOffice(asset) ? (
+            // No Office document yet: Office makes one the first time this is
+            // used, so the item is offered on every document rather than only on
+            // the few somebody set up in advance.
+            <ContextMenuItem
+              onSelect={() =>
+                window.open(
+                  officeTarget.openUnlinked!(asset.id, tenantId),
+                  "_blank",
+                  "noopener,noreferrer",
+                )
+              }
+            >
+              <FilePen /> Open in {officeTarget.name}
+            </ContextMenuItem>
+          ) : null}
           <ContextMenuItem onSelect={() => window.open(`https://folders.axxes.club?folder=${encodeURIComponent(asset.folder || "")}`, "_blank", "noopener,noreferrer")}>
             <ExternalLink /> Open in Folders
           </ContextMenuItem>
