@@ -19,7 +19,10 @@ import { nanoid } from "nanoid"
 const args = process.argv.slice(2)
 const APPLY = args.includes("--apply")
 const TENANT_ID = "1655ea4c-d5dd-4905-a5b9-a61fc6b7cd4d"
-const DOMAIN = "bayamon.pr.gov"
+// The department's real mail domain has no dot in it. The dotted form was our
+// own early assumption and every account in the space was corrected away from
+// it on 2026-09-29, so anything created from here on has to match.
+const DOMAIN = "bayamonpr.gov"
 const DEPARTMENT = "EDUCACION"
 const ROSTER = args.find((a) => !a.startsWith("--")) || "/tmp/pdfimg/roster.json"
 
