@@ -101,3 +101,44 @@ CREATE TABLE IF NOT EXISTS keel_undone (
 
 CREATE UNIQUE INDEX IF NOT EXISTS keel_undone_cp_idx ON keel_undone (checkpoint_id);
 CREATE INDEX IF NOT EXISTS keel_undone_repo_idx ON keel_undone (repo_id);
+
+-- Keel: business record links. The moat.
+--
+-- A checkpoint, tied to the afters.am / Stock / Tollbooth records it affects.
+-- Because both sides are in this one database, "this change affects the event
+-- with 1,240 tickets sold" is a join rather than an integration, and it is the
+-- one thing a Git host structurally cannot do.
+--
+-- Additive and idempotent. No existing table is altered.
+--
+-- `record_id` is deliberately NOT a foreign key. The record lives in a sibling
+-- product's table, which Keel does not own and cannot constrain; a hard
+-- reference would break when that product is restructured. The link is
+-- resolved at read time and a link to a deleted record renders as removed.
+--
+-- `label` and `effect` are denormalised on purpose: they are the sentence the
+-- person reads, captured when the link is made so it stays true even if the
+-- record is renamed or removed years later.
+
+CREATE TABLE IF NOT EXISTS keel_record_links (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id     uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  repo_id       uuid NOT NULL REFERENCES keel_repos(id) ON DELETE CASCADE,
+  checkpoint_id uuid NOT NULL REFERENCES keel_checkpoints(id) ON DELETE CASCADE,
+
+  kind       text NOT NULL,
+  record_id  text NOT NULL,
+  label      text NOT NULL,
+  effect     text,
+
+  created_by_id text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS keel_links_repo_idx ON keel_record_links (repo_id);
+CREATE INDEX IF NOT EXISTS keel_links_checkpoint_idx ON keel_record_links (checkpoint_id);
+CREATE INDEX IF NOT EXISTS keel_links_tenant_idx ON keel_record_links (tenant_id);
+-- A checkpoint affects a given record once; re-linking updates the wording
+-- rather than stacking duplicate statements of the same fact.
+CREATE UNIQUE INDEX IF NOT EXISTS keel_links_unique_idx
+  ON keel_record_links (checkpoint_id, kind, record_id);
