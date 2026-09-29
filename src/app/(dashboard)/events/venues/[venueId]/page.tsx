@@ -24,7 +24,7 @@ export default async function VenuePage({ params }: VenuePageProps) {
         heading={venue.name}
         description="View and manage venue details"
       />
-      <VenueDetailView venue={venue as any} />
+      <VenueDetailView venue={venue} />
     </div>
   )
 }

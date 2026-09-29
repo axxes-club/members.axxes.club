@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use server"
 
 import { db } from "@/lib/db"
@@ -189,6 +188,19 @@ export async function getAdminStats() {
   }
 }
 
+/**
+ * `tenants.settings` is a jsonb column typed `Record<string, unknown>`, so the
+ * feature flags inside it have to be narrowed before they can be read. Anything
+ * that is not the expected shape counts as off, which is the safe default for a
+ * permission check.
+ */
+function isFoldersEnabled(settings: unknown): boolean {
+  if (!settings || typeof settings !== "object") return false
+  const features = (settings as { features?: unknown }).features
+  if (!features || typeof features !== "object") return false
+  return (features as { folders?: unknown }).folders === true
+}
+
 // Get all tenants/businesses with owner info
 export async function getAllTenants() {
   await requireSuperadmin()
@@ -213,7 +225,7 @@ export async function getAllTenants() {
         ...tenant,
         owner: owner ? { id: owner.id, name: owner.name, email: owner.email, image: owner.image } : null,
         memberCount: memberCount[0]?.count || 0,
-        foldersAccess: tenant.settings?.features?.folders === true,
+        foldersAccess: isFoldersEnabled(tenant.settings),
       }
     })
   )

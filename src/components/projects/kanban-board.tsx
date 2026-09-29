@@ -108,7 +108,7 @@ interface KanbanBoardProps {
           items: Array<{
             id: string
             text: string
-            isCompleted: boolean
+            isCompleted: boolean | null
           }>
         }>
       }>
@@ -267,7 +267,7 @@ interface KanbanListProps {
         items: Array<{
           id: string
           text: string
-          isCompleted: boolean
+          isCompleted: boolean | null
         }>
       }>
     }>
@@ -459,7 +459,7 @@ interface KanbanCardProps {
       items: Array<{
         id: string
         text: string
-        isCompleted: boolean
+        isCompleted: boolean | null
       }>
     }>
   }

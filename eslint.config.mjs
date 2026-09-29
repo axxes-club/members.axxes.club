@@ -26,6 +26,18 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // One-off operational scripts, run by hand with `node scripts/...` against
+    // the live database. They are CommonJS by necessity — they load the portal's
+    // Prisma client and the Neon driver through createRequire so they run with
+    // the portal's installed versions — so the TypeScript-only rules do not
+    // apply to them. Converting them to ESM would change how they resolve
+    // dependencies, which is a real risk for a script that writes to production.
+    files: ["scripts/**/*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
