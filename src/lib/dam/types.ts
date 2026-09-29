@@ -19,8 +19,23 @@ export interface DamAsset {
   originalFilename: string | null
   folder: string | null
   tags: string[]
+  /**
+   * Records in other AXXES apps that this asset is attached to.
+   *
+   * Folders holds the link and resolves it through a per-app URL registry, so it
+   * never needs the app's schema. Most assets have none, which is why this is
+   * empty rather than absent.
+   */
+  appLinks?: DamAppLink[]
+
   createdAt: string
   updatedAt: string
+}
+
+export interface DamAppLink {
+  /** Catalog key of the owning app, e.g. "office". */
+  appKey: string
+  recordId: string
 }
 
 export interface DamQuery {

@@ -15,20 +15,36 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { user, tenants, tenantMemberships, session as sessionTable } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { auth } from "@/lib/auth"
+import { user, tenants, tenantMemberships, account } from "@/lib/db/schema"
+import { eq, and } from "drizzle-orm"
 import { nanoid } from "nanoid"
+import { hashPassword } from "better-auth/crypto"
+
+/**
+ * The password both dev users get.
+ *
+ * It has to be a real credential on a real account row, because signing in
+ * goes through Better Auth's email/password path — which verifies a password
+ * hash and only then issues a session. Anything less and the session is never
+ * created, which is the bug this route used to have.
+ */
+const DEV_PASSWORD = "axxes-local-dev"
 
 // Only allow in development/preview environments
 function isDevelopmentEnvironment(): boolean {
-  const vercelEnv = process.env.VERCEL_ENV
-  const nodeEnv = process.env.NODE_ENV
-
-  return (
-    nodeEnv === "development" ||
-    vercelEnv === "preview" ||
-    !process.env.VERCEL // Local development
-  )
+  // Refuse whenever the host is known to be a real deployment, whatever else
+  // is set. The old check also returned true whenever VERCEL was merely
+  // absent, which meant a production box that did not happen to define that
+  // variable would serve a route that signs anyone in as admin@axxes.club,
+  // with superadmin and a workspace of its own. Absence of evidence was being
+  // read as evidence of development.
+  if (process.env.VERCEL) return false
+  if (process.env.VERCEL_ENV === "production") return false
+  if (process.env.NODE_ENV === "production") return false
+  // Explicit opt-in, for a production-shaped environment that is genuinely local.
+  if (process.env.ALLOW_DEV_AUTH === "true") return true
+  return process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
 }
 
 export async function GET(request: NextRequest) {
@@ -88,6 +104,32 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Give the dev user a password credential.
+    //
+    // A user row with no credential row is a person who exists but cannot
+    // sign in, so `signInEmail` below would reject them with INVALID_CREDENTIALS
+    // and the whole route would look broken. Re-hashing on every hit keeps this
+    // self-healing: change DEV_PASSWORD and the next request just works.
+    const existingCredential = await db.query.account.findFirst({
+      where: and(
+        eq(account.userId, userRecord.id),
+        eq(account.providerId, "credential")
+      ),
+    })
+
+    if (!existingCredential) {
+      await db.insert(account).values({
+        id: nanoid(),
+        userId: userRecord.id,
+        providerId: "credential",
+        accountId: userRecord.id,
+        password: await hashPassword(DEV_PASSWORD),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      console.log("[dev-auth] Created credential for", userEmail)
+    }
+
     // Find or create tenant
     let tenant = await db.query.tenants.findFirst({
       where: eq(tenants.slug, tenantSlug),
@@ -130,38 +172,91 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Create session manually
-    const sessionId = nanoid()
-    const sessionToken = nanoid(32)
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-    console.log("[dev-auth] Creating session")
-
-    await db.insert(sessionTable).values({
-      id: sessionId,
-      token: sessionToken,
-      userId: userRecord.id,
-      expiresAt,
-      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "127.0.0.1",
-      userAgent: request.headers.get("user-agent") || "unknown",
+    // Create session through Better Auth itself.
+    //
+    // This used to insert a row and set the cookie to the bare token. That
+    // never worked: Better Auth signs its session cookie with an HMAC and
+    // verifies it on every read, so an unsigned value is discarded and
+    // /dashboard bounced straight back to /sign-in. The row was there the
+    // whole time, which is what made it look like a session problem rather
+    // than a signing one.
+    //
+    // Signing the cookie by hand would mean reimplementing the library's
+    // format — base64url payload, HMAC, cookie prefix — and it would drift
+    // the next time Better Auth changes it. Signing in properly produces the
+    // session and the correctly signed cookie in one call.
+    // Sign in over the real HTTP endpoint.
+    //
+    // Two earlier attempts used the server-side API and both failed the same
+    // way: the session was created, and the Set-Cookie headers never made it
+    // back out. Hand-rolling the cookie is not an option either — Better Auth
+    // signs it with an HMAC and verifies on every read, which is exactly why
+    // the original bare-token version bounced straight back to /sign-in.
+    //
+    // Going through the endpoint the browser would use is the one path
+    // guaranteed to produce the same cookie the library issues.
+    const origin = request.nextUrl.origin
+    const signIn = await fetch(`${origin}/api/auth/sign-in/email`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin,
+      },
+      body: JSON.stringify({ email: userEmail, password: DEV_PASSWORD }),
     })
-    console.log("[dev-auth] Session created:", sessionToken.substring(0, 8) + "...")
 
-    // Create response with redirect to dashboard
+    const setCookies = signIn.headers.getSetCookie?.() ?? []
+
+    if (!signIn.ok || setCookies.length === 0) {
+      console.error("[dev-auth] sign-in failed:", signIn.status)
+      return NextResponse.json(
+        { error: "Dev auth could not establish a session" },
+        { status: 500 }
+      )
+    }
+
+    // Replay Better Auth's cookies onto the redirect.
+    //
+    // Appending the raw Set-Cookie strings onto a NextResponse.redirect does
+    // not survive the response — they are dropped, which looks precisely like
+    // a session that was never created. Parsing them into the cookies API gets
+    // them onto the wire.
+    //
+    // The values arrive percent-encoded, so they are decoded on the way in and
+    // encoded once on the way out, which round-trips to the same bytes.
     const response = NextResponse.redirect(new URL("/dashboard", request.url))
+    let copied = 0
 
-    // Set the session cookie (Better Auth uses 'better-auth.session_token')
-    response.cookies.set("better-auth.session_token", sessionToken, {
-      httpOnly: true,
-      secure: false, // Always false for local dev
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    })
+    for (const raw of setCookies) {
+      const [pair, ...attrs] = raw.split(";")
+      const eq = pair.indexOf("=")
+      if (eq < 1) continue
+      const name = pair.slice(0, eq).trim()
+      const value = decodeURIComponent(pair.slice(eq + 1).trim())
 
-    // Set tenant cookie
+      const has = (k: string) =>
+        attrs.some((a) => a.trim().toLowerCase().startsWith(`${k}=`) || a.trim().toLowerCase() === k)
+      const attr = (k: string) =>
+        attrs
+          .map((a) => a.trim())
+          .find((a) => a.toLowerCase().startsWith(`${k}=`))
+          ?.split("=")[1]
+
+      response.cookies.set(name, value, {
+        path: attr("path") ?? "/",
+        httpOnly: has("httponly"),
+        secure: has("secure"),
+        sameSite: (attr("samesite")?.toLowerCase() as "lax" | "strict" | "none") ?? "lax",
+        maxAge: attr("max-age") ? Number(attr("max-age")) : undefined,
+      })
+      copied++
+    }
+
+    console.log("[dev-auth] replayed", copied, "auth cookies")
+    // Not httpOnly: the app reads this one to pick the workspace.
     response.cookies.set("tenant_id", tenant.id, {
       httpOnly: false,
-      secure: false, // Always false for local dev
+      secure: false, // local dev is http
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30, // 30 days

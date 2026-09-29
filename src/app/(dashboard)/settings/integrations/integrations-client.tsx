@@ -46,6 +46,7 @@ import {
   Settings,
   Clock,
 } from "lucide-react"
+import type { IntegrationCategory, IntegrationProviderMeta } from "@/lib/integrations/types"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { formatDistanceToNow } from "date-fns"
@@ -63,7 +64,12 @@ interface Integration {
   id: string
   name: string
   description: string
-  category: "ticketing" | "venues" | "orders" | "shipping" | "storage"
+  // The registry's own category, not a second list of them. This union used to be
+  // typed out here and fell behind: the registry added "marketing" and "crm" and
+  // this stayed at five, so every provider in those groups failed to typecheck
+  // the moment it was registered — which is the bug the comment above this
+  // interface was written to prevent.
+  category: IntegrationCategory
   icon: string
   website: string
   authType: "oauth" | "apikey"
@@ -91,7 +97,7 @@ interface SyncResult {
   errors: Array<{ message: string }>
 }
 
-const integrations: Integration[] = [
+const HARDCODED_FALLBACK: Integration[] = [
   {
     id: "afters",
     name: "Afters.am",
@@ -154,6 +160,32 @@ const integrations: Integration[] = [
   },
 ]
 
+/**
+ * Turn the server-side registry into what this component renders.
+ *
+ * The registry is the source of truth. This list used to be typed out here by
+ * hand, so a provider that was fully implemented and registered could still be
+ * missing from the page, and a card could exist for a provider that had no
+ * implementation behind it — both of which are the kind of bug nobody notices
+ * until somebody clicks Connect and gets a 404.
+ */
+function fromRegistry(
+  grouped: Record<string, IntegrationProviderMeta[]>
+): Integration[] {
+  return Object.values(grouped)
+    .flat()
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      category: p.category,
+      icon: p.icon,
+      website: p.website,
+      authType: p.authType,
+      features: p.features,
+    }))
+}
+
 const categoryLabels: Record<string, string> = {
   ticketing: "Ticketing",
   venues: "Venue Rentals",
@@ -162,7 +194,11 @@ const categoryLabels: Record<string, string> = {
   storage: "Cloud Storage",
 }
 
-function IntegrationsContent() {
+function IntegrationsContent({ grouped }: { grouped: Record<string, IntegrationProviderMeta[]> }) {
+  // Prefer the registry; fall back to the old literal only if the server sent
+  // nothing, so a failure degrades to "possibly out of date", not "empty".
+  const registry = fromRegistry(grouped ?? {})
+  const integrations = registry.length ? registry : HARDCODED_FALLBACK
   const searchParams = useSearchParams()
   const [connectionStates, setConnectionStates] = React.useState<Record<string, ConnectionState>>({})
   const [loadingStates, setLoadingStates] = React.useState<Record<string, boolean>>({})
@@ -692,10 +728,10 @@ function IntegrationsContent() {
   )
 }
 
-export function IntegrationsClient() {
+export function IntegrationsClient({ grouped }: { grouped: Record<string, IntegrationProviderMeta[]> }) {
   return (
     <React.Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
-      <IntegrationsContent />
+      <IntegrationsContent grouped={grouped} />
     </React.Suspense>
   )
 }

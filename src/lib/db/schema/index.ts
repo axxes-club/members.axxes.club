@@ -32,6 +32,7 @@ export * from "./theme-settings"
 // Website / Page Builder
 export * from "./pages"
 export * from "./website-settings"
+export * from "./artists"
 
 // Activity / Audit
 export * from "./activity"

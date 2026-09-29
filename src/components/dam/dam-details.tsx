@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { updateDamAsset } from "@/lib/actions/dam"
 import type { DamAsset } from "@/lib/dam/types"
+import { appTarget } from "@/lib/dam/app-links"
 import { AssetThumb, downloadAsset, formatBytes } from "./dam-utils"
 
 interface DamDetailsProps {
@@ -240,13 +241,27 @@ export function DamPreview({
   index,
   onIndexChange,
   onClose,
+  tenantId,
 }: {
   assets: DamAsset[]
   index: number | null
   onIndexChange: (index: number) => void
   onClose: () => void
+  tenantId?: string
 }) {
   const asset = index != null ? assets[index] : null
+  // A file that an app can show read-only can be shown in place, so a folder
+  // does not have to be left to read a file it already holds. Office is the one
+  // that has a QuickLook today; the registry decides, not this component.
+  const previewable = (asset?.appLinks ?? [])
+    .map((l) => ({ link: l, target: appTarget(l.appKey) }))
+    .find((x) => x.target?.quickLook)
+  const [inline, setInline] = React.useState(false)
+
+  React.useEffect(() => {
+    // Never carry "show the document" over to the next file in the set.
+    setInline(false)
+  }, [asset?.id])
 
   React.useEffect(() => {
     if (index == null) return
@@ -265,12 +280,28 @@ export function DamPreview({
           <div className="flex h-12 shrink-0 items-center gap-3 border-b px-4 pr-12">
             <DialogTitle className="truncate text-[13px] font-medium">{asset.name}</DialogTitle>
             <span className="text-xs text-muted-foreground">{index! + 1} / {assets.length}</span>
+            {previewable && (
+              <Button
+                variant={inline ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setInline((v) => !v)}
+              >
+                {inline ? "Show the file" : `Read in ${previewable.target!.name}`}
+              </Button>
+            )}
             <Button variant="ghost" size="sm" className="ml-auto" onClick={() => downloadAsset(asset)}>
               <Download /> Download
             </Button>
           </div>
           <div className="relative flex min-h-0 flex-1 items-center justify-center bg-muted/40">
-            {asset.type === "image" ? (
+            {inline && previewable ? (
+              <iframe
+                key={previewable.link.recordId}
+                src={previewable.target!.quickLook!(previewable.link.recordId, tenantId)}
+                title={`${asset.name} — ${previewable.target!.name}`}
+                className="h-full w-full border-0 bg-background"
+              />
+            ) : asset.type === "image" ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={asset.url} alt={asset.altText ?? asset.name} className="max-h-full max-w-full object-contain" />
             ) : asset.type === "video" ? (

@@ -1,6 +1,6 @@
 import { asc, desc, sql, type SQL } from "drizzle-orm"
 import { assets, type Asset } from "@/lib/db/schema"
-import type { DamAsset, DamAssetType, DamSort } from "./types"
+import type { DamAppLink, DamAsset, DamAssetType, DamSort } from "./types"
 
 export const DAM_TYPES: DamAssetType[] = ["image", "video", "document", "other"]
 export const DAM_PAGE_SIZE = 60
@@ -56,7 +56,12 @@ export function damOrderBy(sort: DamSort | undefined) {
   }
 }
 
-export function toDamAsset(row: Asset): DamAsset {
+/**
+ * The records in other AXXES apps this asset is attached to. Passed separately
+ * because they come from a left join onto a link table, and an asset with no
+ * links must still come back with everything else intact.
+ */
+export function toDamAsset(row: Asset, appLinks?: DamAppLink[]): DamAsset {
   return {
     id: row.id,
     name: row.name,
@@ -73,6 +78,7 @@ export function toDamAsset(row: Asset): DamAsset {
     originalFilename: row.originalFilename,
     folder: row.folder,
     tags: Array.isArray(row.tags) ? row.tags.filter((t): t is string => typeof t === "string") : [],
+    appLinks: appLinks ?? [],
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }

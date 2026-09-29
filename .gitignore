@@ -44,3 +44,6 @@ next-env.d.ts
 # AI tooling
 .aider*
 .sidecar/
+
+# local db dumps, not source
+db/backups/

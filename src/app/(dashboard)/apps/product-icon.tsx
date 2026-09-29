@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   Network,
   Package,
+  Terminal,
   Ticket,
   type LucideIcon,
 } from "lucide-react"
@@ -38,6 +39,7 @@ const ICONS: Record<string, LucideIcon> = {
   LayoutGrid,
   Network,
   Package,
+  Terminal,
   Ticket,
 }
 

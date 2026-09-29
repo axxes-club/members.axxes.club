@@ -12,7 +12,7 @@ export default async function AssetsPage({
 }: {
   searchParams: Promise<{ folder?: string; type?: string }>
 }) {
-  const [{ role }, params] = await Promise.all([requireTenantAccess(), searchParams])
+  const [{ role, tenantId }, params] = await Promise.all([requireTenantAccess(), searchParams])
   const type = DAM_TYPES.includes(params.type as DamAssetType) ? (params.type as DamAssetType) : null
 
   return (
@@ -21,6 +21,7 @@ export default async function AssetsPage({
       permissions={damPermissions(role)}
       initialFolder={params.folder || null}
       initialType={type}
+      tenantId={tenantId}
     />
   )
 }

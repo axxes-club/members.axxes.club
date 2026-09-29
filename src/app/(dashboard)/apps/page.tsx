@@ -16,6 +16,11 @@ export const dynamic = "force-dynamic"
  * to reach something AXXES built. Where the portal has a surface of its own for
  * an app, the tile opens that, in this tab. Only the apps that genuinely are
  * their own place send you off, and those say so.
+ *
+ * It shows what the catalog marks `surface_in_members`. The horizontal "Work"
+ * products are hidden right now — see `db/axxes-products.sql` — but every one
+ * of them still works and is still one click from here, so hiding a tile is not
+ * the same as withdrawing a product, and the copy here should not imply it is.
  */
 export default async function AppsPage() {
   const [groups, stats] = await Promise.all([getProductGroups(), getCatalogStats()])
@@ -24,7 +29,7 @@ export default async function AppsPage() {
     <div className="space-y-8">
       <PageHeader
         heading="Apps"
-        description="Everything AXXES builds, from one place."
+        description="Everything you need to run a night, in one place."
         actions={
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{stats.total} apps</Badge>
@@ -48,11 +53,20 @@ export default async function AppsPage() {
               const inPortal = Boolean(product.membersPath)
               return (
                 <Card key={product.key} className="group flex flex-col transition-colors hover:border-foreground/20">
+                  {/*
+                    The icon is painted with theme tokens, not `product.color`.
+                    It used to be `color: product.color` on a `${color}1a` wash,
+                    which is unreadable whenever a product ships a near-white or
+                    pale brand colour — the Suite's #ededef on a 95%-lightness
+                    background was effectively invisible. Colour is also not
+                    identity: a suite should look like one suite, and products
+                    are told apart by name and icon. The `color` column stays in
+                    the catalog for the surfaces that still want it.
+                  */}
                   <CardHeader className="flex flex-row items-start gap-3 space-y-0">
                     <span
                       aria-hidden
-                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: `${product.color}1a`, color: product.color }}
+                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-foreground"
                     >
                       <ProductIcon name={product.icon} className="h-4 w-4" />
                     </span>
@@ -85,6 +99,16 @@ export default async function AppsPage() {
                           </a>
                         </Button>
                       )}
+
+                      {/*
+                        Every app gets a landing page from the catalog, so this
+                        link is always valid — including for products added since
+                        this page was written. It is where "what is this, is it
+                        free, how does it work with Folders" is answered.
+                      */}
+                      <Button asChild size="sm" variant="ghost">
+                        <Link href={`/apps/${product.key}`}>About</Link>
+                      </Button>
 
                       {!inPortal && product.sso && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">

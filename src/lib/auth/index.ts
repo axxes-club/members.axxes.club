@@ -10,12 +10,36 @@ import { sendPasswordResetEmail } from "@/lib/email"
 const cookieDomain = process.env.AUTH_COOKIE_DOMAIN
 const parentDomain = (cookieDomain || "axxes.club").replace(/^\./, "")
 
+/**
+ * Extra origins, for running against a Handshake on your own machine.
+ *
+ * Without this, `next dev` cannot complete a sign-in: the callback comes back
+ * from `http://localhost:3101`, which matches neither `https://axxes.club` nor
+ * `https://*.axxes.club`, so Better Auth rejects it as an untrusted origin and
+ * you land back on the sign-in page with no error explaining why.
+ *
+ * The list is opt-in through EXTRA_TRUSTED_ORIGINS and is empty by default,
+ * so production keeps trusting exactly the real domains and nothing else.
+ * Handshake must be listed here too, not just this app: it is the one issuing
+ * the callback.
+ */
+const extraOrigins = (process.env.EXTRA_TRUSTED_ORIGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+const trustedOrigins = [
+  `https://${parentDomain}`,
+  `https://*.${parentDomain}`,
+  ...extraOrigins,
+]
+
 // Central AXXES sign-in; when unset the portal uses its own sign-in pages
 export const HANDSHAKE_URL = process.env.HANDSHAKE_URL?.replace(/\/$/, "") || null
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL || "http://localhost:3000",
-  trustedOrigins: [`https://${parentDomain}`, `https://*.${parentDomain}`],
+  trustedOrigins,
   advanced: cookieDomain ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } } : undefined,
   database: drizzleAdapter(db, {
     provider: "pg",
