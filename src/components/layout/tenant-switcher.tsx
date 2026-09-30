@@ -42,6 +42,8 @@ export function TenantSwitcher({
   const [isLoading, setIsLoading] = React.useState(true)
   const [isSwitching, setIsSwitching] = React.useState<string | null>(null)
 
+  const [error, setError] = React.useState<string | null>(null)
+
   // Fetch user's tenants on mount and check for pending switch notification
   React.useEffect(() => {
     // Check for pending organization switch notification
@@ -56,12 +58,13 @@ export function TenantSwitcher({
     async function fetchTenants() {
       try {
         const response = await fetch("/api/v1/tenants")
+        if (!response.ok) throw new Error("Could not load organizations")
         if (response.ok) {
           const data = await response.json()
           setTenants(data.data || [])
         }
       } catch (error) {
-        console.error("Failed to fetch tenants:", error)
+        setError("Could not load organizations. Please try again.")
       } finally {
         setIsLoading(false)
       }
@@ -73,6 +76,7 @@ export function TenantSwitcher({
     if (tenantId === currentTenantId) return
 
     const targetTenant = tenants.find((t) => t.id === tenantId)
+    setError(null)
     setIsSwitching(tenantId)
     try {
       const response = await fetch("/api/v1/tenants/select", {
@@ -81,6 +85,7 @@ export function TenantSwitcher({
         body: JSON.stringify({ tenantId }),
       })
 
+      if (!response.ok) throw new Error("Could not switch organization")
       if (response.ok) {
         // Store the switch notification for after redirect
         if (targetTenant) {
@@ -91,7 +96,8 @@ export function TenantSwitcher({
         window.location.href = "/dashboard"
       }
     } catch (error) {
-      console.error("Failed to switch tenant:", error)
+      setError("Could not switch organization. Please try again.")
+      toast.error("Could not switch organization. Please try again.")
     } finally {
       setIsSwitching(null)
     }
@@ -147,6 +153,7 @@ export function TenantSwitcher({
       <DropdownMenuContent align="start" className="w-[280px]">
         <DropdownMenuLabel>Your Organizations</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {error && <p role="alert" className="px-2 py-2 text-sm text-destructive">{error}</p>}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-4">
