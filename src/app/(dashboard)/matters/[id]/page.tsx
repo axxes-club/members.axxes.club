@@ -79,7 +79,7 @@ export default async function MatterPage({ params }: { params: Promise<{ id: str
 
         {matter.documents.length === 0 ? (
           <p className="text-body-sm text-muted-foreground">
-            No documents yet. Each one you add starts at v1 with nobody's name on it.
+            No documents yet. Each one you add starts at v1 with nobody&rsquo;s name on it.
           </p>
         ) : (
           <div className="space-y-2">
