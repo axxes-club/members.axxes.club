@@ -75,6 +75,7 @@ import {
 } from "lucide-react"
 import { useSession } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
+import { AllAppsSwitcher } from "@/components/all-apps-switcher"
 import { TenantSwitcher } from "./tenant-switcher"
 import { UnreadBadge } from "./unread-badge"
 
@@ -89,12 +90,6 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  {
-    name: "Apps",
-    href: "/apps",
-    icon: LayoutGrid,
-    subtitle: "Every AXXES app in one place",
-  },
   { name: "Contacts", href: "/crm", icon: Users },
   { name: "Projects", href: "/projects", icon: Kanban, subtitle: "Powered by Lanes" },
   { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
@@ -270,6 +265,7 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
         })}
       </nav>
 
+      <div className="shrink-0 px-3 pb-2"><AllAppsSwitcher tenantId={tenantId} compact={isCollapsed} /></div>
       <div className="shrink-0 border-t p-3">
         <TenantSwitcher
           currentTenantId={tenantId}
@@ -544,6 +540,7 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
           })}
         </nav>
 
+        <div className="shrink-0 px-3 pb-2"><AllAppsSwitcher tenantId={tenantId} /></div>
         <div className="shrink-0 border-t p-3">
           <TenantSwitcher
             currentTenantId={tenantId}

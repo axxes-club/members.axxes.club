@@ -11,7 +11,7 @@
  *   NULL        the tile goes to the standalone app on its own domain
  *
  * Both surfaces read and write the same tables, so either can be the product.
- * Setting it to NULL is the honest default now that matters.axxes.club exists:
+ * Setting it to NULL is the honest default now that matter.axxes.club exists:
  * one product, one URL, and the portal copy becomes a convenience rather than
  * the product itself.
  *
@@ -56,7 +56,7 @@ await sql.query(
     "matter", "Matter",
     "Succession, with a record of who agreed",
     "One case for a family estate or a business hand-over: the documents, the dates, the people, and an acknowledgement on every version of every document — so 'I have seen this' stops being a claim and becomes a record.",
-    "https://matters.axxes.club", "#c9a227", "Work", "beta", true, "Scale",
+    "https://matter.axxes.club", "#c9a227", "Work", "beta", true, "Scale",
     embed ? "/matters" : null,
     !hide, 7,
   ],
@@ -65,4 +65,4 @@ await sql.query(
 const rows = await sql.query(`select key, name, url, status, surface_in_members, members_path from axxes_product where key='matter'`)
 console.log("catalog row:", JSON.stringify(rows[0], null, 2))
 console.log(hide ? "\ntile hidden (--hide)" : "\ntile visible in the Apps launcher")
-console.log(embed ? "opens inside the portal (--embed)" : "opens matters.axxes.club (standalone)")
+console.log(embed ? "opens inside the portal (--embed)" : "opens matter.axxes.club (standalone)")
