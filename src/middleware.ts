@@ -36,6 +36,9 @@ const handshakePages: Record<string, string> = {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // Scheduler uses its bearer token, checked by this exact route, not a user session.
+  if (pathname === "/api/cron/newsletter") return NextResponse.next()
+
   // A path is public if it is the root, or if it sits under one of the prefixes.
   const isPublic = pathname === "/" || publicRoutes.some((route) => route.endsWith("/") ? pathname.startsWith(route) : pathname === route || pathname.startsWith(`${route}/`))
 
