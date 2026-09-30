@@ -35,6 +35,9 @@ const handshakePages: Record<string, string> = {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // Scheduler uses its bearer token, checked by this exact route, not a user session.
+  if (pathname === "/api/cron/newsletter" || pathname === "/api/axxes/products") return NextResponse.next()
+
   // A path is public if it is the root, or if it sits under one of the prefixes.
   const isPublic = pathname === "/" || publicRoutes.some((route) => pathname.startsWith(route))
 
@@ -87,7 +90,8 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for auth session cookie (Better Auth uses 'better-auth.session_token')
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value
+  const sessionToken = request.cookies.get("__Secure-better-auth.session_token")?.value
+    ?? request.cookies.get("better-auth.session_token")?.value
 
   // Redirect to sign-in if not authenticated
   if (!sessionToken) {
