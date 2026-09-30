@@ -4,7 +4,8 @@ import { pgTable, uuid, text, timestamp, jsonb } from "drizzle-orm/pg-core"
 export const uploadSessions = pgTable("upload_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
   token: text("token").notNull().unique(),
-  tenantId: uuid("tenant_id").notNull(),
+  tenantId: uuid("tenant_id"),
+  ownerUserId: text("owner_user_id"),
   folder: text("folder"),
   createdById: text("created_by_id").notNull(),
   photos: jsonb("photos").$type<string[]>().default([]),
