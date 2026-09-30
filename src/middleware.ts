@@ -86,8 +86,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for auth session cookie (Better Auth uses 'better-auth.session_token')
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value
+  // HTTPS uses the secure prefix; local HTTP uses the plain cookie name.
+  // This only routes the request. Server auth still verifies the real session.
+  const sessionToken = request.cookies.get("__Secure-better-auth.session_token")?.value
+    ?? request.cookies.get("better-auth.session_token")?.value
 
   // Redirect to sign-in if not authenticated
   if (!sessionToken) {
