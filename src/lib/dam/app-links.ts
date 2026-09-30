@@ -56,6 +56,11 @@ export const APP_LINK_TARGETS: Record<string, AppLinkTarget> = {
     base: "https://manifest.axxes.club",
     url: (_id, tenant) => withTenant("https://manifest.axxes.club/", tenant),
   },
+  relay: {
+    name: "Relay",
+    base: "https://relay.axxes.club",
+    url: (_id, tenant) => withTenant("https://relay.axxes.club/inbox", tenant),
+  },
 }
 
 /** The target for a link, or null for an app key this build does not know. */

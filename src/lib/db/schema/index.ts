@@ -34,6 +34,9 @@ export * from "./pages"
 export * from "./website-settings"
 export * from "./artists"
 
+// Collection engine (Vitrine)
+export * from "./collection"
+
 // Activity / Audit
 export * from "./activity"
 
@@ -42,6 +45,9 @@ export * from "./messaging"
 
 // Matrix Chat
 export * from "./matrix"
+
+// AXXES Matter — succession matters (family and business), one engine two templates
+export * from "./matters"
 
 // Newsletter
 export * from "./newsletter"
