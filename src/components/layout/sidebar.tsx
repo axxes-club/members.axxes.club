@@ -172,6 +172,11 @@ const navigation: NavItem[] = [
   },
 ]
 
+// Anyone working in AXXES CLUB can set up white-label customers.
+const whiteLabelNavigation: NavItem[] = [
+  { name: "White-label", href: "/admin/white-label", icon: Palette },
+]
+
 const adminNavigation: NavItem[] = [
   { name: "Admin", href: "/admin", icon: Shield },
 ]
@@ -198,7 +203,11 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
 
   const isAdminTenant = tenantId === "40119de9-ef87-4e41-b479-7a28ec8e3d66"
   const showAdminMenu = isSuperadmin && (process.env.NODE_ENV !== "production" || isAdminTenant)
-  const allNavigation = showAdminMenu ? [...navigation, ...adminNavigation] : navigation
+  const allNavigation = [
+    ...navigation,
+    ...(isAdminTenant || isSuperadmin ? whiteLabelNavigation : []),
+    ...(showAdminMenu ? adminNavigation : []),
+  ]
 
   return (
     <aside
@@ -461,7 +470,11 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
 
   const isAdminTenant = tenantId === "40119de9-ef87-4e41-b479-7a28ec8e3d66"
   const showAdminMenu = isSuperadmin && (process.env.NODE_ENV !== "production" || isAdminTenant)
-  const allNavigation = showAdminMenu ? [...navigation, ...adminNavigation] : navigation
+  const allNavigation = [
+    ...navigation,
+    ...(isAdminTenant || isSuperadmin ? whiteLabelNavigation : []),
+    ...(showAdminMenu ? adminNavigation : []),
+  ]
 
   if (!isMobileOpen) return null
 
