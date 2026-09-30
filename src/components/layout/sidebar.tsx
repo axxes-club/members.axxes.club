@@ -69,7 +69,6 @@ import {
   ClipboardCheck,
   BarChart3,
   Layers,
-  // Projects icon
   Kanban,
   // Matter icon — succession matters
   Scale,
