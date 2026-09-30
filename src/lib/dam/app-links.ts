@@ -61,6 +61,17 @@ export const APP_LINK_TARGETS: Record<string, AppLinkTarget> = {
     base: "https://relay.axxes.club",
     url: (_id, tenant) => withTenant("https://relay.axxes.club/inbox", tenant),
   },
+  binnacle: {
+    name: "Binnacle",
+    base: "https://binnacle.axxes.club",
+    url: (id, tenant) => withTenant(`https://binnacle.axxes.club/t/${id}`, tenant),
+    quickLook: (id, tenant) => withTenant(`https://binnacle.axxes.club/t/${id}/read`, tenant),
+    // Lets "Open in Binnacle" appear on every file in Folders, not only on files
+    // somebody linked by hand. The app creates the ticket on first use and files
+    // the asset into its Support folder, which is what makes the folder appear
+    // in the workspace without anyone touching the portal.
+    openUnlinked: (assetId, tenant) => withTenant(`https://binnacle.axxes.club/open?asset=${assetId}`, tenant),
+  },
 }
 
 /** The target for a link, or null for an app key this build does not know. */

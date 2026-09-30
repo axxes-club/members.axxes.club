@@ -59,7 +59,7 @@ export async function queryDamAssets(tenantId: string, query: DamQuery): Promise
 }
 
 export async function queryDamOverview(tenantId: string): Promise<DamOverview> {
-  const [folders, [counts]] = await Promise.all([
+  const [folders, [counts], registered] = await Promise.all([
     db
       .select({ name: assets.folder, count: count() })
       .from(assets)
@@ -76,11 +76,43 @@ export async function queryDamOverview(tenantId: string): Promise<DamOverview> {
       })
       .from(assets)
       .where(eq(assets.tenantId, tenantId)),
+    // Folders an app has registered but that hold nothing yet.
+    //
+    // The folder list above is derived from `assets.folder`, which means an
+    // empty folder is invisible — a workspace would not see "Support" until
+    // somebody attached a file. An app that promises to create its folder in
+    // every workspace therefore needs a row to point at, and the union below is
+    // what makes that promise true before the first upload.
+    registeredFolders(tenantId),
   ])
 
+  const byName = new Map(folders.map((f) => [f.name!, f.count]))
+  for (const r of registered) if (!byName.has(r.name)) byName.set(r.name, 0)
+
   return {
-    folders: folders.map((f) => ({ name: f.name!, count: f.count })),
+    folders: [...byName.entries()]
+      .map(([name, n]) => ({ name, count: n }))
+      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
     counts,
+  }
+}
+
+/**
+ * App-registered folders for a workspace, as {name, count}.
+ *
+ * Read defensively: this table is owned by Binnacle and may not exist in a
+ * database that predates it. A missing table means no registered folders, which
+ * is the correct reading — it must never take the Folders browser down.
+ */
+async function registeredFolders(tenantId: string): Promise<{ name: string; count: number }[]> {
+  try {
+    const rows = await db
+      .select({ path: sql<string>`path` })
+      .from(sql`binnacle_folders`)
+      .where(sql`tenant_id = ${tenantId}`)
+    return rows.map((r) => ({ name: r.path, count: 0 }))
+  } catch {
+    return []
   }
 }
 

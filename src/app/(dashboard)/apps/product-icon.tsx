@@ -1,5 +1,6 @@
 import {
   Activity,
+  Anchor,
   Camera,
   ClipboardList,
   Code,
@@ -10,6 +11,7 @@ import {
   Gem,
   KanbanSquare,
   LayoutGrid,
+  LifeBuoy,
   Network,
   Package,
   Terminal,
@@ -27,6 +29,7 @@ import {
  */
 const ICONS: Record<string, LucideIcon> = {
   Activity,
+  Anchor,
   Camera,
   ClipboardList,
   Code,
@@ -37,6 +40,7 @@ const ICONS: Record<string, LucideIcon> = {
   Gem,
   KanbanSquare,
   LayoutGrid,
+  LifeBuoy,
   Network,
   Package,
   Terminal,

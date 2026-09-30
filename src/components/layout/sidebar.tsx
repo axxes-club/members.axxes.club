@@ -71,6 +71,8 @@ import {
   Layers,
   // Projects icon
   Kanban,
+  // Matter icon — succession matters
+  Scale,
 } from "lucide-react"
 import { useSession } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
@@ -98,6 +100,7 @@ const navigation: NavItem[] = [
   { name: "Projects", href: "/projects", icon: Kanban, subtitle: "Powered by Lanes" },
   { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
   { name: "Office", href: "/office", icon: FileText, subtitle: "AXXES Office · Quill, Tally, Stage" },
+  { name: "Matters", href: "/matters", icon: Scale, subtitle: "Succession, with a record of who agreed" },
   {
     name: "Events",
     href: "/events",
