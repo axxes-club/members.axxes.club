@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, uuid, jsonb, boolean, index, uniqueIndex } from "drizzle-orm/pg-core"
-import { relations } from "drizzle-orm"
+import { pgTable, text, timestamp, uuid, jsonb, boolean, integer, bigint, index, uniqueIndex, primaryKey } from "drizzle-orm/pg-core"
+import { relations, sql } from "drizzle-orm"
 import { tenants } from "./tenants"
 import { user } from "./users"
 import { assets } from "./assets"
@@ -29,6 +29,8 @@ export const officeDocuments = pgTable(
     folder: text("folder"),
 
     content: jsonb("content").$type<Record<string, unknown>>().notNull().default({}),
+
+    version: integer("version").notNull().default(1),
 
     /** draft | published | archived */
     status: text("status").notNull().default("draft"),
@@ -102,6 +104,7 @@ export const assetAppLinks = pgTable(
   },
   (table) => [
     uniqueIndex("asset_app_links_asset_app_idx").on(table.assetId, table.appKey),
+    uniqueIndex("office_asset_canonical_idx").on(table.tenantId, table.appKey, table.recordId).where(sql`${table.appKey} = 'office'`),
     index("asset_app_links_record_idx").on(table.appKey, table.recordId),
     index("asset_app_links_tenant_idx").on(table.tenantId),
   ],
@@ -127,3 +130,15 @@ export const officeRevisionsRelations = relations(officeRevisions, ({ one }) => 
 export type OfficeDocument = typeof officeDocuments.$inferSelect
 export type NewOfficeDocument = typeof officeDocuments.$inferInsert
 export type OfficeRevision = typeof officeRevisions.$inferSelect
+
+export const officeServiceRequests = pgTable("office_service_requests", {
+ caller: text("caller").notNull(), requestId: text("request_id").notNull(),
+ expiresAt: timestamp("expires_at", {withTimezone:true}).notNull(), createdAt: timestamp("created_at", {withTimezone:true}).notNull().defaultNow(),
+}, table => [primaryKey({columns:[table.caller,table.requestId]}), index("office_service_requests_expiry_idx").on(table.expiresAt)])
+export const officeUploads = pgTable("office_uploads", {
+ id: uuid("id").primaryKey().defaultRandom(), requestId: text("request_id").notNull(),
+ userId: text("user_id").notNull().references(()=>user.id), libraryId: text("library_id").notNull(),
+ folder: text("folder"), name: text("name").notNull(), mimeType: text("mime_type").notNull(),
+ size: bigint("size",{mode:"number"}).notNull(), storageKey: text("storage_key").unique(),assetId: uuid("asset_id"),
+ expiresAt:timestamp("expires_at",{withTimezone:true}).notNull(), createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+}, table=>[uniqueIndex("office_uploads_user_request_idx").on(table.userId,table.requestId)])
