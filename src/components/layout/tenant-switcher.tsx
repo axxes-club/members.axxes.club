@@ -117,6 +117,7 @@ export function TenantSwitcher({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
+          aria-label={`Switch organization (${currentTenantName})`}
           className={cn(
             "w-full justify-start gap-2 px-2",
             isCollapsed && "justify-center px-0"
@@ -144,7 +145,7 @@ export function TenantSwitcher({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[280px]">
-        <DropdownMenuLabel>Your Organizationes</DropdownMenuLabel>
+        <DropdownMenuLabel>Your Organizations</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         {isLoading ? (
@@ -153,7 +154,7 @@ export function TenantSwitcher({
           </div>
         ) : tenants.length === 0 ? (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-            No organizationes found
+            No organizations found
           </div>
         ) : (
           tenants.map((tenant) => (

@@ -93,7 +93,7 @@ export default async function DashboardLayout({
               isSuperadmin={currentUser?.isSuperadmin ?? false}
               unreadMessagesCount={unreadMessagesCount}
             />
-            <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               {/* Mobile Header */}
               <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4 lg:hidden">
                 <MobileSidebarTrigger />
