@@ -1,7 +1,8 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
-import { loginActivity } from "@/lib/db/schema"
+import { loginActivity, tenantMemberships } from "@/lib/db/schema"
+import { and, asc, desc, eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { sendPasswordResetEmail } from "@/lib/email"
@@ -103,11 +104,46 @@ export async function getAuthContext() {
     redirect("/sign-in")
   }
 
-  if (!tenantId) {
-    redirect("/onboarding")
+  // The cookie names WHICH workspace you are looking at. It is not proof that
+  // you belong to one, so it is verified here rather than trusted — a
+  // hand-edited cookie must not be a key to somebody else's tenant.
+  //
+  // When it is absent, fall back to a real membership instead of bouncing to
+  // onboarding. Without this, a returning member with a perfectly good account
+  // was sent to the "create a business" screen every time the cookie lapsed,
+  // which reads as "you have no account" to somebody who is signed in. Only a
+  // user with NO membership at all still belongs in onboarding.
+  let resolvedTenantId = tenantId
+  if (tenantId) {
+    const member = await db
+      .select({ id: tenantMemberships.id })
+      .from(tenantMemberships)
+      .where(
+        and(
+          eq(tenantMemberships.tenantId, tenantId),
+          eq(tenantMemberships.userId, session.user.id),
+        ),
+      )
+      .limit(1)
+    if (!member.length) resolvedTenantId = undefined
   }
 
-  return { userId: session.user.id, tenantId }
+  if (!resolvedTenantId) {
+    // is_primary is not unique in the schema, and in this database it is not
+    // unique in practice, so the earliest membership breaks the tie rather than
+    // trusting a flag that can legitimately be true twice.
+    const [membership] = await db
+      .select({ tenantId: tenantMemberships.tenantId })
+      .from(tenantMemberships)
+      .where(eq(tenantMemberships.userId, session.user.id))
+      .orderBy(desc(tenantMemberships.isPrimary), asc(tenantMemberships.joinedAt))
+      .limit(1)
+
+    if (!membership) redirect("/onboarding")
+    resolvedTenantId = membership.tenantId
+  }
+
+  return { userId: session.user.id, tenantId: resolvedTenantId }
 }
 
 export type Session = typeof auth.$Infer.Session

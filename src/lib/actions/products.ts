@@ -34,10 +34,15 @@ const CATEGORY_BLURBS: Record<string, string> = {
   Work: "Plan, organize and run the business.",
   Events: "The night itself: what was sold, who came, and what they did.",
   Commerce: "The money and the stock, reconciled against each other.",
+  Support: "The conversation with the customer, and what it tells you.",
   Developers: "Build on AXXES.",
 }
 
-const CATEGORY_ORDER = ["Suite", "Events", "Commerce", "Developers", "Work"]
+// `Work` sits last on purpose. It is the bucket a horizontal tool lands in, and
+// keeping it at the end means unhiding one never re-splits the featured groups
+// above it. `Support` goes before `Developers` because a desk is bought by
+// operators and the API is not.
+const CATEGORY_ORDER = ["Suite", "Events", "Commerce", "Support", "Developers", "Work"]
 
 /** Every product the launcher shows, in catalog order. */
 export async function getProducts() {

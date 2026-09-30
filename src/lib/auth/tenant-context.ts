@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
 import { tenantMemberships } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -75,7 +76,18 @@ export async function withResourceAccess(
   return withTenantAccess(request, handler)
 }
 
-// For server components and server actions
+// For server components and server actions.
+//
+// These three conditions are not exceptional — a signed-out visitor, or one who
+// has not chosen a workspace yet, is an ordinary state that the middleware
+// sends here. Throwing turned that state into Next's opaque "Application error:
+// a server-side exception has occurred" page with a digest and no explanation,
+// which is what /office was showing. Each one now redirects to the page that can
+// resolve it, the same way getAuthContext() in @/lib/auth does.
+//
+// The route handlers that call this keep working unchanged: they use
+// `.catch(() => null)` to mean "no context", and a redirect is thrown too, so
+// they still fall through to their own 401.
 export async function requireTenantAccess() {
   const cookieStore = await cookies()
   const cookieHeader = cookieStore
@@ -89,14 +101,14 @@ export async function requireTenantAccess() {
   })
 
   if (!session?.user) {
-    throw new Error("Unauthorized")
+    redirect("/sign-in")
   }
 
   const userId = session.user.id
   const tenantId = cookieStore.get("tenant_id")?.value
 
   if (!tenantId) {
-    throw new Error("No tenant selected")
+    redirect("/onboarding")
   }
 
   const membership = await db.query.tenantMemberships.findFirst({
@@ -110,7 +122,12 @@ export async function requireTenantAccess() {
   })
 
   if (!membership) {
-    throw new Error("Access denied")
+    // The cookie names a workspace this account is not in — left over from
+    // another account on the same browser, or the membership was removed.
+    // /onboarding cannot fix it: the middleware bounces /onboarding back to
+    // /dashboard whenever tenant_id is set, which would loop. /sign-out clears
+    // the stale cookie and starts a clean sign-in, which can.
+    redirect("/sign-out")
   }
 
   return {

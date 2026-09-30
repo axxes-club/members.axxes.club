@@ -15,7 +15,13 @@
     "version": "./scripts/version.sh",
     "release": "pnpm build && ./scripts/version.sh minor && git push origin main --tags",
     "release:major": "pnpm build && ./scripts/version.sh major && git push origin main --tags",
-    "release:patch": "pnpm build && ./scripts/version.sh patch && git push origin main --tags"
+    "release:patch": "pnpm build && ./scripts/version.sh patch && git push origin main --tags",
+    "matter:migrate": "node scripts/matter-migrate.mjs",
+    "matter:templates": "node scripts/matter-seed-templates.mjs",
+    "matter:demo": "node scripts/matter-demo.mjs",
+    "matter:demo:clean": "node scripts/matter-demo.mjs --clean",
+    "matter:catalog": "node scripts/matter-catalog.mjs",
+    "matter:catalog:hide": "node scripts/matter-catalog.mjs --hide"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

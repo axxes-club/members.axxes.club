@@ -121,6 +121,29 @@ VALUES
    'The API reference, app and key registration, integrations and webhooks, your usage and plan, and copy-paste prompts for building on AXXES.',
    'https://developer.axxes.club', '#22d3ee', 'Developers', 'beta', true, 'Terminal', NULL, true, 31),
 
+  -- ----------------------------------------------------------- Support ----
+  -- Binnacle is registered but deliberately NOT surfaced, and for the same
+  -- reason as the Work products above: a support desk invites a one-second
+  -- comparison against Intercom and Zendesk, and on brand alone we lose it.
+  --
+  -- The key is reserved now so it can never be lost. It is a primary key
+  -- referenced by developer.axxes.club's plan catalog, Handshake's OIDC clients,
+  -- the integrations providers and lanes' suite registry — and a rebrand changes
+  -- `name`, never `key`.
+  --
+  -- `surface_in_members = false` until there is a deploy and a decision on
+  -- whether this ships as a standalone product or a Suite module. `status =
+  -- 'soon'` because there is no DNS record yet. "Ship or hide" is the standing
+  -- rule and an unreachable tile is worse than no tile.
+  --
+  -- CATEGORY IS PROVISIONAL, same as Keel's. Support is a new category rather
+  -- than a fit into Work or Commerce, and CATEGORY_ORDER in the portal will need
+  -- it added before the product is surfaced. Unlike `key`, category is safe to
+  -- change.
+  ('binnacle', 'Binnacle', 'Every ticket explains itself',
+   'A shared support inbox over email, web form and portal. Threaded conversations with internal notes, SLA policies that pause honestly, automation rules, a knowledge base, and a full history of every change — tied to the event, order or stock movement a ticket is actually about, so you can answer with the numbers to hand.',
+   'https://binnacle.axxes.club', '#3ddc97', 'Support', 'soon', true, 'LifeBuoy', NULL, false, 40),
+
   -- ----------------------------------------------------------------- Work --
   -- Retained, not sold. See the header note: this is a reversible visibility
   -- change, not a retirement. Do not delete these rows — several keys are still
@@ -144,7 +167,25 @@ VALUES
 
   ('vitrine', 'Vitrine', 'The collection, kept',
    'Private collection archives for serious art collections - provenance, condition and legacy in one quiet desk.',
-   'https://vitrine.axxes.club', '#8a7a5c', 'Work', 'beta', true, 'Gem', NULL, false, 6)
+   'https://vitrine.axxes.club', '#8a7a5c', 'Work', 'beta', true, 'Gem', NULL, false, 6),
+
+  -- Matter: succession matters, family and business, one engine two templates.
+  --
+  -- The product lives at matters.axxes.club, its own repo and deployment, signed
+  -- in with the shared AXXES session. `members_path` is NULL so the launcher
+  -- sends people to the product rather than into this portal.
+  --
+  -- There is also a Matter surface inside the portal at /matters. Both read and
+  -- write the same eight matter_* tables, so they cannot disagree about the
+  -- record. Set `members_path = '/matters'` to point the tile back at the
+  -- embedded copy — that is the only difference, and it is a data change.
+  --
+  -- Scripted into place by scripts/matter-catalog.mjs, because this portal's
+  -- build skips the db push. Kept here so the catalog file and the database
+  -- cannot drift apart. `key` is permanent — see the header note.
+  ('matter',   'Matter', 'Succession, with a record of who agreed',
+   'One case for a family estate or a business hand-over: the documents, the dates, the people, and an acknowledgement on every version of every document - so ''I have seen this'' stops being a claim and becomes a record.',
+   'https://matters.axxes.club', '#c9a227', 'Work', 'beta', true, 'Scale', NULL, true, 7)
 ON CONFLICT (key) DO UPDATE SET
   name               = EXCLUDED.name,
   tagline            = EXCLUDED.tagline,
