@@ -1,3 +1,5 @@
+import { storagePool } from "@/lib/storage/database";
+import { assertChargingUser, chargingUserForHandoff } from "@/lib/storage/authorization.mjs";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as receiptSchema from "@/lib/db/schema";
 import { createUploadthing, type FileRouter } from "@/lib/gcs/router.mjs"
@@ -26,6 +28,7 @@ export const ourFileRouter = {
 
       const rawFolder = req.headers.get(DAM_FOLDER_HEADER)
       const folder = normalizeFolder(rawFolder ? decodeURIComponent(rawFolder) : null)
+      await assertChargingUser(storagePool(),{tenantId:context.tenantId,userId:context.userId});
       return { userId: context.userId, tenantId: context.tenantId, folder }
     })
     .onUploadComplete(async ({ metadata, file, transaction }) => {

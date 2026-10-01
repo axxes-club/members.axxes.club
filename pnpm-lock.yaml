@@ -110,6 +110,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.3
         version: 0.45.3(@neondatabase/serverless@1.1.0)(@types/pg@8.23.1)(kysely@0.28.11)(pg@8.23.1)
+      google-auth-library:
+        specifier: 9.15.1
+        version: 9.15.1
       lucide-react:
         specifier: ^0.575.0
         version: 0.575.0(react@19.3.0)

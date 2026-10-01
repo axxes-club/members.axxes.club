@@ -64,3 +64,5 @@ export * from "./office"
 
 // The AXXES product catalog (shared by every app)
 export * from "./products"
+
+export * from "./storage"
