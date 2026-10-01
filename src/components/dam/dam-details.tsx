@@ -280,7 +280,13 @@ export function DamPreview({
           <div className="flex h-12 shrink-0 items-center gap-3 border-b px-4 pr-12">
             <DialogTitle className="truncate text-[13px] font-medium">{asset.name}</DialogTitle>
             <span className="text-xs text-muted-foreground">{index! + 1} / {assets.length}</span>
-            {previewable && (
+            {previewable?.link.appKey === "office" ? (
+              <Button variant="ghost" size="sm" asChild>
+                <a href={previewable.target!.quickLook!(previewable.link.recordId, tenantId)} target="_blank" rel="noopener noreferrer">
+                  Preview in AXXES Work
+                </a>
+              </Button>
+            ) : previewable && (
               <Button
                 variant={inline ? "secondary" : "ghost"}
                 size="sm"
