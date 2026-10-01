@@ -1,0 +1,1 @@
+export function verifyStorageService(request:Request,options:{audience:string;serviceAccount:string;verifyToken:(token:string)=>Promise<{aud?:string|string[];iss?:string;email?:string;email_verified?:boolean}|undefined>}):Promise<void>;
