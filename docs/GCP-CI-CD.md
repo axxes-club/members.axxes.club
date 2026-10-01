@@ -11,3 +11,5 @@ Images are tagged with the full Git commit SHA and unique Google build ID and de
 Checks in addition to Linux production compilation: no unit test/typecheck script exists in this source; compilation and HTTP readiness run.
 
 Build logs: https://console.cloud.google.com/cloud-build/builds;region=us-west1?project=gravy-meta
+
+Legacy `Create Release` workflow is disabled at the repository level because its default-branch/tag definition still deploys Vercel. This branch removes that deployment step. GitHub release publishing can resume after the safe release definition is available on the intended tag source/default branch; production app delivery uses the GCP workflow.
