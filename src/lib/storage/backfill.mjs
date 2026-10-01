@@ -2,6 +2,8 @@ import{principalOwner}from'../gcs/router.mjs';
 export function planBackfill({assets,objects,receipts}) {
  const verified=new Map(objects.map(o=>[o.key+'\0'+o.generation,o])),attributed=[],legacy=[],seen=new Set();
  for(const asset of assets){
+  // Personal libraries have no organization storage account. Preserve their bytes and references.
+  if(!asset.tenantId)continue;
   const receipt=receipts.find(r=>r.result?.serverData?.assetId===asset.id && r.document?.metadata?.tenantId===asset.tenantId && r.result.key===asset.objectKey);
   const result=receipt?.result,object=result?verified.get(result.key+'\0'+result.generation):null;
   let ownerMatches=false;try{ownerMatches=!!receipt&&principalOwner(receipt.document.metadata)===receipt.owner;}catch{}

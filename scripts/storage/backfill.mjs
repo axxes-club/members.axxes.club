@@ -23,7 +23,7 @@ try{
    if(rowCount)await client.query('UPDATE storage_accounts SET used_bytes=used_bytes+$3 WHERE tenant_id=$1 AND user_id=$2',[key.tenantId,key.userId,item.bytes]);
   }
   // Reference links retain physical bytes even for existing shared views.
-  for(const asset of assets)await client.query('INSERT INTO storage_asset_links(asset_id,object_key,generation) SELECT $1,object_key,generation FROM storage_object_charges WHERE object_key=$2 AND released_at IS NULL ON CONFLICT DO NOTHING',[asset.id,asset.objectKey]);
+  for(const asset of assets.filter(asset=>asset.tenantId))await client.query('INSERT INTO storage_asset_links(asset_id,object_key,generation) SELECT $1,object_key,generation FROM storage_object_charges WHERE object_key=$2 AND released_at IS NULL ON CONFLICT DO NOTHING',[asset.id,asset.objectKey]);
   for(const item of plan.legacy)await client.query('INSERT INTO storage_legacy_usage(tenant_id,object_key,generation,bytes) VALUES($1,$2,$3,$4) ON CONFLICT(tenant_id,object_key,generation) DO UPDATE SET bytes=EXCLUDED.bytes',[item.tenantId,item.objectKey,item.generation,item.bytes]);
   await client.query('COMMIT');
  }

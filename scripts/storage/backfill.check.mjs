@@ -1,4 +1,5 @@
 import{test}from'node:test';import assert from'node:assert/strict';import{planBackfill}from'../../src/lib/storage/backfill.mjs';
+test('personal library references stay outside organization quota and legacy ledgers',()=>{const plan=planBackfill({assets:[{id:'personal',tenantId:null,objectKey:'uploads/dam/personal'}],objects:[{key:'uploads/dam/personal',generation:'1',size:100}],receipts:[]});assert.deepEqual(plan,{attributed:[],legacy:[]});});
 test('backfill only attributes matching completed receipts and verified objects',()=>{
 const asset={id:'asset',tenantId:'org',objectKey:'uploads/dam/owned'},object={key:'uploads/dam/owned',generation:'1',size:100};
 const receipt={owner:'tenant:org:user:user',document:{app:'dam',metadata:{tenantId:'org',userId:'user'},descriptor:{size:100}},result:{key:object.key,generation:'1',serverData:{assetId:'asset'}}};
