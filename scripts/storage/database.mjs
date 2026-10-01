@@ -9,6 +9,7 @@ export async function database() {
   await admin.query(`CREATE SCHEMA ${name}`);
   const pool = new Pool({connectionString, options: `-c search_path=${name}`, max:10});
   const sql = await readFile(new URL("../../drizzle/0005_storage_allowances.sql", import.meta.url), "utf8");
+  await pool.query("CREATE TABLE assets(id uuid PRIMARY KEY,tenant_id uuid NOT NULL,url text NOT NULL,source text)");
   await pool.query(sql);
   return {pool, sql, async close() {await pool.end();await admin.query(`DROP SCHEMA ${name} CASCADE`);await admin.end();}};
 }
