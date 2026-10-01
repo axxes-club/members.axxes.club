@@ -1,3 +1,4 @@
+import {sharedAssetUrl} from "@/lib/gcs/server";
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { and, asc, eq } from "drizzle-orm"
@@ -40,6 +41,8 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   if (payload.k === "asset" && !items.length) return <Expired />
 
   const expires = format(new Date(payload.exp), "MMM d, yyyy")
+
+  items = items.map(asset => ({ ...asset, url: sharedAssetUrl(asset.url, token)!, thumbnailUrl: sharedAssetUrl(asset.thumbnailUrl, token) }));
 
   return (
     <div className="min-h-screen bg-background">
