@@ -21,7 +21,8 @@
     "matter:demo": "node scripts/matter-demo.mjs",
     "matter:demo:clean": "node scripts/matter-demo.mjs --clean",
     "matter:catalog": "node scripts/matter-catalog.mjs",
-    "matter:catalog:hide": "node scripts/matter-catalog.mjs --hide"
+    "matter:catalog:hide": "node scripts/matter-catalog.mjs --hide",
+    "test:storage": "node --test scripts/gcs/*.check.mjs"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
