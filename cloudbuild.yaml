@@ -38,7 +38,7 @@
         "ci-check:$BUILD_ID",
         "sh",
         "-ec",
-        "rm -f .env .env.*; npm run test:office-domain"
+        "rm -f .env .env.*; npm run test:office-domain; npm run test:organization-launch"
       ]
     },
     {

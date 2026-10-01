@@ -81,7 +81,7 @@ export function middleware(request: NextRequest) {
 
   // Handle dev auth bypass: /?devauth or /sign-in?devauth
   if (searchParams.has("devauth")) {
-    const devAuthUrl = new URL("/api/dev-auth", request.url)
+    const devAuthUrl = new URL("/api/dev-auth", origin)
     // Preserve redirect param if present
     const redirect = searchParams.get("redirect")
     if (redirect) {
@@ -102,8 +102,8 @@ export function middleware(request: NextRequest) {
 
   // Redirect to sign-in if not authenticated
   if (!sessionToken) {
-    const signInUrl = new URL("/sign-in", request.url)
-    signInUrl.searchParams.set("redirect", pathname)
+    const signInUrl = new URL("/sign-in", origin)
+    signInUrl.searchParams.set("redirect", pathname + request.nextUrl.search)
     return NextResponse.redirect(signInUrl)
   }
 
@@ -136,14 +136,14 @@ export function middleware(request: NextRequest) {
   // picker. Somebody with no membership at all is forwarded to /onboarding,
   // where the picker (and "create a business") is the correct thing to show.
   if (!tenantId && !isSelectingTenant && !pathname.startsWith("/onboarding")) {
-    const autoSelect = new URL("/api/v1/tenants/select", request.url)
+    const autoSelect = new URL("/api/v1/tenants/select", origin)
     autoSelect.searchParams.set("next", pathname)
     return NextResponse.redirect(autoSelect)
   }
 
   // Already onboarded, skip onboarding
   if (tenantId && pathname.startsWith("/onboarding")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL("/dashboard", origin))
   }
 
   return NextResponse.next()
