@@ -39,6 +39,9 @@ const handshakePages: Record<string, string> = {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // These website APIs enforce session/membership themselves or serve only immutable published snapshots.
+  if (pathname === '/api/v1/website/gangstarz' || /^\/api\/v1\/public\/tenants\/[^/]+\/website\/[^/]+$/.test(pathname)) return NextResponse.next()
+
   // Scheduler uses its bearer token, checked by this exact route, not a user session.
   if (pathname === "/api/cron/newsletter" || pathname === "/api/axxes/products") return NextResponse.next()
 

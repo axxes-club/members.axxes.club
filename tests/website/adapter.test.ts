@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {toPuck,fromPuck} from '../../src/lib/website/gangstarz-adapter';
+const data:any={version:1,revision:7,page:{id:'page',slug:'home',title:'Home',metaTitle:'Gangstarz'},theme:{logo:'/media/logo.png',background:'#212121',foreground:'#FFFFFF',primary:'#F48D25',secondary:'#F9BC22',displayFont:'Teko',labelFont:'Victor Mono'},navigation:[{label:'Events',href:'#events'}],footer:{text:'Charlotte',socials:[],showPoweredBy:true,conceptLabel:'Concept'},blocks:[{id:'block',type:'gangstarz-hero',content:{title:'House music',image:'/media/hero.jpeg'},settings:{hideOnMobile:true,overrides:{colors:{text:'#fff'}}},isVisible:false,sortOrder:0}]};
+test('puck_round_trip_preserves_all_fields',()=>{assert.deepEqual(fromPuck(toPuck(data),data),data)});
