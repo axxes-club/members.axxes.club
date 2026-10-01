@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers"
 import { and, eq, inArray, sql } from "drizzle-orm"
-import { UTApi } from "uploadthing/server"
+import { deleteStoredUrls } from "@/lib/gcs/server"
 import { db } from "@/lib/db"
 import { assets } from "@/lib/db/schema"
 import { requireTenantAccess } from "@/lib/auth/tenant-context"
@@ -12,7 +12,6 @@ import {
   normalizeFolder,
   normalizeTags,
   toDamAsset,
-  uploadthingKey,
 } from "@/lib/dam/assets"
 import { createShareToken } from "@/lib/dam/share"
 import type { DamAsset } from "@/lib/dam/types"
@@ -179,16 +178,15 @@ export async function deleteDamAssets(ids: string[]): Promise<number> {
 // Files we uploaded ourselves are removed from storage once no asset (e.g. a duplicate) still points at them.
 async function removeOrphanedUploads(rows: { url: string; source: string | null }[]) {
   const urls = Array.from(new Set(rows.filter((r) => r.source === "upload").map((r) => r.url)))
-  if (!urls.length || !process.env.UPLOADTHING_TOKEN) return
+  if (!urls.length) return
 
   const stillUsed = await db.select({ url: assets.url }).from(assets).where(inArray(assets.url, urls))
   const used = new Set(stillUsed.map((r) => r.url))
-  const keys = urls.filter((u) => !used.has(u)).map(uploadthingKey).filter((k): k is string => !!k)
-  if (!keys.length) return
-
-  await new UTApi().deleteFiles(keys).catch((err) => {
-    console.error("Failed to delete UploadThing files", keys, err)
-  })
+  const orphaned = urls.filter((u) => !used.has(u));
+  if (!orphaned.length) return;
+  await deleteStoredUrls(orphaned).catch(() => {
+    console.error("Failed to delete orphaned GCS assets");
+  });
 }
 
 // ── Folders ──────────────────────────────────────────────────────────────

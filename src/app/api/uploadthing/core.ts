@@ -1,5 +1,7 @@
-import { createUploadthing, type FileRouter } from "uploadthing/next"
-import { UploadThingError } from "uploadthing/server"
+import { drizzle } from "drizzle-orm/node-postgres";
+import * as receiptSchema from "@/lib/db/schema";
+import { createUploadthing, type FileRouter } from "@/lib/gcs/router.mjs"
+import { UploadThingError } from "@/lib/gcs/router.mjs"
 import { db } from "@/lib/db"
 import { assets } from "@/lib/db/schema"
 import { requireTenantAccess } from "@/lib/auth/tenant-context"
@@ -24,9 +26,10 @@ export const ourFileRouter = {
 
       const rawFolder = req.headers.get(DAM_FOLDER_HEADER)
       const folder = normalizeFolder(rawFolder ? decodeURIComponent(rawFolder) : null)
-      return { tenantId: context.tenantId, folder }
+      return { userId: context.userId, tenantId: context.tenantId, folder }
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ metadata, file, transaction }) => {
+      const db = drizzle(transaction, { schema: receiptSchema });
       const [row] = await db
         .insert(assets)
         .values({
