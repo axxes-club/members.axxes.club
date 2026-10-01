@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { tenantMemberships } from "@/lib/db/schema"
+import { tenantMemberships, tenants } from "@/lib/db/schema"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
-import { and, asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { publicOrigin } from "@/lib/public-origin"
 
 async function getSession() {
@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
   const [membership] = await db
     .select({ tenantId: tenantMemberships.tenantId })
     .from(tenantMemberships)
-    .where(eq(tenantMemberships.userId, session.user.id))
+    .innerJoin(tenants, eq(tenants.id, tenantMemberships.tenantId))
+    .where(and(eq(tenantMemberships.userId, session.user.id), isNull(tenantMemberships.deletedAt), isNull(tenants.deletedAt), eq(tenants.status, "active")))
     .orderBy(desc(tenantMemberships.isPrimary), asc(tenantMemberships.joinedAt))
     .limit(1)
 
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { tenantId } = body
 
-    if (!tenantId) {
+    if (typeof tenantId !== "string" || !/^[0-9a-f-]{36}$/i.test(tenantId)) {
       return NextResponse.json(
         { error: "Tenant ID is required" },
         { status: 400 }
@@ -97,14 +98,15 @@ export async function POST(request: NextRequest) {
     const membership = await db.query.tenantMemberships.findFirst({
       where: and(
         eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.userId, userId)
+        eq(tenantMemberships.userId, userId),
+        isNull(tenantMemberships.deletedAt)
       ),
       with: {
         tenant: true,
       },
     })
 
-    if (!membership) {
+    if (!membership || membership.tenant.deletedAt || membership.tenant.status !== "active") {
       return NextResponse.json(
         { error: "You don't have access to this business" },
         { status: 403 }

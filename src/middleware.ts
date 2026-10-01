@@ -22,6 +22,7 @@ const publicRoutes = [
   "/api/dev-auth",
   "/share/",
   "/api/uploadthing",
+  "/api/axxes/products",
 ]
 
 // Auth pages that move to Handshake (the central AXXES account) when it's switched on
@@ -39,7 +40,7 @@ export function middleware(request: NextRequest) {
   if (pathname === "/api/cron/newsletter" || pathname === "/api/axxes/products") return NextResponse.next()
 
   // A path is public if it is the root, or if it sits under one of the prefixes.
-  const isPublic = pathname === "/" || publicRoutes.some((route) => pathname.startsWith(route))
+  const isPublic = pathname === "/" || publicRoutes.some((route) => route.endsWith("/") ? pathname.startsWith(route) : pathname === route || pathname.startsWith(`${route}/`))
 
   // ── Handshake hand-off ──
   //
@@ -89,7 +90,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for auth session cookie (Better Auth uses 'better-auth.session_token')
+  // HTTPS uses the secure prefix; local HTTP uses the plain cookie name.
+  // This only routes the request. Server auth still verifies the real session.
   const sessionToken = request.cookies.get("__Secure-better-auth.session_token")?.value
     ?? request.cookies.get("better-auth.session_token")?.value
 
@@ -113,7 +115,7 @@ export function middleware(request: NextRequest) {
   //
   // They stay BELOW the session check above: you still have to be signed in to
   // list or pick a workspace, this only exempts them from the tenant guard.
-  const tenantSelectionRoutes = ["/api/v1/tenants"]
+  const tenantSelectionRoutes = ["/api/v1/tenants", "/api/organization/open"]
 
   // Check for tenant ID cookie
   const tenantId = request.cookies.get("tenant_id")?.value

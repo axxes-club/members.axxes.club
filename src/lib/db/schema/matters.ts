@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import { pgTable, text, timestamp, uuid, integer, jsonb, boolean, index, uniqueIndex } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 import { tenants } from "./tenants"
@@ -159,10 +160,54 @@ export const matterDocuments = pgTable(
     title: text("title").notNull(),
     /** asset | office_document | external_link */
     kind: text("kind").notNull().default("asset"),
+    /**
+     * What KIND of legal document this is, which decides how it may be signed.
+     *
+     * This is not a label. `wills`, `codicils` and `trusts` are excluded from
+     * electronic signature by ESIGN 101(c) and the UETA, and only a handful of
+     * states permit an e-will by separate statute. A signature flow that does
+     * not know this will cheerfully produce a defective will and call it
+     * signed. See SIGNABLE_KINDS in src/lib/matters/shared.ts.
+     */
+    /** will | codicil | trust | deed | appraisal | correspondence | filing | tax | financial | other */
+    documentType: text("document_type").notNull().default("other"),
     assetId: uuid("asset_id"),
     /** Bumped whenever the underlying file is replaced. Acks are pinned to this. */
     revision: integer("revision").notNull().default(1),
 
+    /**
+     * Who may see this at all.
+     *
+     *   participants  everyone in the matter (the default)
+     *   restricted    only people holding an explicit grant
+     *   counsel_only  the executor and counsel, not the beneficiaries
+     *
+     * `restricted` and `counsel_only` are enforced in assertCanViewDocument().
+     * A person without access does not merely get a 403 on the document page —
+     * its TITLE is withheld from lists, search and notifications too, because
+     * the filename is the leak. See redactFor().
+     */
+    visibility: text("visibility").notNull().default("participants"),
+    /** Whether a viewer may save the file. Reading online is not having it. */
+    allowDownload: boolean("allow_download").notNull().default(true),
+    /**
+     * SHA-256 of the file this revision points at.
+     *
+     * Two jobs. It is the integrity half of ESIGN: a signature proves what was
+     * signed, and the hash is how you prove the file has not changed since. It
+     * is also how a wet-ink signing packet is matched back to the record — the
+     * hash is printed on the page the person signs, so a scanned original can
+     * be tied to the exact revision.
+     */
+    sha256: text("sha256"),
+    /** Set when a newer revision replaces this one. The row is kept, never deleted. */
+    supersededById: uuid("superseded_by_id"),
+    /** Bytes and mime, denormalised so a list can show them without a join. */
+    fileName: text("file_name"),
+    fileSize: integer("file_size"),
+    mimeType: text("mime_type"),
+    /** Extracted text, so documents are searchable. Null until OCR has run. */
+    extractedText: text("extracted_text"),
     /** draft | in_review | agreed | executed | superseded */
     status: text("status").notNull().default("draft"),
     /** Short plain-language note on what this document is and what it settles. */
@@ -177,6 +222,77 @@ export const matterDocuments = pgTable(
     index("matter_documents_matter_idx").on(table.matterId),
     index("matter_documents_tenant_idx").on(table.tenantId),
     index("matter_documents_status_idx").on(table.matterId, table.status),
+    index("matter_documents_visibility_idx").on(table.matterId, table.visibility),
+  ],
+)
+
+/**
+ * ★ THE ACCESS CONTROL. This table is why the product can be called private.
+ *
+ * A grant is an explicit permission for one person over one thing. Absence of a
+ * grant is DENIAL, not permission. That default is the whole design: a case
+ * where you must add someone to see something is correct, and a case where
+ * adding someone is how they get access is a leak.
+ *
+ * `documentId` null means the grant is for the whole matter; set, it is for
+ * ONE document without the rest of the case. The second is the interesting one
+ * — a beneficiary with a claim to one part of an estate, or opposing counsel
+ * who needs the deed and nothing else, is a real situation, and there is
+ * nowhere in this schema to put that without either inventing a second matter
+ * (and two records that disagree) or opening the whole case.
+ *
+ * `matter_participants` is NOT this. A participant says who is IN the case and
+ * in what legal capacity — executor, heir, counsel. A grant says who may SEE
+ * something. A participant with no grant on a restricted document can know the
+ * executor exists and still be unable to read the will. Those are different
+ * facts and they live in different tables on purpose.
+ *
+ * Being in the matter is the implicit matter-wide grant: you can see
+ * everything whose visibility is `participants`. A grant is how somebody who is
+ * not in the matter — or who is, but should not see one particular document —
+ * gets in.
+ */
+export const matterGrants = pgTable(
+  "matter_grants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    matterId: uuid("matter_id").notNull().references(() => matters.id, { onDelete: "cascade" }),
+    tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+
+    /** Null means the grant covers the whole matter. */
+    documentId: uuid("document_id").references(() => matterDocuments.id, { onDelete: "cascade" }),
+
+    /** Same actor vocabulary as matter_acks: user:<id> or guest:<subject>. */
+    actorKey: text("actor_key").notNull(),
+
+    canView: boolean("can_view").notNull().default(true),
+    /** May record an acknowledgement. Implies canView. */
+    canAcknowledge: boolean("can_acknowledge").notNull().default(false),
+    /** May sign. Refused for testamentary documents regardless — see SIGNABLE_KINDS. */
+    canSign: boolean("can_sign").notNull().default(false),
+    /** May hand out further grants. The executor, or nobody. */
+    canManage: boolean("can_manage").notNull().default(false),
+
+    /** Why this person was given this, in plain words. Shown in the access list. */
+    reason: text("reason"),
+    grantedByActorKey: text("granted_by_actor_key"),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+
+    /** Revocation keeps the row. Who could see what, and who stopped, is both history. */
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    revokedByActorKey: text("revoked_by_actor_key"),
+    /** When it lapses on its own, e.g. a court-appointed representative. */
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("matter_grants_target_idx").on(table.matterId, table.documentId, table.actorKey).where(sql`${table.revokedAt} is null`),
+    uniqueIndex("matter_grants_matter_actor_idx").on(table.matterId, table.actorKey).where(sql`${table.revokedAt} is null and ${table.documentId} is null`),
+    index("matter_grants_actor_idx").on(table.actorKey),
+    index("matter_grants_matter_idx").on(table.matterId),
+    index("matter_grants_document_idx").on(table.documentId),
+    index("matter_grants_tenant_idx").on(table.tenantId),
   ],
 )
 
@@ -333,6 +449,69 @@ export const matterThreads = pgTable(
     index("matter_threads_conversation_idx").on(table.conversationId),
   ],
 )
+
+/**
+ * ★ THE AUDIT TRAIL. Append-only. No update path, no delete path.
+ *
+ * Every consequential thing that happens in a matter is written here: who
+ * looked at a document, who acknowledged it, who was granted access, who was
+ * removed. For a product that will be asked to prove what a family and their
+ * lawyers agreed to, this table is the difference between a record and a claim.
+ *
+ * It is written on the READ path too, not just writes. "Who saw the will, and
+ * when" is a question this product exists to answer, and it cannot be answered
+ * if viewing is not recorded. That costs one insert on document open, and it is
+ * the most valuable row in the table.
+ *
+ * `ipAddress` and `userAgent` are here because the hard question in electronic
+ * signature is not validity — that has been settled for twenty-five years — it
+ * is attribution. Whoever is asked to rely on this record will be asked where
+ * the person was and on what device.
+ */
+export const matterActivity = pgTable(
+  "matter_activity",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    matterId: uuid("matter_id").notNull().references(() => matters.id, { onDelete: "cascade" }),
+    tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+
+    /** created | viewed | acknowledged | uploaded | revised | granted | revoked | signed | downloaded | exported | stage_changed */
+    action: text("action").notNull(),
+    documentId: uuid("document_id").references(() => matterDocuments.id, { onDelete: "set null" }),
+
+    actorKey: text("actor_key").notNull(),
+    actorName: text("actor_name"),
+    /** Denormalised: a role change later must not rewrite what was true at the time. */
+    actorRole: text("actor_role"),
+
+    /** The decision, for an acknowledged action. Null otherwise. */
+    decision: text("decision"),
+    /** Free-text detail. Redacted for documents the actor could not see. */
+    detail: text("detail"),
+    target: text("target"),
+
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("matter_activity_matter_idx").on(table.matterId, table.occurredAt),
+    index("matter_activity_actor_idx").on(table.actorKey),
+    index("matter_activity_document_idx").on(table.documentId),
+    index("matter_activity_action_idx").on(table.matterId, table.action),
+    index("matter_activity_tenant_idx").on(table.tenantId),
+  ],
+)
+
+export const matterGrantsRelations = relations(matterGrants, ({ one }) => ({
+  matter: one(matters, { fields: [matterGrants.matterId], references: [matters.id] }),
+  document: one(matterDocuments, { fields: [matterGrants.documentId], references: [matterDocuments.id] }),
+}))
+
+export type MatterGrant = typeof matterGrants.$inferSelect
+export type MatterActivity = typeof matterActivity.$inferSelect
 
 export const mattersRelations = relations(matters, ({ one, many }) => ({
   tenant: one(tenants, { fields: [matters.tenantId], references: [tenants.id] }),

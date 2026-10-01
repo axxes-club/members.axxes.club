@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, integer, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uuid, boolean, integer, bigint, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
 import { tenants } from "./tenants"
 import { user } from "./users"
@@ -106,6 +106,9 @@ export const binnacleTickets = pgTable(
     resolutionDueAt: timestamp("resolution_due_at", { withTimezone: true }),
     firstResponseAt: timestamp("first_response_at", { withTimezone: true }),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    slaPausedMs: bigint("sla_paused_ms", { mode: "number" }).notNull().default(0),
+    slaPausedAt: timestamp("sla_paused_at", { withTimezone: true }),
+    firstResponsePausedMs: bigint("first_response_paused_ms", { mode: "number" }),
 
     internalSummary: text("internal_summary"),
 
