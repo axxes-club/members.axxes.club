@@ -5,6 +5,7 @@ import { tenantMemberships } from "@/lib/db/schema"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { and, asc, desc, eq } from "drizzle-orm"
+import { publicOrigin } from "@/lib/public-origin"
 
 async function getSession() {
   const headersList = await headers()
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
 
   if (!membership) redirect("/onboarding")
 
-  const next = new URL(request.nextUrl.origin)
+  const next = new URL(publicOrigin(request))
   const destination = request.nextUrl.searchParams.get("next")
   // Same-origin only: an open redirect here would hand a signed-in member's
   // fresh session cookie to whatever host the query string named.

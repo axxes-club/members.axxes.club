@@ -19,6 +19,7 @@ import { user, tenants, tenantMemberships, account } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { hashPassword } from "better-auth/crypto"
+import { publicOrigin } from "@/lib/public-origin"
 
 /**
  * The password both dev users get.
@@ -194,7 +195,7 @@ export async function GET(request: NextRequest) {
     //
     // Going through the endpoint the browser would use is the one path
     // guaranteed to produce the same cookie the library issues.
-    const origin = request.nextUrl.origin
+    const origin = publicOrigin(request)
     const signIn = await fetch(`${origin}/api/auth/sign-in/email`, {
       method: "POST",
       headers: {
@@ -223,7 +224,7 @@ export async function GET(request: NextRequest) {
     //
     // The values arrive percent-encoded, so they are decoded on the way in and
     // encoded once on the way out, which round-trips to the same bytes.
-    const response = NextResponse.redirect(new URL("/dashboard", request.url))
+    const response = NextResponse.redirect(new URL("/dashboard", publicOrigin(request)))
     let copied = 0
 
     for (const raw of setCookies) {
