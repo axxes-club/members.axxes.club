@@ -4,8 +4,8 @@
  * Behind Cloud Run, a route handler's `request.url` / `nextUrl.origin` is the
  * container's own listen address (`https://0.0.0.0:8080`), not the public host,
  * so `new URL("/dashboard", request.url)` sends the browser nowhere. The load
- * balancer preserves the `Host` header, which is the public host. Middleware is
- * unaffected; route handlers need this.
+ * balancer preserves the `Host` header, which is the public host. Middleware
+ * sees the same container address, so it needs this too.
  */
 export function publicOrigin(request: Request): string {
   const own = new URL(request.url)
