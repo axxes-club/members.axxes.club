@@ -22,7 +22,8 @@
     "matter:demo:clean": "node scripts/matter-demo.mjs --clean",
     "matter:catalog": "node scripts/matter-catalog.mjs",
     "matter:catalog:hide": "node scripts/matter-catalog.mjs --hide",
-    "test:storage": "node --test scripts/gcs/*.check.mjs"
+    "test:storage": "node --test scripts/gcs/*.check.mjs",
+    "test:office-domain": "tsx --test tests/office-links-domain.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
@@ -92,6 +93,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
