@@ -13,13 +13,13 @@ new Function('require','module','exports',originOutput)(require,originModule,ori
 const projectRequire = spec => spec === '@/lib/public-origin' ? originModule.exports : require(spec);
 new Function('require','module','exports','process',output)(projectRequire,module,module.exports,{env:{NODE_ENV:'production'}});
 const middleware = module.exports.middleware;
-for (const pathname of ['/api/cron/newsletter','/api/axxes/products']) {
+for (const pathname of ['/api/cron/newsletter','/api/cron/storage','/api/internal/storage','/api/axxes/products']) {
  test(`${pathname} reaches its handler without a user session`,()=>{
   const response=middleware(new NextRequest('https://members.v2.axxes.app'+pathname));
   assert.equal(response.headers.get('x-middleware-next'),'1');
  });
 }
-for (const pathname of ['/api/cron/newsletter-extra','/api/axxes/products-extra','/dashboard']) {
+for (const pathname of ['/api/cron/newsletter-extra','/api/cron/storage-extra','/api/internal/storage-extra','/api/axxes/products-extra','/dashboard']) {
  test(`${pathname} keeps the session guard`,()=>{
   const response=middleware(new NextRequest('https://members.v2.axxes.app'+pathname));
   assert.equal(response.status,307);

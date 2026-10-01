@@ -1,3 +1,4 @@
+import { StorageSummary } from "@/components/storage/storage-panel"
 import { PageHeader } from "@/components/layout/page-header"
 export const dynamic = "force-dynamic"
 
@@ -41,6 +42,8 @@ export default async function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <StorageSummary tenantId={tenant.id} />
 
       <SectionHeader number="03" title="Billing" />
 

@@ -25,8 +25,10 @@
     "test:storage": "node --test scripts/gcs/*.check.mjs",
     "test:office-domain": "tsx --test tests/office-links-domain.test.ts",
     "test:organization-launch": "node --test tests/*.test.mjs",
-    "test:public-tenants": "tsx --test tests/public-tenant-routes.test.ts",
-    "test:website": "tsx --test tests/website/*.test.ts"
+    "test:public-tenants": "tsx --test tests/public-tenant-routes.test.ts tests/public-origin.test.ts",
+    "test:website": "tsx --test tests/website/*.test.ts",
+    "test:quota": "node --test scripts/storage/*.check.mjs",
+    "test:commerce": "tsx --test tests/commerce/*.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",

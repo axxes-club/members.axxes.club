@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/api/v1/website/gangstarz' || /^\/api\/v1\/public\/tenants\/[^/]+\/website\/[^/]+$/.test(pathname)) return NextResponse.next()
 
   // Scheduler uses its bearer token, checked by this exact route, not a user session.
-  if (pathname === "/api/cron/newsletter" || pathname === "/api/axxes/products") return NextResponse.next()
+  if (pathname === "/api/cron/newsletter" || pathname === "/api/cron/storage" || pathname === "/api/internal/storage" || pathname === "/api/axxes/products") return NextResponse.next()
 
   // A path is public if it is the root, or if it sits under one of the prefixes.
   const isPublic = pathname === "/" || publicRoutes.some((route) => route.endsWith("/") ? pathname.startsWith(route) : pathname === route || pathname.startsWith(`${route}/`))

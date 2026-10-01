@@ -38,7 +38,7 @@
         "ci-check:$BUILD_ID",
         "sh",
         "-ec",
-        "rm -f .env .env.*; npm run test:office-domain; npm run test:organization-launch; npm run test:public-tenants"
+        "rm -f .env .env.* && npm run test:office-domain && npm run test:organization-launch && npm run test:public-tenants"
       ]
     },
     {
@@ -63,6 +63,27 @@
         "sh",
         "-ec",
         "rm -f .env .env.*; npm run test:website"
+      ]
+    },
+    {
+      "id": "quota-tests",
+      "name": "gcr.io/cloud-builders/docker",
+      "entrypoint": "sh",
+      "args": [
+        "-ec",
+        "docker run -d --rm --name quota-db -e POSTGRES_PASSWORD=quota-test-only postgres:17; trap \"docker stop quota-db\" EXIT; for i in $$(seq 1 60); do docker exec quota-db pg_isready -U postgres && break; sleep 1; done; docker run --rm --network container:quota-db -e STORAGE_TEST_DATABASE_URL=postgres://postgres:quota-test-only@127.0.0.1:5432/postgres ci-check:$BUILD_ID sh -ec \"rm -f .env .env.*; npm run test:quota\""
+      ]
+    },
+    {
+      "id": "commerce-tests",
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "run",
+        "--rm",
+        "ci-check:$BUILD_ID",
+        "sh",
+        "-ec",
+        "rm -f .env .env.*; npm run test:commerce"
       ]
     },
     {
@@ -115,6 +136,15 @@
       "args": [
         "push",
         "us-west1-docker.pkg.dev/$PROJECT_ID/ci-members/members:${_TAG}-$BUILD_ID"
+      ]
+    },
+    {
+      "id": "release",
+      "name": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
+      "entrypoint": "bash",
+      "args": [
+        "-c",
+        "set -euo pipefail\nimage='us-west1-docker.pkg.dev/$PROJECT_ID/ci-members/members:${_TAG}-$BUILD_ID'\ndigest=$(gcloud artifacts docker images describe \"$$image\" --format='value(image_summary.digest)')\nexport CI_SERVICE='members' CI_BUILD_ID='$BUILD_ID' CI_IMAGE=\"$${image%:*}@$$digest\"\npython3 scripts/gcp-release.py\n"
       ]
     }
   ],
