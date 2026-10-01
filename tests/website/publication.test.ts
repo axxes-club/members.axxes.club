@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {PGlite} from '../../../gangstarz.axxes.club/node_modules/@electric-sql/pglite/dist/index.js';
+import {PGlite} from '@electric-sql/pglite';
 import {WebsitePublication} from '../../src/lib/website/publication';
 const tenant='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',page='33333333-3333-4333-8333-333333333333';
 const principal={tenantId:tenant,userId:'operator'};
