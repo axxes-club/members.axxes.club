@@ -5,6 +5,6 @@ export const dynamic="force-dynamic";
 export async function GET(request:Request){
  if(!process.env.CRON_SECRET || request.headers.get("authorization")!==`Bearer ${process.env.CRON_SECRET}`)return Response.json({error:"Unauthorized"},{status:401});
  const client=await storagePool().connect();
- try{await client.query("BEGIN");const expired=await expireReservations(client);await client.query("COMMIT");const removed=await cleanupUnreferencedStorage();return Response.json({expired,removed},{headers:{"Cache-Control":"no-store"}});}
+ try{await client.query("BEGIN");await client.query("SET LOCAL lock_timeout='5s'");await client.query("SET LOCAL statement_timeout='30s'");const expired=await expireReservations(client);await client.query("COMMIT");const removed=await cleanupUnreferencedStorage();return Response.json({expired,removed},{headers:{"Cache-Control":"no-store"}});}
  catch{await client.query("ROLLBACK");return Response.json({error:"Storage maintenance failed"},{status:500});}finally{client.release();}
 }

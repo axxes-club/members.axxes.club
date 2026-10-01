@@ -38,8 +38,9 @@ export async function reserveBatch(client,{key,records,enforce,now=new Date()}) 
  }
  await client.query('UPDATE storage_accounts SET reserved_bytes=reserved_bytes+$3,updated_at=now() WHERE tenant_id=$1 AND user_id=$2',[key.tenantId,key.userId,requested.toString()]);
 }
-export async function expireReservations(client,now=new Date()) {
- const {rows:keys}=await client.query("SELECT DISTINCT tenant_id,user_id FROM storage_reservations WHERE state='pending' AND expires_at<=$1 ORDER BY tenant_id,user_id",[now]);
+export async function expireReservations(client,now=new Date(),maxAccounts=100) {
+ if(!Number.isInteger(maxAccounts)||maxAccounts<1||maxAccounts>100)throw new QuotaError("Invalid reservation expiry batch size");
+ const {rows:keys}=await client.query("SELECT DISTINCT tenant_id,user_id FROM storage_reservations WHERE state='pending' AND expires_at<=$1 ORDER BY tenant_id,user_id LIMIT $2",[now,maxAccounts]);
  let total=0;
  for(const row of keys) {
   const key={tenantId:row.tenant_id,userId:row.user_id};await lockAccount(client,key);

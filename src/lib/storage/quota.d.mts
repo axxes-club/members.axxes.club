@@ -7,7 +7,7 @@ export function ensureAccount(client:Pool|PoolClient,key:StorageKey):Promise<voi
 export function readStorage(client:Pool|PoolClient,key:StorageKey,now?:Date):Promise<StorageSnapshot>;
 export function lockAccount(client:PoolClient,key:StorageKey):Promise<void>;
 export function reserveBatch(client:PoolClient,input:{key:StorageKey;records:Array<{id:string;descriptor:{size:number};maxExpiresAt:number;quota?:StorageKey}>;enforce:'shadow'|'enforce';now?:Date}):Promise<void>;
-export function expireReservations(client:PoolClient,now?:Date):Promise<number>;
+export function expireReservations(client:PoolClient,now?:Date,maxAccounts?:number):Promise<number>;
 export function cancelReservations(client:PoolClient,input:{key:StorageKey;uploadIds:string[]}):Promise<number>;
 export function commitCharge(client:PoolClient,input:{uploadId:string;assetId:string;objectKey:string;generation:string;actualBytes:string;now?:Date}):Promise<void>;
 export function lockedCharge(client:PoolClient,input:{objectKey:string;generation:string}):Promise<{object_key:string;generation:string;tenant_id:string|null;user_id:string|null;bytes:string;released_at:Date|null}|undefined>;
