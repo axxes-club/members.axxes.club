@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { auth, HANDSHAKE_URL } from "@/lib/auth"
+import { publicOrigin } from "@/lib/public-origin"
 
 // Ends the session: through Handshake (all AXXES apps) when it's on, otherwise just here.
 //
@@ -12,12 +13,12 @@ export async function GET(req: NextRequest) {
   const isLocalHost = localHosts.has(req.nextUrl.hostname)
 
   if (HANDSHAKE_URL && !isLocalHost) {
-    const back = new URL("/dashboard", req.url).href
+    const back = new URL("/dashboard", publicOrigin(req)).href
     return NextResponse.redirect(`${HANDSHAKE_URL}/sign-out?redirect=${encodeURIComponent(back)}`)
   }
 
   const result = await auth.api.signOut({ headers: req.headers, asResponse: true }).catch(() => null)
-  const res = NextResponse.redirect(new URL("/sign-in", req.url))
+  const res = NextResponse.redirect(new URL("/sign-in", publicOrigin(req)))
   result?.headers.getSetCookie().forEach((cookie) => res.headers.append("set-cookie", cookie))
   res.cookies.delete("tenant_id")
   return res
