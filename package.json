@@ -28,7 +28,8 @@
     "test:public-tenants": "tsx --test tests/public-tenant-routes.test.ts tests/public-origin.test.ts",
     "test:website": "tsx --test tests/website/*.test.ts",
     "test:quota": "node --test scripts/storage/*.check.mjs",
-    "test:commerce": "tsx --test tests/commerce/*.test.ts"
+    "test:commerce": "tsx --test tests/commerce/*.test.ts",
+    "test:storage-billing": "tsx --test tests/storage-billing-catalog.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",

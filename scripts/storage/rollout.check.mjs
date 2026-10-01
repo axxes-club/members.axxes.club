@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {accountingReadiness} from './rollout.mjs';
+test('shadow accounting readiness rejects unexplained counter divergence and missing links',()=>{assert.equal(accountingReadiness({accounts:[{used_bytes:'9007199254740993',charged_bytes:'9007199254740993',reserved_bytes:'100',pending_bytes:'100'}],missingLinks:0,orphanCharges:0}).ready,true);for(const patch of [{used_bytes:'0'},{reserved_bytes:'99'}])assert.equal(accountingReadiness({accounts:[{used_bytes:'100',charged_bytes:'100',reserved_bytes:'100',pending_bytes:'100',...patch}],missingLinks:0,orphanCharges:0}).ready,false);assert.equal(accountingReadiness({accounts:[],missingLinks:1,orphanCharges:0}).ready,false);});

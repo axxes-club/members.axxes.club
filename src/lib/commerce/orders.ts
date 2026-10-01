@@ -4,7 +4,7 @@ import { CommerceError,cartSchema,cents,transaction,type SqlPool,type SqlClient,
 export class CommerceOrders {
  constructor(public pool:SqlPool,private options:{receiptSecret:string}){}
  token(tenantId:string,id:string){return id+'.'+createHmac('sha256',this.options.receiptSecret).update('commerce-receipt:'+tenantId+':'+id).digest('base64url')}
- checkout(row:CheckoutRow):Checkout{return {id:row.id,tenantId:row.tenant_id,mode:row.mode,amount:row.amount,currency:row.currency,state:row.state,token:this.token(row.tenant_id,row.id),paymentId:row.payment_id??null,checkoutUrl:row.checkout_url??null}}
+ checkout(row:CheckoutRow):Checkout{return {id:row.id,tenantId:row.tenant_id,mode:row.mode,amount:row.amount,currency:row.currency,state:row.state,token:this.token(row.tenant_id,row.id),paymentId:row.payment_id??null,checkoutUrl:['awaiting_gateway','pending'].includes(row.state)?row.checkout_url??null:null}}
  async catalog(slug:string){const c=await this.pool.connect();try{return await catalog(c,slug)}finally{c.release()}}
  private async priceLine(c:SqlClient,tenantId:string,item:CartInput['items'][number]):Promise<Line>{
   if(item.kind==='ticket'){

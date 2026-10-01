@@ -36,3 +36,19 @@ CREATE TABLE IF NOT EXISTS commerce_notifications (
  payment_id uuid NOT NULL,
  processed_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS commerce_merchants (
+ tenant_id uuid NOT NULL REFERENCES tenants(id),mode text NOT NULL CHECK(mode IN ('test','live')),
+ credentials_ciphertext text NOT NULL,updated_by text NOT NULL,verified_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(tenant_id,mode)
+);
+CREATE TABLE IF NOT EXISTS commerce_returns (
+ tenant_id uuid NOT NULL REFERENCES tenants(id),order_item_id uuid NOT NULL REFERENCES order_items(id),
+ idempotency_key text NOT NULL,quantity integer NOT NULL CHECK(quantity>0),actor_id text NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(tenant_id,idempotency_key)
+);
+CREATE TABLE IF NOT EXISTS commerce_refund_requests (
+ tenant_id uuid NOT NULL REFERENCES tenants(id),checkout_id uuid NOT NULL REFERENCES commerce_checkouts(id),
+ idempotency_key text NOT NULL,amount integer NOT NULL CHECK(amount>0),
+ state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','confirmed')),provider_refund_id uuid,
+ created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(tenant_id,checkout_id,idempotency_key)
+);

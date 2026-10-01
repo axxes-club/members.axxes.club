@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {storageCatalog} from '../src/lib/storage/billing-catalog';
+test('missing or invalid commercial terms leave all purchases unpublished',()=>{assert.deepEqual(storageCatalog(undefined),{published:false,packages:[]});for(const value of ['{}','{"published":true,"packages":[]}','{"published":true,"packages":[{"id":"small","bytes":"-1","amountCents":1}]}'])assert.deepEqual(storageCatalog(value),{published:false,packages:[]});});
+test('approved catalog uses exact decimal bytes and explicit financial and expiry terms',()=>{const value={published:true,packages:[{id:'approved-fixture',name:'Synthetic fixture package',bytes:'9007199254740993',amountCents:500,currency:'usd',cadence:'one_time',validForSeconds:86400,refundPolicy:'revoke_on_full_refund'}]};assert.equal(storageCatalog(JSON.stringify(value)).packages[0]?.bytes,value.packages[0].bytes);for(const patch of [{amountCents:0},{bytes:'1e9'},{currency:'invented'},{cadence:'monthly'},{validForSeconds:0}])assert.equal(storageCatalog(JSON.stringify({...value,packages:[{...value.packages[0],...patch}]})).published,false);});

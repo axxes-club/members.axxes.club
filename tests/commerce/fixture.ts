@@ -1,10 +1,19 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFile } from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import {Pool} from 'pg';
 export const tenant='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',event='33333333-3333-4333-8333-333333333333',ticket='44444444-4444-4444-8444-444444444444',product='55555555-5555-4555-8555-555555555555',variant='66666666-6666-4666-8666-666666666666';
 export async function fixture(){
- const db=new PGlite();
+ const url=process.env.COMMERCE_TEST_DATABASE_URL;
+ if(url&&!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw new Error('Commerce tests require disposable local PostgreSQL');
+ const pg=url?new Pool({connectionString:url}):null;
+ const schema='commerce_test_'+randomUUID().replaceAll('-','');
+ if(pg)await pg.query(`CREATE SCHEMA ${schema}`);
+ const direct=pg?await pg.connect():null;
+ if(direct)await direct.query(`SET search_path TO ${schema},public`);
+ const db=direct&&pg?{exec:async(sql:string)=>{await direct.query(sql);},query:async<Row>(sql:string,params?:unknown[])=>{const result=await direct.query(sql,params);return{rows:result.rows as Row[]};},close:async()=>{direct.release();await pg.query(`DROP SCHEMA ${schema} CASCADE`);await pg.end();}}:new PGlite();
  await db.exec(`
- CREATE TABLE tenants(id uuid PRIMARY KEY,slug text UNIQUE,settings jsonb DEFAULT '{}',deleted_at timestamptz);
+ CREATE TABLE tenants(id uuid PRIMARY KEY,slug text UNIQUE,settings jsonb DEFAULT '{}',status text DEFAULT 'active',deleted_at timestamptz);
  CREATE TABLE tenant_memberships(tenant_id uuid,user_id text,role text,deleted_at timestamptz);
  CREATE TABLE events(id uuid PRIMARY KEY,tenant_id uuid,name text,slug text,starts_at timestamptz,status text,is_private boolean DEFAULT false,cover_image_url text,deleted_at timestamptz);
  CREATE TABLE ticket_types(id uuid PRIMARY KEY,tenant_id uuid,event_id uuid,name text,price numeric,currency text DEFAULT 'USD',quantity_total int,quantity_sold int DEFAULT 0,quantity_reserved int DEFAULT 0,status text DEFAULT 'available',is_hidden boolean DEFAULT false,min_per_order int DEFAULT 1,max_per_order int DEFAULT 10,sales_start_at timestamptz,sales_end_at timestamptz,deleted_at timestamptz);
@@ -21,7 +30,7 @@ export async function fixture(){
  INSERT INTO product_variants(id,tenant_id,product_id,name,price,quantity,options) VALUES('${variant}','${tenant}','${product}','Medium',40.00,3,'{"size":"M"}');
  `);
  await db.exec(await readFile(new URL('../../db/gangstarz-commerce.sql',import.meta.url),'utf8'));
- const pool={connect:async()=>({query:async<Row>(sql:string,params?:unknown[])=>db.query<Row>(sql,params),release(){}})};
+ const pool={connect:async()=>{if(pg){const client=await pg.connect();await client.query(`SET search_path TO ${schema},public`);return{query:async<Row>(sql:string,params?:unknown[])=>{const result=await client.query(sql,params);return{rows:result.rows as Row[]};},release(){client.release();}};}return{query:async<Row>(sql:string,params?:unknown[])=>db.query<Row>(sql,params),release(){}};}};
  return {db,pool};
 }
 export const buyer={email:'buyer@example.com',firstName:'Test',lastName:'Buyer'};

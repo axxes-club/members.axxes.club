@@ -1,0 +1,11 @@
+// Explicit additive-only activation. No customer writes, output, provider calls or credentials.
+import{readFile}from'node:fs/promises';import{createHash}from'node:crypto';import{Pool}from'pg';
+if(process.env.COMMERCE_SCHEMA_APPLY!=='additive-only'||!process.env.DATABASE_URL)throw Error('Explicit additive commerce activation and active authority required');
+const sql=await readFile(new URL('../../db/gangstarz-commerce.sql',import.meta.url),'utf8');
+if(/\b(DROP|DELETE|UPDATE|INSERT|TRUNCATE|ALTER)\b/i.test(sql))throw Error('Only reviewed CREATE statements are permitted');
+const tables=['commerce_checkouts','commerce_reservations','commerce_notifications','commerce_merchants','commerce_returns','commerce_refund_requests'];
+const pool=new Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:15000}),client=await pool.connect();
+try{await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');await client.query("SET LOCAL lock_timeout='5s'");await client.query("SET LOCAL statement_timeout='30s'");const locked=(await client.query("SELECT pg_try_advisory_xact_lock(hashtext('main-release-commerce-additive')) AS locked")).rows[0].locked;if(!locked)throw Error('Another commerce activation is running');
+const counts=()=>client.query('SELECT (SELECT count(*)::text FROM assets) assets,(SELECT count(*)::text FROM tenants) tenants,(SELECT count(*)::text FROM orders) orders,(SELECT count(*)::text FROM attendees) attendees');const before=(await counts()).rows[0];await client.query(sql);const after=(await counts()).rows[0];if(JSON.stringify(before)!==JSON.stringify(after))throw Error('Customer count guard failed');
+const present=(await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name=ANY($1)",[tables])).rows.length;if(present!==tables.length)throw Error('Required commerce tables are missing');await client.query('COMMIT');console.log(JSON.stringify({additiveCommerceApplied:true,tables,sqlSha256:createHash('sha256').update(sql).digest('hex'),customerCountsPreserved:true,counts:after}));
+}catch(error){await client.query('ROLLBACK');console.error(JSON.stringify({additiveCommerceApplied:false,code:error.code??'COMMERCE_ACTIVATION_FAILED'}));process.exitCode=1;}finally{client.release();await pool.end();}
