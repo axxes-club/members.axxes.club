@@ -31,17 +31,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: '24'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: TypeScript type check
-        run: pnpm exec tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: ESLint
-        run: pnpm lint
+        run: npm run lint
 
   # ─── Build Check ───
   build:
@@ -62,14 +62,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: '24'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build application
-        run: pnpm build
+        run: npm run build
         env:
           # Minimal env vars for build
           DATABASE_URL: postgresql://build:build@localhost:5432/build
@@ -100,11 +100,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: '24'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run security audit
         run: pnpm audit --audit-level=high || true
