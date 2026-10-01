@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "revision": 0,
+  "page": {
+    "id": "00000000-0000-4000-8000-000000000000",
+    "title": "Gangstarz \u2014 For the love of the dance",
+    "slug": "home",
+    "description": "Charlotte house music collective. Parties, people, and gang love.",
+    "metaTitle": "Gangstarz \u2014 Charlotte House Music & Events",
+    "metaDescription": "Find your next party. Meet the Gangstarz collective, explore Charlotte house music events, and take a little gang love home.",
+    "ogImage": "https://gangstarz.axxes.club/media/hero.jpeg"
+  },
+  "theme": {
+    "logo": "/media/logo.png",
+    "background": "#212121",
+    "foreground": "#FFFFFF",
+    "primary": "#F48D25",
+    "secondary": "#F9BC22",
+    "displayFont": "Teko",
+    "labelFont": "Victor Mono"
+  },
+  "navigation": [
+    {
+      "label": "Events",
+      "href": "#events"
+    },
+    {
+      "label": "Collective",
+      "href": "#collective"
+    },
+    {
+      "label": "Gallery",
+      "href": "#gallery"
+    },
+    {
+      "label": "Merch",
+      "href": "#shop"
+    },
+    {
+      "label": "Get tickets",
+      "href": "#events"
+    }
+  ],
+  "footer": {
+    "text": "Charlotte house music.\nGood people. Great nights. Gang love.",
+    "socials": [
+      {
+        "label": "Instagram",
+        "href": "https://www.instagram.com/gangstarz_clt/"
+      },
+      {
+        "label": "Get in touch",
+        "href": "mailto:info@gangstarzentertainment.com"
+      }
+    ],
+    "showPoweredBy": true,
+    "conceptLabel": "Website concept by AXXES"
+  },
+  "blocks": [
+    {
+      "id": "f5a4d636-545e-4fbc-a91d-ede896c3be89",
+      "type": "gangstarz-hero",
+      "content": {
+        "anchor": "home",
+        "location": "CHARLOTTE, NC \u00b7 HOUSE MUSIC COLLECTIVE",
+        "eyebrow": "GOOD MUSIC. GOOD PEOPLE. GANG LOVE.",
+        "title": "FOR THE LOVE\nOF THE DANCE.",
+        "subtitle": "From daytime grooves to late-night afters. Bringing Charlotte together, one dance floor at a time.",
+        "image": "/media/hero.jpeg",
+        "alt": "Gangstarz crowd beneath the original illuminated G-and-star logo",
+        "ctaText": "Find your next party",
+        "ctaLink": "#events",
+        "secondaryText": "Meet the collective",
+        "secondaryLink": "#collective"
+      },
+      "settings": {},
+      "sortOrder": 0,
+      "isVisible": true
+    },
+    {
+      "id": "63509cbb-efb6-43ec-ab88-8e862c5660f8",
+      "type": "gangstarz-events",
+      "content": {
+        "anchor": "events",
+        "eyebrow": "UP NEXT / ON THE CALENDAR",
+        "title": "YOUR NEXT\nGOOD NIGHT.",
+        "subtitle": "The lineup, the room, the feeling. Find your people on the dance floor.",
+        "emptyText": "New dates are on the way. Follow @gangstarz_clt for the next announcement.",
+        "items": [
+          {
+            "id": "caleb-jackson-2026-10-09",
+            "title": "Caleb Jackson",
+            "date": "2026-10-09",
+            "venue": "RSVP Mainstage",
+            "ticketUrl": "https://posh.vip/e/gangstarz-presents-caleb-jackson?u=iankingstonsmith&_t=msp5b3ks&os=ios&src=event_page",
+            "image": "/media/caleb.jpg",
+            "label": "GANGSTARZ PRESENTS"
+          },
+          {
+            "id": "marco-strous-2026-10-31",
+            "title": "Marco Strous",
+            "date": "2026-10-31",
+            "venue": "Dahlias",
+            "ticketUrl": "https://wl.eventim.us/event/Marco-Strous-CHARLOTTE/700102?afflky=DiscoDonnie",
+            "image": "/media/marco.jpg",
+            "label": "HALLOWEEN IN CHARLOTTE"
+          }
+        ]
+      },
+      "settings": {},
+      "sortOrder": 1,
+      "isVisible": true
+    },
+    {
+      "id": "190402be-ae81-4579-abcf-14ae47b13f79",
+      "type": "gangstarz-story",
+      "content": {
+        "anchor": "about",
+        "eyebrow": "HOUSE MUSIC. HOMEGROWN.",
+        "title": "A COLLECTIVE.\nA COMMUNITY.\nA FEELING.",
+        "subtitle": "We love this city. We love this music. We\u2019re here to bring people together.",
+        "text": "Founded in Charlotte in 2024 by Ian Kingston Smith, Gangstarz is a DJ collective built around a love for house music. Latin tech, deep grooves, funky cuts, and peak-hour tech house.\n\nFrom caf\u00e9 parties to late-night afters, we bring the DJs, sound, lighting, and the energy. Every event is produced by our team, with community at the center.",
+        "image": "/media/collective.jpg",
+        "alt": "Gangstarz house music community in Charlotte",
+        "linkText": "Come find us on Instagram",
+        "linkUrl": "https://www.instagram.com/gangstarz_clt/"
+      },
+      "settings": {},
+      "sortOrder": 2,
+      "isVisible": true
+    },
+    {
+      "id": "1c5d4bef-bb11-4a9c-8ade-e38afdebe3de",
+      "type": "gangstarz-artists",
+      "content": {
+        "anchor": "collective",
+        "eyebrow": "THE PEOPLE BEHIND THE SOUND",
+        "title": "MEET THE GANG.",
+        "subtitle": "Local roots. A shared love of house. The DJs shaping the Gangstarz sound.",
+        "items": [
+          {
+            "name": "Kingston",
+            "image": "/media/kingston.jpg",
+            "alt": "Kingston",
+            "instagram": "https://www.instagram.com/IanKingstonSmith/",
+            "role": "GANGSTARZ COLLECTIVE"
+          },
+          {
+            "name": "Pharro",
+            "image": "/media/pharro.jpg",
+            "alt": "Pharro",
+            "instagram": "https://www.instagram.com/ItsPharro/",
+            "role": "GANGSTARZ COLLECTIVE"
+          },
+          {
+            "name": "Kike Naranjo",
+            "image": "/media/kike.jpg",
+            "alt": "Kike Naranjo",
+            "instagram": "https://www.instagram.com/KikeNaranjoDJ/",
+            "role": "GANGSTARZ COLLECTIVE"
+          },
+          {
+            "name": "Coll",
+            "image": "/media/coll.jpg",
+            "alt": "Coll",
+            "instagram": "https://www.instagram.com/ColllMusic/",
+            "role": "GANGSTARZ COLLECTIVE"
+          }
+        ]
+      },
+      "settings": {},
+      "sortOrder": 3,
+      "isVisible": true
+    },
+    {
+      "id": "77fe5825-05c6-4a67-83bf-8a5281321c33",
+      "type": "gangstarz-gallery",
+      "content": {
+        "anchor": "gallery",
+        "eyebrow": "YOU HAD TO BE THERE",
+        "title": "THIS IS\nGANG LOVE.",
+        "subtitle": "Real moments. Familiar faces. The feeling that keeps us coming back.",
+        "items": [
+          {
+            "image": "/media/gallery-0.jpg",
+            "alt": "Gangstarz community and dance floor moment 1"
+          },
+          {
+            "image": "/media/gallery-1.jpg",
+            "alt": "Gangstarz community and dance floor moment 2"
+          },
+          {
+            "image": "/media/gallery-2.jpg",
+            "alt": "Gangstarz community and dance floor moment 3"
+          },
+          {
+            "image": "/media/gallery-3.jpg",
+            "alt": "Gangstarz community and dance floor moment 4"
+          },
+          {
+            "image": "/media/gallery-4.jpg",
+            "alt": "Gangstarz community and dance floor moment 5"
+          },
+          {
+            "image": "/media/gallery-5.jpg",
+            "alt": "Gangstarz community and dance floor moment 6"
+          },
+          {
+            "image": "/media/gallery-6.jpg",
+            "alt": "Gangstarz community and dance floor moment 7"
+          },
+          {
+            "image": "/media/gallery-7.jpg",
+            "alt": "Gangstarz community and dance floor moment 8"
+          }
+        ]
+      },
+      "settings": {},
+      "sortOrder": 4,
+      "isVisible": true
+    },
+    {
+      "id": "60ff6592-53ca-4cd1-b34b-ad90fa4e5e5a",
+      "type": "gangstarz-merch",
+      "content": {
+        "anchor": "shop",
+        "eyebrow": "TAKE THE FEELING WITH YOU",
+        "title": "WEAR THE GANG.",
+        "subtitle": "Original Gangstarz pieces. A little gang love, wherever you go.",
+        "shopText": "Explore the merch",
+        "shopUrl": "https://shop.gangstarzentertainment.com/",
+        "items": [
+          {
+            "name": "Gangstarz Fan",
+            "image": "/media/merch-0.jpg",
+            "alt": "Gangstarz Fan",
+            "price": "$20.00",
+            "status": "Sold out",
+            "url": "https://shop.gangstarzentertainment.com/products/gangstarz-fan"
+          },
+          {
+            "name": "Gang Love T-Shirt Black",
+            "image": "/media/merch-1.jpg",
+            "alt": "Gang Love T-Shirt Black",
+            "price": "$40.00",
+            "status": "Sold out",
+            "url": "https://shop.gangstarzentertainment.com/products/gang-love-t-shirt-black"
+          },
+          {
+            "name": "Gang Love T-Shirt White",
+            "image": "/media/merch-2.jpg",
+            "alt": "Gang Love T-Shirt White",
+            "price": "$40.00",
+            "status": "Sold out",
+            "url": "https://shop.gangstarzentertainment.com/products/t-shirt"
+          }
+        ]
+      },
+      "settings": {},
+      "sortOrder": 5,
+      "isVisible": true
+    },
+    {
+      "id": "7b7384f6-216f-4149-8fb5-e1b22b450778",
+      "type": "gangstarz-partnership",
+      "content": {
+        "anchor": "contact",
+        "eyebrow": "LET\u2019S MAKE SOMETHING HAPPEN",
+        "title": "YOUR SPACE.\nOUR ENERGY.",
+        "subtitle": "A caf\u00e9, a rooftop, a club, a warehouse. We build the right party for the right room.",
+        "email": "info@gangstarzentertainment.com",
+        "phone": "704-926-2016",
+        "ctaText": "GOT A SPACE?\nLET\u2019S MAKE IT MOVE.",
+        "items": [
+          {
+            "title": "Full event production",
+            "text": "Sound, lighting, DJ setups, and operations. Our team brings the complete production, powered by Danley Sound Systems."
+          },
+          {
+            "title": "DJs & curated lineups",
+            "text": "Resident talent, local openers, and thoughtful headliner support. A lineup built for the room and the flow of the night."
+          },
+          {
+            "title": "Venue partnerships",
+            "text": "From caf\u00e9 sets to club nights and after-hours. We work with spaces across Charlotte to create something that feels right."
+          }
+        ],
+        "venues": [
+          {
+            "name": "TRIO"
+          },
+          {
+            "name": "THOUSAND HILLS"
+          },
+          {
+            "name": "DAHLIAS"
+          },
+          {
+            "name": "RSVP"
+          },
+          {
+            "name": "MUST BE NICE"
+          },
+          {
+            "name": "HOPPIN"
+          }
+        ]
+      },
+      "settings": {},
+      "sortOrder": 6,
+      "isVisible": true
+    }
+  ]
+}

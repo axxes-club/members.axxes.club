@@ -25,7 +25,8 @@
     "test:storage": "node --test scripts/gcs/*.check.mjs",
     "test:office-domain": "tsx --test tests/office-links-domain.test.ts",
     "test:organization-launch": "node --test tests/*.test.mjs",
-    "test:public-tenants": "tsx --test tests/public-tenant-routes.test.ts"
+    "test:public-tenants": "tsx --test tests/public-tenant-routes.test.ts",
+    "test:website": "tsx --test tests/website/*.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
@@ -96,6 +97,7 @@
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@electric-sql/pglite": "0.3.14"
   }
 }
