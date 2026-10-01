@@ -1,3 +1,4 @@
+import { publicOrigin } from "@/lib/public-origin"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
@@ -60,15 +61,17 @@ export function middleware(request: NextRequest) {
   // NODE_ENV, so a production-shaped local run (`NODE_ENV=production` on
   // localhost) behaves the same way, and a real deployment is untouched.
   const localHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0", "[::1]"])
-  const isLocalHost = localHosts.has(request.nextUrl.hostname)
+  // On Cloud Run nextUrl is the container address (0.0.0.0:8080); use the public host.
+  const origin = publicOrigin(request)
+  const isLocalHost = localHosts.has(new URL(origin).hostname)
 
   const handshakeUrl = isLocalHost
     ? null
     : process.env.HANDSHAKE_URL?.replace(/\/$/, "")
 
   if (handshakeUrl && handshakePages[pathname]) {
-    const back = new URL(searchParams.get("redirect") || "/dashboard", request.url)
-    if (back.origin !== request.nextUrl.origin) back.href = new URL("/dashboard", request.url).href
+    const back = new URL(searchParams.get("redirect") || "/dashboard", origin)
+    if (back.origin !== origin) back.href = new URL("/dashboard", origin).href
     const target = new URL(`${handshakeUrl}${handshakePages[pathname]}`)
     target.searchParams.set("redirect", back.href)
     return NextResponse.redirect(target)
