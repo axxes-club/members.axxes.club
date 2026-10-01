@@ -34,14 +34,16 @@ export function DamDetails({ asset, folders, canWrite, canDelete, onClose, onSav
   const [altText, setAltText] = React.useState(asset.altText ?? "")
   const [saving, setSaving] = React.useState(false)
 
-  React.useEffect(() => {
+  const [previousAsset, setPreviousAsset] = React.useState(asset)
+  if (previousAsset !== asset) {
+    setPreviousAsset(asset)
     setName(asset.name)
     setFolder(asset.folder ?? "")
     setTags(asset.tags)
     setTagDraft("")
     setDescription(asset.description ?? "")
     setAltText(asset.altText ?? "")
-  }, [asset])
+  }
 
   const dirty =
     name !== asset.name ||
@@ -258,10 +260,11 @@ export function DamPreview({
     .find((x) => x.target?.quickLook)
   const [inline, setInline] = React.useState(false)
 
-  React.useEffect(() => {
-    // Never carry "show the document" over to the next file in the set.
+  const [previousAssetId, setPreviousAssetId] = React.useState(asset?.id)
+  if (previousAssetId !== asset?.id) {
+    setPreviousAssetId(asset?.id)
     setInline(false)
-  }, [asset?.id])
+  }
 
   React.useEffect(() => {
     if (index == null) return

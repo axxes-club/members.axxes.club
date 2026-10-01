@@ -1,5 +1,10 @@
 import { z } from 'zod';
-export type SqlClient={query:(sql:string,params?:unknown[])=>Promise<{rows:any[]}>;release:()=>void};
+export type CheckoutRow={id:string;tenant_id:string;mode:'test'|'live';amount:number;currency:'usd';state:string;payment_id:string|null;checkout_url:string|null;request_hash:string};
+export type TicketRow={id:string;event_id:string;event_name:string;name:string;price:string;currency:string|null;quantity_total:number|null;min_per_order:number|null;max_per_order:number|null};
+export type ProductRow={id:string;name:string;price:string;currency:string|null;track_inventory:boolean;allow_backorder:boolean;has_variants:boolean;quantity:number|null};
+export type VariantRow={id:string;product_id:string;name:string|null;price:string;quantity:number|null};
+
+export type SqlClient={query:<Row=Record<string,unknown>>(sql:string,params?:unknown[])=>Promise<{rows:Row[]}>;release:()=>void};
 export type SqlPool={connect:()=>Promise<SqlClient>};
 export class CommerceError extends Error {constructor(message:string,public status=400){super(message)}}
 export const uuid=z.string().uuid();

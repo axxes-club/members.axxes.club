@@ -42,18 +42,19 @@ export function NewConversationDialog() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [isLoadingMembers, setIsLoadingMembers] = React.useState(false)
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (next) setIsLoadingMembers(true)
+    else { setSearch(""); setSelectedMembers([]); setGroupName("") }
+  }
   React.useEffect(() => {
-    if (open) {
-      setIsLoadingMembers(true)
-      getTeamMembersForMessaging()
-        .then(setTeamMembers)
-        .finally(() => setIsLoadingMembers(false))
-    } else {
-      // Reset state when dialog closes
-      setSearch("")
-      setSelectedMembers([])
-      setGroupName("")
-    }
+    if (!open) return
+    let active = true
+    getTeamMembersForMessaging()
+      .then(members => { if (active) setTeamMembers(members) })
+      .catch(error => console.error("Failed to load team members", error))
+      .finally(() => { if (active) setIsLoadingMembers(false) })
+    return () => { active = false }
   }, [open])
 
   const filteredMembers = teamMembers.filter(
@@ -80,7 +81,7 @@ export function NewConversationDialog() {
         type: selectedMembers.length > 1 ? "group" : "direct",
         name: selectedMembers.length > 1 ? groupName : undefined,
       })
-      setOpen(false)
+      handleOpenChange(false)
       router.push(`/messages/${conversation.id}`)
     } catch (error) {
       console.error("Failed to create conversation:", error)
@@ -90,7 +91,7 @@ export function NewConversationDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4" />

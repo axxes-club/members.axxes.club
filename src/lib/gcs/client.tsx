@@ -1,4 +1,6 @@
 "use client";
+import type { FileRouter as LegacyFileRouter } from "uploadthing/next";
+import type { UploadOptions } from "./browser.mjs";
 import { useRef, useState } from "react";
 import { createUploader } from "./browser.mjs";
 import { createProviderUpload } from "./provider.mjs";
@@ -9,7 +11,7 @@ type Uploaded = {
   type: string;
   url: string;
   ufsUrl: string;
-  serverData: any;
+  serverData: unknown;
 };
 type Options = {
   onUploadBegin?: (fileName: string) => void;
@@ -22,7 +24,8 @@ const upload = createProviderUpload({
   gcsUpload: createUploader(),
   legacyUpload: async (route, options) => {
     const { generateReactHelpers } = await import("@uploadthing/react");
-    return generateReactHelpers<any>().uploadFiles(route, {
+    const legacyUpload = generateReactHelpers<LegacyFileRouter>().uploadFiles as unknown as (route:string, options:Omit<UploadOptions,"onUploadProgress"> & {onUploadProgress?:(event:{totalProgress:number})=>void})=>Promise<Uploaded[]>;
+    return legacyUpload(route, {
       ...options,
       onUploadProgress: (event) =>
         options.onUploadProgress?.(event.totalProgress),

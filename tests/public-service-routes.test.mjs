@@ -6,13 +6,13 @@ import ts from 'typescript';
 const require = createRequire(import.meta.url);
 const { NextRequest } = require('next/server');
 const output = ts.transpileModule(readFileSync('src/middleware.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
-const module = {exports:{}};
+const evaluatedModule = {exports:{}};
 const originModule = {exports:{}};
 const originOutput = ts.transpileModule(readFileSync('src/lib/public-origin.ts','utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
 new Function('require','module','exports',originOutput)(require,originModule,originModule.exports);
 const projectRequire = spec => spec === '@/lib/public-origin' ? originModule.exports : require(spec);
-new Function('require','module','exports','process',output)(projectRequire,module,module.exports,{env:{NODE_ENV:'production'}});
-const middleware = module.exports.middleware;
+new Function('require','module','exports','process',output)(projectRequire,evaluatedModule,evaluatedModule.exports,{env:{NODE_ENV:'production'}});
+const middleware = evaluatedModule.exports.middleware;
 for (const pathname of ['/api/cron/newsletter','/api/cron/storage','/api/internal/storage','/api/axxes/products']) {
  test(`${pathname} reaches its handler without a user session`,()=>{
   const response=middleware(new NextRequest('https://members.v2.axxes.app'+pathname));

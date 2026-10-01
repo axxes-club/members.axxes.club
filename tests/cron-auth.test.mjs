@@ -12,14 +12,14 @@ for (const [name,env,headers] of [
  ['incorrect bearer token',{CRON_SECRET:'synthetic-cron-secret'},{authorization:'Bearer wrong'}],
 ]) {
  test(`newsletter refuses ${name} before reading campaigns`,async()=>{
-  const module={exports:{}};
+  const evaluatedModule={exports:{}};
   function require(spec) {
    if(spec==='next/server')return nativeRequire(spec);
    if(spec==='@/lib/db')return {db:new Proxy({}, {get(){throw new Error('Unauthorized cron touched the database')}})};
    return {};
   }
-  new Function('require','module','exports','process',output)(require,module,module.exports,{env});
-  const response=await module.exports.GET(new NextRequest('https://members.v2.axxes.app/api/cron/newsletter',{headers}));
+  new Function('require','module','exports','process',output)(require,evaluatedModule,evaluatedModule.exports,{env});
+  const response=await evaluatedModule.exports.GET(new NextRequest('https://members.v2.axxes.app/api/cron/newsletter',{headers}));
   assert.equal(response.status,401);
   assert.deepEqual(await response.json(),{error:'Unauthorized'});
  });

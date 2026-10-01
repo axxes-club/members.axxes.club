@@ -93,7 +93,7 @@ export function TenantSwitcher({
         }
         // Refresh the page to load new tenant context
         router.refresh()
-        window.location.href = "/dashboard"
+        window.location.assign("/dashboard")
       }
     } catch (error) {
       setError("Could not switch organization. Please try again.")

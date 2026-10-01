@@ -1,3 +1,4 @@
+import type {PoolClient} from "pg";
 import {deleteChargedObject} from "../storage/quota.mjs";
 import { shareProxyUrl } from "./share-url.mjs";
 import { db } from "@/lib/db";
@@ -42,7 +43,7 @@ const aliases = loadAliases({
 export function storageEnabled() {
   return process.env.GCS_STORAGE_ENABLED === "true";
 }
-let instance: any;
+let instance: Adapter<PoolClient> | undefined;
 export function storageAdapter() {
   if (!instance) {
     const routePolicies = policies.members;
@@ -112,7 +113,8 @@ export function storageHandlers() {
       if (!key) throw new StorageError("Unknown asset", 404);
       return key;
     },
-    authorizeRead: async (request: Request, key: string, file: any) => {
+    authorizeRead: async (request: Request | null, key: string, file: import("./contracts.mjs").StoredFile) => {
+      if (!request) return false;
       const id = file.metadata?.uploadId ?? file.metadata?.uploadid;
       const record = id ? await adapter.registry.get(id) : null;
       return authorizeAssetRead(request, {

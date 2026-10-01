@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useHydrated } from "@/hooks/use-hydrated"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -190,11 +191,7 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
   const { data: session } = useSession()
   const user = session?.user
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useHydrated()
 
   const isAdminTenant = tenantId === "40119de9-ef87-4e41-b479-7a28ec8e3d66"
   const showAdminMenu = isSuperadmin && (process.env.NODE_ENV !== "production" || isAdminTenant)
@@ -338,7 +335,7 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                window.location.href = "/sign-out"
+                window.location.assign("/sign-out")
               }}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -458,11 +455,7 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
   const { data: session } = useSession()
   const user = session?.user
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useHydrated()
 
   // Close mobile sidebar on route change
   React.useEffect(() => {
@@ -603,7 +596,7 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => {
-                  window.location.href = "/sign-out"
+                  window.location.assign("/sign-out")
                 }}
               >
                 <LogOut className="mr-2 h-4 w-4" />

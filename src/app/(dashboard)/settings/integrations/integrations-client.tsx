@@ -217,6 +217,12 @@ function IntegrationsContent({ grouped }: { grouped: Record<string, IntegrationP
   const [integrationToConfigure, setIntegrationToConfigure] = React.useState<Integration | null>(null)
   const [syncFrequency, setSyncFrequency] = React.useState<string>("hourly")
 
+  const refreshConnectionState = React.useCallback((providerId: string) =>
+    fetch(`/api/integrations/${providerId}`)
+      .then(async res => res.ok ? res.json() : null)
+      .then(data => { if (data) setConnectionStates(prev => ({ ...prev, [providerId]: data })) })
+      .catch(error => console.error(`Error checking ${providerId} connection:`, error)), [])
+
   // Handle OAuth callback
   React.useEffect(() => {
     const success = searchParams.get("success")
@@ -230,34 +236,16 @@ function IntegrationsContent({ grouped }: { grouped: Record<string, IntegrationP
     if (error) {
       toast.error(`Connection failed: ${error}`)
     }
-  }, [searchParams])
+  }, [searchParams, refreshConnectionState])
 
-  const loadAllConnections = React.useCallback(async () => {
-    // Load all integration connections
-    const providerIds = ["afters", "qortr", "peerspace", "orders-co", "shipstation", "dropbox"]
-    await Promise.all(providerIds.map(id => refreshConnectionState(id)))
-    setInitialLoading(false)
-  }, [])
-
-  // Initial load
   React.useEffect(() => {
-    loadAllConnections()
-  }, [loadAllConnections])
+    let active = true
+    const providerIds = ["afters", "qortr", "peerspace", "orders-co", "shipstation", "dropbox"]
+    Promise.all(providerIds.map(id => refreshConnectionState(id)))
+      .then(() => { if (active) setInitialLoading(false) })
+    return () => { active = false }
+  }, [refreshConnectionState])
 
-  const refreshConnectionState = async (providerId: string) => {
-    try {
-      const res = await fetch(`/api/integrations/${providerId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setConnectionStates(prev => ({
-          ...prev,
-          [providerId]: data,
-        }))
-      }
-    } catch (error) {
-      console.error(`Error checking ${providerId} connection:`, error)
-    }
-  }
 
   const handleConnect = async (integration: Integration) => {
     if (integration.authType === "oauth") {
@@ -274,7 +262,7 @@ function IntegrationsContent({ grouped }: { grouped: Record<string, IntegrationP
         
         if (res.ok) {
           const data = await res.json()
-          window.location.href = data.authorizationUrl
+          window.location.assign(data.authorizationUrl)
         } else {
           const error = await res.json()
           toast.error(error.error || "Failed to start connection")

@@ -15,7 +15,11 @@ const POLL_MS = 2000
  * the phone land in the current folder and appear here as they arrive; closing the
  * dialog ends the session.
  */
-export function PhotoHandoffDialog({
+type PhotoHandoffProps = {folder:string|null;onDone:()=>void;onClose:()=>void}
+export function PhotoHandoffDialog(props:PhotoHandoffProps) {
+  return <PhotoHandoffSession key={props.folder ?? "library"} {...props}/>
+}
+function PhotoHandoffSession({
   folder,
   onDone,
   onClose,
@@ -43,8 +47,13 @@ export function PhotoHandoffDialog({
   }, [folder])
 
   React.useEffect(() => {
-    start()
-  }, [start])
+    let active = true
+    createUploadSession(folder).then(value => {
+      if (active) setHandoff(value)
+      else void deleteUploadSession(value.token).catch(() => {})
+    }).catch(() => { if (active) setFailed(true) })
+    return () => { active = false }
+  }, [folder])
 
   React.useEffect(() => {
     if (!handoff || expired) return

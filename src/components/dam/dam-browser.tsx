@@ -86,6 +86,14 @@ import { DamDetails, DamPreview } from "./dam-details"
 
 const DRAG_MIME = "application/x-dam-ids"
 const VIEW_KEY = "dam:view"
+const subscribeView = (notify: () => void) => {
+  window.addEventListener("storage", notify)
+  return () => window.removeEventListener("storage", notify)
+}
+const readView = (): "grid" | "list" => {
+  try { return localStorage.getItem(VIEW_KEY) === "list" ? "list" : "grid" } catch { return "grid" }
+}
+
 
 const officeTarget = appTarget("office")
 
@@ -171,7 +179,9 @@ export function DamBrowser({ permissions, initialFolder, initialType, tenantId }
   const [search, setSearch] = React.useState("")
   const q = useDebounced(search.trim(), 300)
   const [sort, setSort] = React.useState<DamSort>("newest")
-  const [view, setView] = React.useState<"grid" | "list">("grid")
+  const [chosenView, setView] = React.useState<"grid" | "list" | null>(null)
+  const storedView = React.useSyncExternalStore(subscribeView, readView, () => "grid" as const)
+  const view = chosenView ?? storedView
 
   // ── Data ──
   const [assets, setAssets] = React.useState<DamAsset[]>([])
@@ -199,12 +209,6 @@ export function DamBrowser({ permissions, initialFolder, initialType, tenantId }
   const [dropFolder, setDropFolder] = React.useState<string | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-  React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem(VIEW_KEY)
-      if (stored === "grid" || stored === "list") setView(stored)
-    } catch {}
-  }, [])
 
   const changeView = (v: "grid" | "list") => {
     setView(v)
@@ -222,12 +226,17 @@ export function DamBrowser({ permissions, initialFolder, initialType, tenantId }
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname)
   }, [folder, type])
 
+  const requestKey = JSON.stringify([q, type, folder, sort, reloadKey])
+  const [previousRequestKey, setPreviousRequestKey] = React.useState(requestKey)
+  if (previousRequestKey !== requestKey) {
+    setPreviousRequestKey(requestKey)
+    setLoading(true)
+    setLoadError(null)
+  }
+
   // ── Loading ──
-  const refreshOverview = React.useCallback(async () => {
-    try {
-      setOverview(await fetchJson<DamOverview>("/api/dam/overview"))
-    } catch {}
-  }, [])
+  const refreshOverview = React.useCallback(() =>
+    fetchJson<DamOverview>("/api/dam/overview").then(setOverview).catch(() => {}), [])
 
   React.useEffect(() => {
     refreshOverview()
@@ -237,10 +246,9 @@ export function DamBrowser({ permissions, initialFolder, initialType, tenantId }
     loadController.current?.abort()
     const controller = new AbortController()
     loadController.current = controller
-    setLoading(true)
-    setLoadError(null)
     fetchJson<DamPage>(assetsUrl({ q, type, folder, sort }), controller.signal)
       .then((page) => {
+        if (controller.signal.aborted) return
         setAssets(page.assets)
         setTotal(page.total)
         setNextOffset(page.nextOffset)

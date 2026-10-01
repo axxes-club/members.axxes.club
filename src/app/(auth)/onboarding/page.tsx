@@ -51,7 +51,7 @@ export default function OnboardingPage() {
       })
 
       if (response.ok) {
-        window.location.href = "/dashboard"
+        window.location.assign("/dashboard")
       } else {
         const data = await response.json()
         setError(data.error || "Failed to select business")
@@ -80,7 +80,7 @@ export default function OnboardingPage() {
       })
 
       if (response.ok) {
-        window.location.href = "/dashboard"
+        window.location.assign("/dashboard")
       } else {
         const data = await response.json()
         setError(data.error || "Failed to create business")

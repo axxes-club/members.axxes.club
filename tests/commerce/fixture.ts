@@ -21,7 +21,7 @@ export async function fixture(){
  INSERT INTO product_variants(id,tenant_id,product_id,name,price,quantity,options) VALUES('${variant}','${tenant}','${product}','Medium',40.00,3,'{"size":"M"}');
  `);
  await db.exec(await readFile(new URL('../../db/gangstarz-commerce.sql',import.meta.url),'utf8'));
- const pool={connect:async()=>({query:async(sql:string,params?:unknown[])=>db.query(sql,params),release(){}})};
+ const pool={connect:async()=>({query:async<Row>(sql:string,params?:unknown[])=>db.query<Row>(sql,params),release(){}})};
  return {db,pool};
 }
 export const buyer={email:'buyer@example.com',firstName:'Test',lastName:'Buyer'};

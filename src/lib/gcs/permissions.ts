@@ -6,7 +6,7 @@ import { verifyShareToken } from "@/lib/dam/share";
 import { matchesShare } from "./permissions-core.mjs";
 export async function authorizeAssetRead(
   request: Request,
-  { urls, record }: any,
+  { urls, record }: {key?:string;urls:string[];record:import("./contracts.mjs").Receipt|null},
 ) {
   const candidates = await db
     .select()

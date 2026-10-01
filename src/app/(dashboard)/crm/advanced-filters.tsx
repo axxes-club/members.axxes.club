@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -59,9 +59,11 @@ export function AdvancedFilters({ filters, onFiltersChange, metadata }: Advanced
   const [isOpen, setIsOpen] = useState(false)
   const [localFilters, setLocalFilters] = useState<FilterState>(filters)
 
-  useEffect(() => {
+  const [previousFilters, setPreviousFilters] = useState(filters)
+  if (previousFilters !== filters) {
+    setPreviousFilters(filters)
     setLocalFilters(filters)
-  }, [filters])
+  }
 
   const activeFilterCount = [
     filters.types.length,

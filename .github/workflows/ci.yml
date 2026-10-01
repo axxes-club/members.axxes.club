@@ -82,6 +82,37 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "The application built successfully." >> $GITHUB_STEP_SUMMARY
 
+  feature-tests:
+    name: Feature Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: quota-test-only
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Test private storage and owned libraries
+        run: npm run test:storage && npm run test:office-domain && npm run test:organization-launch && npm run test:public-tenants
+      - name: Test CMS and canonical commerce
+        run: npm run test:website && npm run test:commerce
+      - name: Test quota transactions in disposable PostgreSQL
+        run: npm run test:quota
+        env:
+          STORAGE_TEST_DATABASE_URL: postgres://postgres:quota-test-only@127.0.0.1:5432/postgres
+
   # ─── Security Audit ───
   security:
     name: Security Audit

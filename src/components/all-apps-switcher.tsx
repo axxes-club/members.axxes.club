@@ -76,10 +76,10 @@ export function AllAppsSwitcher({ tenantId, compact = false }: { tenantId?: stri
   useEffect(() => {
     if (!open) return
     const abort = new AbortController()
-    setLoading(true); setError(""); setApps([])
     fetch(CATALOG, { signal: abort.signal, credentials: "omit" })
       .then(async response => { if (!response.ok) throw new Error(); return response.json() })
       .then(data => {
+        if (abort.signal.aborted) return
         if (!Array.isArray(data.products)) throw new Error()
         setApps(data.products.filter((app: SuiteApp) => {
           if (!app || typeof app.key !== "string" || typeof app.name !== "string" || !["live", "beta"].includes(app.status)) return false
@@ -94,7 +94,7 @@ export function AllAppsSwitcher({ tenantId, compact = false }: { tenantId?: stri
   const needle = query.trim().toLocaleLowerCase()
   const visible = apps.filter(app => `${app.name} ${app.description ?? ""} ${app.tagline ?? ""}`.toLocaleLowerCase().includes(needle))
   return <>
-    <button ref={trigger} type="button" className={`axxes-all-apps-trigger ${compact ? "axxes-all-apps-compact" : ""}`} aria-label="All apps" aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id : undefined} title="All apps" onClick={() => { setQuery(""); setOpen(value => !value) }}>
+    <button ref={trigger} type="button" className={`axxes-all-apps-trigger ${compact ? "axxes-all-apps-compact" : ""}`} aria-label="All apps" aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id : undefined} title="All apps" onClick={() => { setQuery(""); if (!open) { setLoading(true); setError(""); setApps([]) }; setOpen(value => !value) }}>
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="2" width="6" height="6" rx="1" /><rect x="12" y="2" width="6" height="6" rx="1" /><rect x="2" y="12" width="6" height="6" rx="1" /><rect x="12" y="12" width="6" height="6" rx="1" /></svg>
       <span className="axxes-all-apps-label">All apps</span>
     </button>
@@ -107,7 +107,7 @@ export function AllAppsSwitcher({ tenantId, compact = false }: { tenantId?: stri
         </div>
         <div className="axxes-apps-list" role="list" aria-label="Apps">
           {loading && <p role="status">Loading apps…</p>}
-          {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => setRetry(value => value + 1)}>Try again</button></div>}
+          {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => { setLoading(true); setError(""); setApps([]); setRetry(value => value + 1) }}>Try again</button></div>}
           {!loading && !error && !visible.length && <p>No apps match your search.</p>}
           {visible.map(app => <div key={app.key} role="listitem"><a href={appLaunchUrl(app, tenantId)} target="_blank" rel="noopener noreferrer" className="axxes-apps-item">
             <span className="axxes-apps-mark" aria-hidden="true" style={{ color: app.color }}>{app.name.slice(0, 2).toUpperCase()}</span>
