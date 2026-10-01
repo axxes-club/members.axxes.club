@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { tenants, tenantMemberships } from "@/lib/db/schema"
+import { and, eq, isNull } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
@@ -109,13 +110,13 @@ export async function GET() {
 
     // Get all tenants the user is a member of
     const memberships = await db.query.tenantMemberships.findMany({
-      where: (memberships, { eq }) => eq(memberships.userId, userId),
+      where: and(eq(tenantMemberships.userId, userId), isNull(tenantMemberships.deletedAt)),
       with: {
         tenant: true,
       },
     })
 
-    const userTenants = memberships.map((m) => ({
+    const userTenants = memberships.filter(m => !m.tenant.deletedAt && m.tenant.status === "active").map((m) => ({
       id: m.tenant.id,
       name: m.tenant.name,
       slug: m.tenant.slug,

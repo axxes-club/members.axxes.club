@@ -22,6 +22,7 @@ const publicRoutes = [
   "/api/dev-auth",
   "/share/",
   "/api/uploadthing",
+  "/api/axxes/products",
 ]
 
 // Auth pages that move to Handshake (the central AXXES account) when it's switched on
@@ -35,8 +36,11 @@ const handshakePages: Record<string, string> = {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // Scheduler uses its bearer token, checked by this exact route, not a user session.
+  if (pathname === "/api/cron/newsletter") return NextResponse.next()
+
   // A path is public if it is the root, or if it sits under one of the prefixes.
-  const isPublic = pathname === "/" || publicRoutes.some((route) => pathname.startsWith(route))
+  const isPublic = pathname === "/" || publicRoutes.some((route) => route.endsWith("/") ? pathname.startsWith(route) : pathname === route || pathname.startsWith(`${route}/`))
 
   // ── Handshake hand-off ──
   //
@@ -111,7 +115,7 @@ export function middleware(request: NextRequest) {
   //
   // They stay BELOW the session check above: you still have to be signed in to
   // list or pick a workspace, this only exempts them from the tenant guard.
-  const tenantSelectionRoutes = ["/api/v1/tenants"]
+  const tenantSelectionRoutes = ["/api/v1/tenants", "/api/organization/open"]
 
   // Check for tenant ID cookie
   const tenantId = request.cookies.get("tenant_id")?.value

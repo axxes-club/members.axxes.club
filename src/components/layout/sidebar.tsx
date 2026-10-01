@@ -75,6 +75,7 @@ import {
 } from "lucide-react"
 import { useSession } from "@/lib/auth/client"
 import { useTheme } from "next-themes"
+import { AllAppsSwitcher } from "@/components/all-apps-switcher"
 import { TenantSwitcher } from "./tenant-switcher"
 import { UnreadBadge } from "./unread-badge"
 
@@ -89,12 +90,6 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  {
-    name: "Apps",
-    href: "/apps",
-    icon: LayoutGrid,
-    subtitle: "Every AXXES app in one place",
-  },
   { name: "Contacts", href: "/crm", icon: Users },
   { name: "Projects", href: "/projects", icon: Kanban, subtitle: "Powered by Lanes" },
   { name: "Assets", href: "/assets", icon: FileImage, subtitle: "Powered by folders.axxes.club" },
@@ -212,18 +207,12 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col border-r bg-background transition-all duration-200 relative",
+        "hidden lg:flex shrink-0 min-w-0 flex-col border-r bg-background transition-all duration-200 relative",
         isCollapsed ? "w-16" : "w-[260px]"
       )}
     >
-      {/* Logo & Tenant Switcher */}
       <div className="flex h-16 shrink-0 items-center border-b px-4">
-        <TenantSwitcher
-          currentTenantId={tenantId}
-          currentTenantName={tenantName}
-          currentTenantLogo={tenantLogo}
-          isCollapsed={isCollapsed}
-        />
+        <Link href="/dashboard" aria-label="AXXES home" className="font-semibold">{isCollapsed ? "A" : "AXXES"}</Link>
       </div>
 
       {/* Navigation */}
@@ -275,6 +264,16 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
           )
         })}
       </nav>
+
+      <div className="shrink-0 px-3 pb-2"><AllAppsSwitcher tenantId={tenantId} compact={isCollapsed} /></div>
+      <div className="shrink-0 border-t p-3">
+        <TenantSwitcher
+          currentTenantId={tenantId}
+          currentTenantName={tenantName}
+          currentTenantLogo={tenantLogo}
+          isCollapsed={isCollapsed}
+        />
+      </div>
 
       {/* User Menu */}
       <div className="border-t p-4">
@@ -355,6 +354,8 @@ export function Sidebar({ tenantId, tenantName = "My Organization", tenantLogo, 
         size="icon-sm"
         className="absolute -right-3 top-20 rounded-full border bg-background shadow-sm"
         onClick={toggle}
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-expanded={!isCollapsed}
       >
         {isCollapsed ? (
           <PanelLeft className="h-4 w-4" />
@@ -490,12 +491,7 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
       <aside className="fixed inset-y-0 left-0 z-50 w-[280px] bg-background shadow-lg lg:hidden flex flex-col">
         {/* Header */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b px-4">
-          <TenantSwitcher
-            currentTenantId={tenantId}
-            currentTenantName={tenantName}
-            currentTenantLogo={tenantLogo}
-            isCollapsed={false}
-          />
+          <Link href="/dashboard" className="font-semibold">AXXES</Link>
           <Button
             variant="ghost"
             size="icon"
@@ -543,6 +539,16 @@ export function MobileSidebar({ tenantId, tenantName = "My Organization", tenant
             )
           })}
         </nav>
+
+        <div className="shrink-0 px-3 pb-2"><AllAppsSwitcher tenantId={tenantId} /></div>
+        <div className="shrink-0 border-t p-3">
+          <TenantSwitcher
+            currentTenantId={tenantId}
+            currentTenantName={tenantName}
+            currentTenantLogo={tenantLogo}
+            isCollapsed={false}
+          />
+        </div>
 
         {/* User Menu */}
         <div className="border-t p-4">
