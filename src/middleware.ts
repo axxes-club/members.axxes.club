@@ -26,6 +26,8 @@ const publicRoutes = [
   "/api/storage",
   "/api/assets/gcp",
   "/api/axxes/products",
+  // These handlers expose the published tenant catalog/CMS and accept inquiries.
+  "/api/v1/public/tenants",
 ]
 
 // Auth pages that move to Handshake (the central AXXES account) when it's switched on
