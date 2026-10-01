@@ -105,7 +105,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Test private storage and owned libraries
-        run: npm run test:storage && npm run test:office-domain && npm run test:organization-launch && npm run test:public-tenants
+        run: node --test scripts/schema-readiness.check.cjs && npm run test:storage && npm run test:office-domain && npm run test:organization-launch && npm run test:public-tenants
       - name: Test CMS and canonical commerce
         run: npm run test:website && npm run test:commerce
       - name: Test quota transactions in disposable PostgreSQL
