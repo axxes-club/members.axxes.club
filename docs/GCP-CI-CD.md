@@ -13,3 +13,5 @@ Checks in addition to Linux production image build: no unit test/typecheck scrip
 Build logs: https://console.cloud.google.com/cloud-build/builds;region=us-west1?project=gravy-meta
 
 Legacy `Create Release` workflow is disabled at the repository level because its default-branch/tag definition still deploys Vercel. This branch removes that deployment step. GitHub release publishing can resume after the safe release definition is available on the intended tag source/default branch; production app delivery uses the GCP workflow.
+
+BuildKit mounts the production dotenv only during Next compilation; it is excluded from COPY and removed from standalone output before final-image COPY. Every image is exported and all layers are inspected before publication. The gate rejects dotenv files (including files deleted by later layers) and matches private build-secret values without logging them; public NEXT_PUBLIC values are intentionally allowed. Test containers receive only a synthetic AUTH_SECRET and never production dotenv credentials.
