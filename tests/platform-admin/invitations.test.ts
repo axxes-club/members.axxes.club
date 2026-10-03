@@ -1,5 +1,164 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {policyFixture} from './fixtures';
-import {createInvitation,acceptInvitationToken,revokeInvitation,resendInvitation,revealInvitationLink,deliverInvitation} from '../../src/lib/platform-admin/invitations';
-const org={authorityId:'axxes-shared',id:'11111111-1111-4111-8111-111111111111'};const actor={wmUserId:'wm',integrationId:'wm',correlationId:'test'};
-test('verified recipient accepts once; revoked/expired/suspended invitations cannot join',async()=>{const db=await policyFixture();try{const invite=await createInvitation(db,org,'bea@example.com','member',actor);const link=await revealInvitationLink(db,invite.id);const token=new URL(link.url).searchParams.get('token')!;await assert.rejects(()=>acceptInvitationToken(db,token,{id:'b',email:'bea@example.com',emailVerified:false}));await assert.rejects(()=>acceptInvitationToken(db,token,{id:'c',email:'cyd@example.com',emailVerified:true}));assert.equal((await acceptInvitationToken(db,token,{id:'b',email:'bea@example.com',emailVerified:true})).tenantId,org.id);assert.equal((await acceptInvitationToken(db,token,{id:'b',email:'bea@example.com',emailVerified:true})).alreadyMember,true);const second=await createInvitation(db,org,'cyd@example.com','viewer',actor);const old=(await revealInvitationLink(db,second.id)).url;await resendInvitation(db,org,second.id,actor);await assert.rejects(()=>acceptInvitationToken(db,new URL(old).searchParams.get('token')!,{id:'c',email:'cyd@example.com',emailVerified:true}));await revokeInvitation(db,org,second.id,actor);await assert.rejects(()=>revealInvitationLink(db,second.id));const third=await createInvitation(db,org,'other@example.com','viewer',actor);const thirdToken=new URL((await revealInvitationLink(db,third.id)).url).searchParams.get('token')!;await db.query(`UPDATE tenant_invitations SET expires_at=now()-interval '1 second' WHERE id=$1`,[third.id]);await assert.rejects(()=>acceptInvitationToken(db,thirdToken,{id:'c',email:'other@example.com',emailVerified:true}));await db.exec(`UPDATE tenants SET status='suspended'`);await assert.rejects(()=>revealInvitationLink(db,third.id));}finally{await db.close();}});
-test('mail setup, retries and uncertain outcomes never lie about delivery',async()=>{const db=await policyFixture();try{const i=await createInvitation(db,org,'bea@example.com','member',actor);assert.equal((await deliverInvitation(db,i.id,{})).state,'not_configured');let calls=0;const config={key:'test',from:'AXXES <test@example.com>',fetcher:async()=>{calls++;return Response.json({id:'sent'});}};assert.equal((await deliverInvitation(db,i.id,config)).state,'sent');assert.equal((await deliverInvitation(db,i.id,config)).state,'sent');assert.equal(calls,1);const next=await createInvitation(db,org,'cyd@example.com','member',actor);assert.equal((await deliverInvitation(db,next.id,{...config,fetcher:async()=>{throw new Error('timeout');}})).state,'uncertain');await db.query(`UPDATE platform_invitation_delivery SET first_attempt_at=now()-interval '24 hours' WHERE invitation_id=$1`,[next.id]);assert.equal((await deliverInvitation(db,next.id,config)).state,'uncertain');assert.equal(calls,1);}finally{await db.close();}});
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { policyFixture } from "./fixtures";
+import {
+  createInvitation,
+  acceptInvitationToken,
+  revokeInvitation,
+  resendInvitation,
+  revealInvitationLink,
+  deliverInvitation,
+} from "../../src/lib/platform-admin/invitations";
+const org = {
+  authorityId: "axxes-shared",
+  id: "11111111-1111-4111-8111-111111111111",
+};
+const actor = { wmUserId: "wm", integrationId: "wm", correlationId: "test" };
+test("verified recipient accepts once; revoked/expired/suspended invitations cannot join", async () => {
+  const db = await policyFixture();
+  try {
+    const invite = await createInvitation(
+      db,
+      org,
+      "bea@example.com",
+      "member",
+      actor,
+    );
+    const link = await revealInvitationLink(db, invite.id);
+    const token = new URL(link.url).searchParams.get("token")!;
+    await assert.rejects(() =>
+      acceptInvitationToken(db, token, {
+        id: "b",
+        email: "bea@example.com",
+        emailVerified: false,
+      }),
+    );
+    await assert.rejects(() =>
+      acceptInvitationToken(db, token, {
+        id: "c",
+        email: "cyd@example.com",
+        emailVerified: true,
+      }),
+    );
+    assert.equal(
+      (
+        await acceptInvitationToken(db, token, {
+          id: "b",
+          email: "bea@example.com",
+          emailVerified: true,
+        })
+      ).tenantId,
+      org.id,
+    );
+    assert.equal(
+      (
+        await acceptInvitationToken(db, token, {
+          id: "b",
+          email: "bea@example.com",
+          emailVerified: true,
+        })
+      ).alreadyMember,
+      true,
+    );
+    const second = await createInvitation(
+      db,
+      org,
+      "cyd@example.com",
+      "viewer",
+      actor,
+    );
+    const old = (await revealInvitationLink(db, second.id)).url;
+    await resendInvitation(db, org, second.id, actor);
+    await assert.rejects(() =>
+      acceptInvitationToken(db, new URL(old).searchParams.get("token")!, {
+        id: "c",
+        email: "cyd@example.com",
+        emailVerified: true,
+      }),
+    );
+    await revokeInvitation(db, org, second.id, actor);
+    await assert.rejects(() => revealInvitationLink(db, second.id));
+    const third = await createInvitation(
+      db,
+      org,
+      "other@example.com",
+      "viewer",
+      actor,
+    );
+    const thirdToken = new URL(
+      (await revealInvitationLink(db, third.id)).url,
+    ).searchParams.get("token")!;
+    await db.query(
+      `UPDATE tenant_invitations SET expires_at=now()-interval '1 second' WHERE id=$1`,
+      [third.id],
+    );
+    await assert.rejects(() =>
+      acceptInvitationToken(db, thirdToken, {
+        id: "c",
+        email: "other@example.com",
+        emailVerified: true,
+      }),
+    );
+    await db.exec(`UPDATE tenants SET status='suspended'`);
+    await assert.rejects(() => revealInvitationLink(db, third.id));
+  } finally {
+    await db.close();
+  }
+});
+test("mail setup, retries and uncertain outcomes never lie about delivery", async () => {
+  const db = await policyFixture();
+  try {
+    const i = await createInvitation(
+      db,
+      org,
+      "bea@example.com",
+      "member",
+      actor,
+    );
+    assert.equal(
+      (await deliverInvitation(db, i.id, {})).state,
+      "not_configured",
+    );
+    let calls = 0;
+    const config = {
+      key: "test",
+      from: "AXXES <test@example.com>",
+      fetcher: async () => {
+        calls++;
+        return Response.json({ id: "sent" });
+      },
+    };
+    assert.equal((await deliverInvitation(db, i.id, config)).state, "sent");
+    assert.equal((await deliverInvitation(db, i.id, config)).state, "sent");
+    assert.equal(calls, 1);
+    const next = await createInvitation(
+      db,
+      org,
+      "cyd@example.com",
+      "member",
+      actor,
+    );
+    assert.equal(
+      (
+        await deliverInvitation(db, next.id, {
+          ...config,
+          fetcher: async () => {
+            throw new Error("timeout");
+          },
+        })
+      ).state,
+      "uncertain",
+    );
+    await db.query(
+      `UPDATE platform_invitation_delivery SET first_attempt_at=now()-interval '24 hours' WHERE invitation_id=$1`,
+      [next.id],
+    );
+    assert.equal(
+      (await deliverInvitation(db, next.id, config)).state,
+      "uncertain",
+    );
+    assert.equal(calls, 1);
+  } finally {
+    await db.close();
+  }
+});

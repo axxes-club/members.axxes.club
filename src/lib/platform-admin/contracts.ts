@@ -1,23 +1,172 @@
 export const CONTRACT_VERSION = 1;
 export type SubjectRef = { authorityId: string; id: string };
-export type Page<T> = { items: T[]; nextCursor: string | null; observedAt: string };
-export type DirectoryQuery = { query?: string; cursor?: string; limit: number; organization?: SubjectRef; serviceId?: string; state?: string };
-export type MembershipRole = 'owner' | 'admin' | 'manager' | 'member' | 'viewer';
-export type Action = 'invitation.create' | 'invitation.revoke' | 'invitation.resend' | 'membership.role' | 'membership.remove' | 'organization.access.grant' | 'organization.access.revoke' | 'organization.profile' | 'access.grant' | 'access.revoke' | 'account.suspend' | 'account.reactivate' | 'organization.suspend' | 'organization.reactivate' | 'credentials.revoke';
-export type OperationState = 'pending' | 'running' | 'succeeded' | 'failed' | 'partial' | 'uncertain' | 'cancelled';
-export type UserSummary = { subject: SubjectRef; name: string; email: string; emailVerified: boolean; state: 'active' | 'suspended' | 'unknown'; version: string; createdAt: string; organizationCount: number; protected?: boolean };
-export type OrganizationSummary = { subject: SubjectRef; name: string; slug: string; state: string; version: string; createdAt: string; memberCount: number; owner: { id: string; name: string; email: string } | null };
-export type Membership = { id: string; organization: SubjectRef; user: SubjectRef; organizationName: string; name: string; email: string; role: MembershipRole; joinedAt: string };
-export type InvitationSummary = { id: string; organization: SubjectRef; email: string; role: MembershipRole; state: string; expiresAt: string; deliveryState?: string };
-export type AccessObservation = { serviceId: string; organization?: SubjectRef; state: 'allowed' | 'denied' | 'unknown'; enforcement: 'verified' | 'unverified'; observedAt?: string };
-export type UserDetails = UserSummary & { memberships: Membership[]; access: AccessObservation[]; invitations: InvitationSummary[] };
-export type OrganizationDetails = OrganizationSummary & { memberships: Membership[]; access: AccessObservation[]; invitations: InvitationSummary[] };
-export type Capability = { action: Action; scope: 'authority' | 'service'; serviceIds: string[]; enforcement: 'verified' | 'unverified'; available: boolean; reason?: string };
-export type Capabilities = { contractVersion: number; authorityId: string; observedAt: string; services: string[]; actions: Capability[]; mailConfigured: boolean };
-export type AdminActor = { wmUserId: string; integrationId: string; correlationId: string };
-export type AdminCommand = { subject: SubjectRef; action: Action; expectedVersion: string; payload: { organization?: SubjectRef; role?: MembershipRole; email?: string; invitationId?: string; serviceId?: string; name?: string; contactEmail?: string; reason?: string; scope?: 'sessions' | 'all-supported' } };
-export type CommandResult = { operationId: string; version: string; state: OperationState };
-export type ServiceResult = { serviceId: string; state: OperationState; message?: string };
-export type OperationDetails = CommandResult & { subject: SubjectRef; action: Action; createdAt: string; updatedAt: string; actor: string; message: string; services: ServiceResult[]; invitationId?: string; deliveryState?: string };
-export type ActionIntent = { id: string; command: AdminCommand; expiresAt: string; services: string[]; consequence: string };
-export class PlatformError extends Error { constructor(readonly status: number, readonly code: string, message: string) { super(message); } }
+export type Page<T> = {
+  items: T[];
+  nextCursor: string | null;
+  observedAt: string;
+};
+export type DirectoryQuery = {
+  query?: string;
+  cursor?: string;
+  limit: number;
+  organization?: SubjectRef;
+  serviceId?: string;
+  state?: string;
+};
+export type MembershipRole =
+  "owner" | "admin" | "manager" | "member" | "viewer";
+export type Action =
+  | "invitation.create"
+  | "invitation.revoke"
+  | "invitation.resend"
+  | "membership.role"
+  | "membership.remove"
+  | "organization.access.grant"
+  | "organization.access.revoke"
+  | "organization.profile"
+  | "access.grant"
+  | "access.revoke"
+  | "account.suspend"
+  | "account.reactivate"
+  | "organization.suspend"
+  | "organization.reactivate"
+  | "credentials.revoke";
+export type OperationState =
+  | "pending"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "partial"
+  | "uncertain"
+  | "cancelled";
+export type UserSummary = {
+  subject: SubjectRef;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  state: "active" | "suspended" | "unknown";
+  version: string;
+  createdAt: string;
+  organizationCount: number;
+  protected?: boolean;
+};
+export type OrganizationSummary = {
+  subject: SubjectRef;
+  name: string;
+  slug: string;
+  state: string;
+  version: string;
+  createdAt: string;
+  memberCount: number;
+  owner: { id: string; name: string; email: string } | null;
+};
+export type Membership = {
+  id: string;
+  organization: SubjectRef;
+  user: SubjectRef;
+  organizationName: string;
+  name: string;
+  email: string;
+  role: MembershipRole;
+  joinedAt: string;
+};
+export type InvitationSummary = {
+  id: string;
+  organization: SubjectRef;
+  email: string;
+  role: MembershipRole;
+  state: string;
+  expiresAt: string;
+  deliveryState?: string;
+};
+export type AccessObservation = {
+  serviceId: string;
+  organization?: SubjectRef;
+  state: "allowed" | "denied" | "unknown";
+  enforcement: "verified" | "unverified";
+  observedAt?: string;
+};
+export type UserDetails = UserSummary & {
+  memberships: Membership[];
+  access: AccessObservation[];
+  invitations: InvitationSummary[];
+};
+export type OrganizationDetails = OrganizationSummary & {
+  memberships: Membership[];
+  access: AccessObservation[];
+  invitations: InvitationSummary[];
+};
+export type Capability = {
+  action: Action;
+  scope: "authority" | "service";
+  serviceIds: string[];
+  enforcement: "verified" | "unverified";
+  available: boolean;
+  reason?: string;
+};
+export type Capabilities = {
+  contractVersion: number;
+  authorityId: string;
+  observedAt: string;
+  services: string[];
+  actions: Capability[];
+  mailConfigured: boolean;
+};
+export type AdminActor = {
+  wmUserId: string;
+  integrationId: string;
+  correlationId: string;
+};
+export type AdminCommand = {
+  subject: SubjectRef;
+  action: Action;
+  expectedVersion: string;
+  payload: {
+    organization?: SubjectRef;
+    role?: MembershipRole;
+    email?: string;
+    invitationId?: string;
+    serviceId?: string;
+    name?: string;
+    contactEmail?: string;
+    reason?: string;
+    scope?: "sessions" | "all-supported";
+  };
+};
+export type CommandResult = {
+  operationId: string;
+  version: string;
+  state: OperationState;
+};
+export type ServiceResult = {
+  serviceId: string;
+  state: OperationState;
+  message?: string;
+};
+export type OperationDetails = CommandResult & {
+  subject: SubjectRef;
+  action: Action;
+  createdAt: string;
+  updatedAt: string;
+  actor: string;
+  message: string;
+  services: ServiceResult[];
+  invitationId?: string;
+  deliveryState?: string;
+};
+export type ActionIntent = {
+  id: string;
+  command: AdminCommand;
+  expiresAt: string;
+  services: string[];
+  consequence: string;
+};
+export class PlatformError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}

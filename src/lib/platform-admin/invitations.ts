@@ -1,41 +1,321 @@
-import {randomBytes,randomUUID} from 'node:crypto';
-import {PlatformError,type SubjectRef,type MembershipRole,type AdminActor} from './contracts';
-import {assertAuthority,type Sql} from './directory';import {evaluateAccess} from './access-policy';
-export interface TransactionSql extends Sql {transaction<T>(work:(tx:Sql)=>Promise<T>):Promise<T>;}
-const recipient=(email:string)=>email.trim().toLowerCase();
-async function eligible(db:Sql,org:SubjectRef){assertAuthority(org);const t=(await db.query(`SELECT id,name,status FROM tenants WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`,[org.id])).rows[0];if(!t||t.status!=='active')throw new PlatformError(409,'ORGANIZATION_UNAVAILABLE','Invitations require an active organization.');return t;}
-async function rateLimit(db:Sql,org:SubjectRef,id?:string){const rows=(await db.query(id?`SELECT count(*)::int AS count FROM platform_admin_operations WHERE result->>'invitationId'=$1 AND created_at>now()-interval '1 hour'`:`SELECT count(*)::int AS count FROM tenant_invitations WHERE tenant_id=$1 AND created_at>now()-interval '1 hour'`,[id??org.id])).rows;if(Number(rows[0]?.count??0)>=(id?5:50))throw new PlatformError(429,'INVITATION_RATE_LIMIT','Invitation limit reached. Try again later.');}
-export async function createInvitation(db:Sql,org:SubjectRef,email:string,role:MembershipRole,_actor:AdminActor){
- await eligible(db,org);await rateLimit(db,org);if(role==='owner'||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new PlatformError(400,'INVALID_INVITATION','Choose a valid email and non-owner role.');
- const existing=(await db.query(`SELECT i.id FROM tenant_invitations i WHERE i.tenant_id=$1 AND lower(i.email)=$2 AND i.status='pending' AND i.expires_at>now()`,[org.id,recipient(email)])).rows[0];if(existing)throw new PlatformError(409,'INVITATION_EXISTS','A pending invitation already exists.');
- const member=(await db.query(`SELECT m.id FROM tenant_memberships m JOIN "user" u ON u.id=m.user_id WHERE m.tenant_id=$1 AND lower(u.email)=$2 AND m.deleted_at IS NULL`,[org.id,recipient(email)])).rows[0];if(member)throw new PlatformError(409,'ALREADY_MEMBER','This person is already a member.');
- const id=randomUUID(),token=randomBytes(32).toString('base64url');await db.query(`INSERT INTO tenant_invitations(id,tenant_id,email,role,token,status,expires_at) VALUES($1,$2,$3,$4,$5,'pending',now()+interval '7 days')`,[id,org.id,recipient(email),role,token]);await db.query(`INSERT INTO platform_invitation_delivery(invitation_id,state,attempt_id) VALUES($1,'pending',$2)`,[id,randomUUID()]);return {id};
+import { randomBytes, randomUUID } from "node:crypto";
+import {
+  PlatformError,
+  type SubjectRef,
+  type MembershipRole,
+  type AdminActor,
+} from "./contracts";
+import { assertAuthority, type Sql } from "./directory";
+import { evaluateAccess } from "./access-policy";
+export interface TransactionSql extends Sql {
+  transaction<T>(work: (tx: Sql) => Promise<T>): Promise<T>;
 }
-export async function revokeInvitation(db:Sql,org:SubjectRef,id:string,_actor:AdminActor){await eligible(db,org);const row=(await db.query(`UPDATE tenant_invitations SET status='revoked',updated_at=now() WHERE id=$1 AND tenant_id=$2 AND status IN ('pending','expired') RETURNING id`,[id,org.id])).rows[0];if(!row)throw new PlatformError(409,'INVITATION_UNAVAILABLE','Only pending or expired invitations can be revoked.');return {id};}
-export async function resendInvitation(db:Sql,org:SubjectRef,id:string,_actor:AdminActor){await eligible(db,org);await rateLimit(db,org,id);const row=(await db.query(`UPDATE tenant_invitations SET token=$3,status='pending',expires_at=now()+interval '7 days',updated_at=now() WHERE id=$1 AND tenant_id=$2 AND status IN ('pending','expired') RETURNING id`,[id,org.id,randomBytes(32).toString('base64url')])).rows[0];if(!row)throw new PlatformError(409,'INVITATION_UNAVAILABLE','Only pending or expired invitations can be resent.');await db.query(`INSERT INTO platform_invitation_delivery(invitation_id,state,attempt_id) VALUES($1,'pending',$2) ON CONFLICT(invitation_id) DO UPDATE SET state='pending',attempt_id=$2,payload=NULL,first_attempt_at=NULL,last_attempt_at=NULL,sent_at=NULL,updated_at=now()`,[id,randomUUID()]);return {id};}
-export async function revealInvitationLink(db:Sql,id:string){const row=(await db.query(`SELECT i.token FROM tenant_invitations i JOIN tenants t ON t.id=i.tenant_id WHERE i.id=$1 AND i.status='pending' AND i.expires_at>now() AND t.status='active' AND t.deleted_at IS NULL`,[id])).rows[0];if(!row)throw new PlatformError(409,'INVITATION_UNAVAILABLE','The invitation link is no longer available.');return {url:'https://members.axxes.club/accept-invite?token='+encodeURIComponent(String(row.token))};}
-export async function acceptInvitationToken(db:TransactionSql,token:string,user:{id:string;email:string;emailVerified:boolean}){
- if(!user.emailVerified)throw new PlatformError(403,'EMAIL_VERIFICATION_REQUIRED','Verify your email address before accepting this invitation.');
- return db.transaction(async tx=>{
-  await tx.query(`SELECT id FROM "user" WHERE id=$1 FOR UPDATE`,[user.id]);if(!(await evaluateAccess(tx,user.id)).allowed)throw new PlatformError(403,'ACCOUNT_SUSPENDED','Account access is suspended.');
-  const preview=(await tx.query(`SELECT tenant_id FROM tenant_invitations WHERE token=$1`,[token])).rows[0];if(!preview)throw new PlatformError(404,'INVITATION_NOT_FOUND','Invitation not found.');
-  await eligible(tx,{authorityId:'axxes-shared',id:String(preview.tenant_id)});
-  const i=(await tx.query(`SELECT * FROM tenant_invitations WHERE token=$1 FOR UPDATE`,[token])).rows[0];
-  if(!i||recipient(String(i.email))!==recipient(user.email)||i.role==='owner')throw new PlatformError(403,'INVITATION_RECIPIENT_MISMATCH','This invitation belongs to a different verified identity.');
-  if(i.status==='accepted'&&i.accepted_by_id===user.id)return {tenantId:String(i.tenant_id),alreadyMember:true};
-  if(i.status!=='pending'||new Date(String(i.expires_at))<=new Date())throw new PlatformError(409,'INVITATION_UNAVAILABLE','This invitation has expired or is no longer pending.');
-  const existing=(await tx.query(`SELECT id,deleted_at FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2 FOR UPDATE`,[i.tenant_id,user.id])).rows[0];const alreadyMember=!!existing&&!existing.deleted_at;
-  if(!alreadyMember)await tx.query(`INSERT INTO tenant_memberships(id,tenant_id,user_id,role) VALUES($1,$2,$3,$4) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=$4,deleted_at=NULL,joined_at=now(),updated_at=now()`,[randomUUID(),i.tenant_id,user.id,i.role]);
-  await tx.query(`UPDATE tenant_invitations SET status='accepted',accepted_by_id=$2,accepted_at=now(),updated_at=now() WHERE id=$1`,[i.id,user.id]);return {tenantId:String(i.tenant_id),alreadyMember};
- });
+const recipient = (email: string) => email.trim().toLowerCase();
+async function eligible(db: Sql, org: SubjectRef) {
+  assertAuthority(org);
+  const t = (
+    await db.query(
+      `SELECT id,name,status FROM tenants WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`,
+      [org.id],
+    )
+  ).rows[0];
+  if (!t || t.status !== "active")
+    throw new PlatformError(
+      409,
+      "ORGANIZATION_UNAVAILABLE",
+      "Invitations require an active organization.",
+    );
+  return t;
 }
-export async function deliverInvitation(db:Sql,id:string,config:{key?:string;from?:string;fetcher?:typeof fetch}){
- if(!config.key||!config.from)return {state:'not_configured'};
- const row=(await db.query(`SELECT d.*,i.email,i.token,i.status,i.expires_at,t.name,t.status AS organization_status,t.deleted_at FROM platform_invitation_delivery d JOIN tenant_invitations i ON i.id=d.invitation_id JOIN tenants t ON t.id=i.tenant_id WHERE d.invitation_id=$1`,[id])).rows[0];if(!row)throw new PlatformError(404,'INVITATION_NOT_FOUND','Invitation not found.');
- if(row.state==='sent')return {state:'sent'};if(row.status!=='pending'||row.organization_status!=='active'||row.deleted_at||new Date(String(row.expires_at))<=new Date())return {state:'failed'};
- if(row.first_attempt_at&&Date.now()-new Date(String(row.first_attempt_at)).getTime()>=23*3600000)return {state:'uncertain'};
- const payload={from:config.from,to:[String(row.email)],subject:'Invitation to '+String(row.name),text:'You have been invited to '+String(row.name)+' on AXXES. Sign in with this email address to accept:\n\nhttps://members.axxes.club/accept-invite?token='+encodeURIComponent(String(row.token))};
- const frozen=(await db.query(`UPDATE platform_invitation_delivery SET payload=coalesce(payload,$3::jsonb),first_attempt_at=coalesce(first_attempt_at,now()),last_attempt_at=now(),updated_at=now() WHERE invitation_id=$1 AND attempt_id=$2 RETURNING payload`,[id,row.attempt_id,JSON.stringify(payload)])).rows[0];if(!frozen)return {state:'failed'};
- let state='uncertain';try{const response=await (config.fetcher??fetch)('https://api.resend.com/emails',{method:'POST',headers:{authorization:'Bearer '+config.key,'content-type':'application/json','idempotency-key':'wm-invite/'+row.attempt_id},body:JSON.stringify(frozen.payload),redirect:'error',signal:AbortSignal.timeout(10000)});if(response.ok){const body=await response.json();if(typeof body.id==='string')state='sent';}else if(response.status>=400&&response.status<500&&!['409','429'].includes(String(response.status)))state='failed';}catch{}
- await db.query(`UPDATE platform_invitation_delivery SET state=CASE WHEN state='sent' THEN 'sent' ELSE $3 END,sent_at=CASE WHEN $3='sent' THEN now() ELSE sent_at END,updated_at=now() WHERE invitation_id=$1 AND attempt_id=$2`,[id,row.attempt_id,state]);return {state};
+async function rateLimit(db: Sql, org: SubjectRef, id?: string) {
+  const rows = (
+    await db.query(
+      id
+        ? `SELECT count(*)::int AS count FROM platform_admin_operations WHERE result->>'invitationId'=$1 AND created_at>now()-interval '1 hour'`
+        : `SELECT count(*)::int AS count FROM tenant_invitations WHERE tenant_id=$1 AND created_at>now()-interval '1 hour'`,
+      [id ?? org.id],
+    )
+  ).rows;
+  if (Number(rows[0]?.count ?? 0) >= (id ? 5 : 50))
+    throw new PlatformError(
+      429,
+      "INVITATION_RATE_LIMIT",
+      "Invitation limit reached. Try again later.",
+    );
+}
+export async function createInvitation(
+  db: Sql,
+  org: SubjectRef,
+  email: string,
+  role: MembershipRole,
+  _actor: AdminActor,
+) {
+  await eligible(db, org);
+  await rateLimit(db, org);
+  if (role === "owner" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    throw new PlatformError(
+      400,
+      "INVALID_INVITATION",
+      "Choose a valid email and non-owner role.",
+    );
+  const existing = (
+    await db.query(
+      `SELECT i.id FROM tenant_invitations i WHERE i.tenant_id=$1 AND lower(i.email)=$2 AND i.status='pending' AND i.expires_at>now()`,
+      [org.id, recipient(email)],
+    )
+  ).rows[0];
+  if (existing)
+    throw new PlatformError(
+      409,
+      "INVITATION_EXISTS",
+      "A pending invitation already exists.",
+    );
+  const member = (
+    await db.query(
+      `SELECT m.id FROM tenant_memberships m JOIN "user" u ON u.id=m.user_id WHERE m.tenant_id=$1 AND lower(u.email)=$2 AND m.deleted_at IS NULL`,
+      [org.id, recipient(email)],
+    )
+  ).rows[0];
+  if (member)
+    throw new PlatformError(
+      409,
+      "ALREADY_MEMBER",
+      "This person is already a member.",
+    );
+  const id = randomUUID(),
+    token = randomBytes(32).toString("base64url");
+  await db.query(
+    `INSERT INTO tenant_invitations(id,tenant_id,email,role,token,status,expires_at) VALUES($1,$2,$3,$4,$5,'pending',now()+interval '7 days')`,
+    [id, org.id, recipient(email), role, token],
+  );
+  await db.query(
+    `INSERT INTO platform_invitation_delivery(invitation_id,state,attempt_id) VALUES($1,'pending',$2)`,
+    [id, randomUUID()],
+  );
+  return { id };
+}
+export async function revokeInvitation(
+  db: Sql,
+  org: SubjectRef,
+  id: string,
+  _actor: AdminActor,
+) {
+  await eligible(db, org);
+  const row = (
+    await db.query(
+      `UPDATE tenant_invitations SET status='revoked',updated_at=now() WHERE id=$1 AND tenant_id=$2 AND status IN ('pending','expired') RETURNING id`,
+      [id, org.id],
+    )
+  ).rows[0];
+  if (!row)
+    throw new PlatformError(
+      409,
+      "INVITATION_UNAVAILABLE",
+      "Only pending or expired invitations can be revoked.",
+    );
+  return { id };
+}
+export async function resendInvitation(
+  db: Sql,
+  org: SubjectRef,
+  id: string,
+  _actor: AdminActor,
+) {
+  await eligible(db, org);
+  await rateLimit(db, org, id);
+  const row = (
+    await db.query(
+      `UPDATE tenant_invitations SET token=$3,status='pending',expires_at=now()+interval '7 days',updated_at=now() WHERE id=$1 AND tenant_id=$2 AND status IN ('pending','expired') RETURNING id`,
+      [id, org.id, randomBytes(32).toString("base64url")],
+    )
+  ).rows[0];
+  if (!row)
+    throw new PlatformError(
+      409,
+      "INVITATION_UNAVAILABLE",
+      "Only pending or expired invitations can be resent.",
+    );
+  await db.query(
+    `INSERT INTO platform_invitation_delivery(invitation_id,state,attempt_id) VALUES($1,'pending',$2) ON CONFLICT(invitation_id) DO UPDATE SET state='pending',attempt_id=$2,payload=NULL,first_attempt_at=NULL,last_attempt_at=NULL,sent_at=NULL,updated_at=now()`,
+    [id, randomUUID()],
+  );
+  return { id };
+}
+export async function revealInvitationLink(db: Sql, id: string) {
+  const row = (
+    await db.query(
+      `SELECT i.token FROM tenant_invitations i JOIN tenants t ON t.id=i.tenant_id WHERE i.id=$1 AND i.status='pending' AND i.expires_at>now() AND t.status='active' AND t.deleted_at IS NULL`,
+      [id],
+    )
+  ).rows[0];
+  if (!row)
+    throw new PlatformError(
+      409,
+      "INVITATION_UNAVAILABLE",
+      "The invitation link is no longer available.",
+    );
+  return {
+    url:
+      "https://members.axxes.club/accept-invite?token=" +
+      encodeURIComponent(String(row.token)),
+  };
+}
+export async function acceptInvitationToken(
+  db: TransactionSql,
+  token: string,
+  user: { id: string; email: string; emailVerified: boolean },
+) {
+  if (!user.emailVerified)
+    throw new PlatformError(
+      403,
+      "EMAIL_VERIFICATION_REQUIRED",
+      "Verify your email address before accepting this invitation.",
+    );
+  return db.transaction(async (tx) => {
+    await tx.query(`SELECT id FROM "user" WHERE id=$1 FOR UPDATE`, [user.id]);
+    if (!(await evaluateAccess(tx, user.id)).allowed)
+      throw new PlatformError(
+        403,
+        "ACCOUNT_SUSPENDED",
+        "Account access is suspended.",
+      );
+    const preview = (
+      await tx.query(
+        `SELECT tenant_id FROM tenant_invitations WHERE token=$1`,
+        [token],
+      )
+    ).rows[0];
+    if (!preview)
+      throw new PlatformError(
+        404,
+        "INVITATION_NOT_FOUND",
+        "Invitation not found.",
+      );
+    await eligible(tx, {
+      authorityId: "axxes-shared",
+      id: String(preview.tenant_id),
+    });
+    const i = (
+      await tx.query(
+        `SELECT * FROM tenant_invitations WHERE token=$1 FOR UPDATE`,
+        [token],
+      )
+    ).rows[0];
+    if (
+      !i ||
+      recipient(String(i.email)) !== recipient(user.email) ||
+      i.role === "owner"
+    )
+      throw new PlatformError(
+        403,
+        "INVITATION_RECIPIENT_MISMATCH",
+        "This invitation belongs to a different verified identity.",
+      );
+    if (i.status === "accepted" && i.accepted_by_id === user.id)
+      return { tenantId: String(i.tenant_id), alreadyMember: true };
+    if (i.status !== "pending" || new Date(String(i.expires_at)) <= new Date())
+      throw new PlatformError(
+        409,
+        "INVITATION_UNAVAILABLE",
+        "This invitation has expired or is no longer pending.",
+      );
+    const existing = (
+      await tx.query(
+        `SELECT id,deleted_at FROM tenant_memberships WHERE tenant_id=$1 AND user_id=$2 FOR UPDATE`,
+        [i.tenant_id, user.id],
+      )
+    ).rows[0];
+    const alreadyMember = !!existing && !existing.deleted_at;
+    if (!alreadyMember)
+      await tx.query(
+        `INSERT INTO tenant_memberships(id,tenant_id,user_id,role) VALUES($1,$2,$3,$4) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=$4,deleted_at=NULL,joined_at=now(),updated_at=now()`,
+        [randomUUID(), i.tenant_id, user.id, i.role],
+      );
+    await tx.query(
+      `UPDATE tenant_invitations SET status='accepted',accepted_by_id=$2,accepted_at=now(),updated_at=now() WHERE id=$1`,
+      [i.id, user.id],
+    );
+    return { tenantId: String(i.tenant_id), alreadyMember };
+  });
+}
+export async function deliverInvitation(
+  db: Sql,
+  id: string,
+  config: { key?: string; from?: string; fetcher?: typeof fetch },
+) {
+  if (!config.key || !config.from) return { state: "not_configured" };
+  const row = (
+    await db.query(
+      `SELECT d.*,i.email,i.token,i.status,i.expires_at,t.name,t.status AS organization_status,t.deleted_at FROM platform_invitation_delivery d JOIN tenant_invitations i ON i.id=d.invitation_id JOIN tenants t ON t.id=i.tenant_id WHERE d.invitation_id=$1`,
+      [id],
+    )
+  ).rows[0];
+  if (!row)
+    throw new PlatformError(
+      404,
+      "INVITATION_NOT_FOUND",
+      "Invitation not found.",
+    );
+  if (row.state === "sent") return { state: "sent" };
+  if (
+    row.status !== "pending" ||
+    row.organization_status !== "active" ||
+    row.deleted_at ||
+    new Date(String(row.expires_at)) <= new Date()
+  )
+    return { state: "failed" };
+  if (
+    row.first_attempt_at &&
+    Date.now() - new Date(String(row.first_attempt_at)).getTime() >=
+      23 * 3600000
+  )
+    return { state: "uncertain" };
+  const payload = {
+    from: config.from,
+    to: [String(row.email)],
+    subject: "Invitation to " + String(row.name),
+    text:
+      "You have been invited to " +
+      String(row.name) +
+      " on AXXES. Sign in with this email address to accept:\n\nhttps://members.axxes.club/accept-invite?token=" +
+      encodeURIComponent(String(row.token)),
+  };
+  const frozen = (
+    await db.query(
+      `UPDATE platform_invitation_delivery SET payload=coalesce(payload,$3::jsonb),first_attempt_at=coalesce(first_attempt_at,now()),last_attempt_at=now(),updated_at=now() WHERE invitation_id=$1 AND attempt_id=$2 RETURNING payload`,
+      [id, row.attempt_id, JSON.stringify(payload)],
+    )
+  ).rows[0];
+  if (!frozen) return { state: "failed" };
+  let state = "uncertain";
+  try {
+    const response = await (config.fetcher ?? fetch)(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer " + config.key,
+          "content-type": "application/json",
+          "idempotency-key": "wm-invite/" + row.attempt_id,
+        },
+        body: JSON.stringify(frozen.payload),
+        redirect: "error",
+        signal: AbortSignal.timeout(10000),
+      },
+    );
+    if (response.ok) {
+      const body = await response.json();
+      if (typeof body.id === "string") state = "sent";
+    } else if (
+      response.status >= 400 &&
+      response.status < 500 &&
+      !["409", "429"].includes(String(response.status))
+    )
+      state = "failed";
+  } catch {}
+  await db.query(
+    `UPDATE platform_invitation_delivery SET state=CASE WHEN state='sent' THEN 'sent' ELSE $3 END,sent_at=CASE WHEN $3='sent' THEN now() ELSE sent_at END,updated_at=now() WHERE invitation_id=$1 AND attempt_id=$2`,
+    [id, row.attempt_id, state],
+  );
+  return { state };
 }
