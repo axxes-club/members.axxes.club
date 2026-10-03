@@ -25,3 +25,12 @@ test('stream budgets stop chunked bodies and upstream responses before materiali
  const exact=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new TextEncoder().encode('hello'));controller.close();}});
  assert.equal(await readBoundedText(exact,5),'hello');
 });
+test('attachment proxy permits only mailbox upload and message-part downloads',()=>{
+ const base='v1/organizations/11111111-1111-4111-8111-111111111111/mailboxes/22222222-2222-4222-8222-222222222222';
+ assert.equal(allowedWorkspacePath(base+'/attachments','POST'),true);assert.equal(allowedWorkspacePath(base+'/messages/owned-message/attachments/1.2','GET'),true);
+ assert.equal(allowedWorkspacePath(base+'/blobs/foreign-blob','GET'),false);assert.equal(allowedWorkspacePath(base+'/messages/owned-message/attachments/../../admin','GET'),false);assert.equal(allowedWorkspacePath(base+'/attachments','GET'),false);
+});
+test('bounded byte reader preserves non-UTF8 attachment bytes and cancels excess',async()=>{
+ const {readBoundedBytes}=await import('../../src/lib/mail/security');let cancelled=false;const bytes=await readBoundedBytes(new ReadableStream({start(c){c.enqueue(new Uint8Array([0,255]));c.enqueue(new Uint8Array([1]));c.close()}}),3);assert.deepEqual([...bytes],[0,255,1]);
+ await assert.rejects(readBoundedBytes(new ReadableStream({start(c){c.enqueue(new Uint8Array([0,255,1]));},cancel(){cancelled=true}}),2));assert.equal(cancelled,true);
+});
