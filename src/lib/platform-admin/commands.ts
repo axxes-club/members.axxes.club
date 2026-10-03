@@ -1,6 +1,6 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {PlatformError,type AdminCommand,type AdminActor,type OperationDetails} from './contracts';
-import {parseCommand,parseOperation,identifier} from './validation';import {createDirectory,assertAuthority,type Sql} from './directory';
+import {parseCommand,parseOperation,identifier} from './validation';import {createDirectory,assertAuthority,assertOrganizationId,type Sql} from './directory';
 import {lockSubject,bumpVersion,setAccountState,setOrganizationState} from './access-policy';import {revokeCredentials} from './credentials';
 import {createInvitation,resendInvitation,revokeInvitation,deliverInvitation,type TransactionSql} from './invitations';
 export const ENTITLEMENT_SERVICES=['lanes','developer','axxes-workspace-api'];
@@ -9,7 +9,7 @@ export function operationIdFor(principal:string,key:string){const h=sha(principa
 export function createCommands(db:TransactionSql,config:{services:string[];mail?:{key?:string;from?:string;fetcher?:typeof fetch}}){
  async function getOperation(id:string,byKey:boolean,principal:string):Promise<OperationDetails>{const row=(await db.query(`SELECT result FROM platform_admin_operations WHERE ${byKey?'idempotency_key':'id::text'}=$1 AND integration_id=$2`,[id,principal])).rows[0];if(!row)throw new PlatformError(404,'OPERATION_NOT_FOUND','This operation is not recorded by the authority.');return parseOperation(row.result);}
  async function execute(input:AdminCommand,key:string,actor:AdminActor):Promise<OperationDetails>{
-  const command=parseCommand(input);assertAuthority(command.subject);identifier(key);if(!config.services.length)throw new PlatformError(503,'ADMINISTRATION_NOT_READY','Verified service coverage is required.');
+  const command=parseCommand(input);assertAuthority(command.subject);if(command.action.startsWith('organization.')||command.action.startsWith('invitation.'))assertOrganizationId(command.subject.id);if(command.payload.organization)assertOrganizationId(command.payload.organization.id);identifier(key);if(!config.services.length)throw new PlatformError(503,'ADMINISTRATION_NOT_READY','Verified service coverage is required.');
   const hash=sha(JSON.stringify(command)),id=operationIdFor(actor.integrationId,key),kind=command.action.startsWith('organization.')||command.action.startsWith('invitation.')?'organization':'user';
   let result=await db.transaction(async tx=>{
    await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended($1,0))`,[id]);
