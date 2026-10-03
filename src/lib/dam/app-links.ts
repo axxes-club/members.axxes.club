@@ -48,8 +48,8 @@ export const APP_LINK_TARGETS: Record<string, AppLinkTarget> = {
   },
   pulse: {
     name: "Pulse",
-    base: "https://pulse.axxes.club",
-    url: (_id, tenant) => withTenant("https://pulse.axxes.club/", tenant),
+    base: "https://pulse.axxes.app",
+    url: (_id, tenant) => withTenant("https://pulse.axxes.app/dashboard", tenant),
   },
   manifest: {
     name: "Manifest",

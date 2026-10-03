@@ -66,3 +66,5 @@ export * from "./office"
 export * from "./products"
 
 export * from "./storage"
+// Pulse organization metadata (event storage lives in an isolated database)
+export * from "./pulse"

@@ -1,3 +1,4 @@
+import { PulsePortalTracking } from "@/components/pulse-portal-tracking"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { Toaster } from "sonner"
@@ -64,6 +65,8 @@ export default async function DashboardLayout({
   ])
 
   return (
+    <>
+    <PulsePortalTracking/>
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -106,5 +109,6 @@ export default async function DashboardLayout({
         </BrandThemeProvider>
       </SidebarProvider>
     </ThemeProvider>
+    </>
   )
 }
