@@ -1,0 +1,58 @@
+/* Keep the editor chrome on the same theme as Assets. Puck's preview remains
+   inside its own iframe so these tokens don't restyle the tenant's website. */
+.members-website-editor {
+  --puck-color-surface: hsl(var(--background));
+  --puck-color-surface-muted: hsl(var(--muted));
+  --puck-color-surface-subtle: hsl(var(--card));
+  --puck-color-surface-inverse: hsl(var(--primary));
+  --puck-color-border: hsl(var(--border));
+  --puck-color-border-hover: hsl(var(--ring));
+  --puck-color-border-muted: hsl(var(--border));
+  --puck-color-border-inverse: hsl(var(--input));
+  --puck-color-text: hsl(var(--foreground));
+  --puck-color-text-secondary: hsl(var(--foreground));
+  --puck-color-text-muted: hsl(var(--muted-foreground));
+  --puck-color-text-subtle: hsl(var(--muted-foreground));
+  --puck-color-text-inverse: hsl(var(--primary-foreground));
+  --puck-color-interactive: hsl(var(--foreground));
+  --puck-color-interactive-hover: hsl(var(--foreground));
+  --puck-color-interactive-active: hsl(var(--foreground));
+  --puck-color-interactive-subtle: hsl(var(--accent));
+  --puck-color-interactive-soft: hsl(var(--muted));
+  --puck-color-interactive-soft-hover: hsl(var(--accent));
+  --puck-color-interactive-neutral-hover: hsl(var(--accent));
+  --puck-color-interactive-inverse-hover: hsl(var(--primary-foreground));
+  --puck-color-interactive-inverse-active: hsl(var(--primary-foreground));
+  --puck-color-focus-ring: hsl(var(--ring));
+  --puck-color-selection-bg: hsl(var(--foreground) / 0.06);
+  --puck-color-selection-border: hsl(var(--ring));
+  --puck-color-line-placeholder: hsl(var(--ring));
+  --puck-color-highlight: hsl(var(--ring));
+  --puck-color-bg-disabled: hsl(var(--muted));
+  --puck-color-text-disabled: hsl(var(--muted-foreground));
+  --puck-font-family: var(--font-sans);
+  --puck-font-size-xxs: 13px;
+  --puck-font-size-xs: 13px;
+  --puck-font-size-base: 13px;
+  --puck-font-weight-bold: 600;
+  --puck-radius-xs: 0;
+  --puck-radius-s: 0;
+  --puck-radius-m: 0;
+  --puck-radius-l: 0;
+  --puck-radius-pill: 0;
+  --puck-user-sidebar-left-width: 220px;
+  --puck-user-sidebar-right-width: 280px;
+}
+
+/* Puck defaults to a full viewport. Contain it within the members workspace,
+   leaving the action bar and revision drawer visible without a second scroll. */
+.members-website-puck > [class*="_Puck_"] {
+  height: 100%;
+  color: hsl(var(--foreground));
+}
+.members-website-puck [class*="_PuckLayout_"] {
+  height: 100%;
+}
+.members-website-editor summary::-webkit-details-marker {
+  display: none;
+}
