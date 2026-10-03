@@ -41,6 +41,9 @@ const handshakePages: Record<string, string> = {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // Platform administration uses its own exact Google principal JWT guard.
+  if (pathname === "/api/platform-admin/v1" || pathname.startsWith("/api/platform-admin/v1/")) return NextResponse.next()
+
   // These website APIs enforce session/membership themselves or serve only immutable published snapshots.
   if (pathname === '/api/v1/website/gangstarz' || pathname === '/api/v1/website/gangstarz/commerce' || /^\/api\/v1\/public\/tenants\/[^/]+\/website\/[^/]+$/.test(pathname)) return NextResponse.next()
 
