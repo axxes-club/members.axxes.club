@@ -4,10 +4,11 @@ export function createMailClient(request){
  async function call(method,args,id){if(!base)throw new Error('Choose a mailbox first');const response=await request(base+'/jmap',{method:'POST',body:{methodCalls:[[method,args,id]]}});const result=response.methodResponses?.find(item=>item[2]===id);if(!result||result[0]==='error')throw new Error(result?.[1]?.type||'Mailbox operation failed');if(result[0]!==method)throw new Error('Unexpected mailbox response');return result[1];}
  return {
  bind(organizationId,mailboxId){base='/v1/organizations/'+encodeURIComponent(organizationId)+'/mailboxes/'+encodeURIComponent(mailboxId);},
+ composition(){return owned('/composition');},
  listDrafts(){return owned('/drafts');},
  readDraft(draftId,revision){return owned('/drafts/'+encodeURIComponent(draftId)+(revision===undefined?'':'?revision='+encodeURIComponent(revision)));},
  saveRevision({draftId,operationId,expectedRevision,body}){return owned('/drafts/'+encodeURIComponent(draftId),{method:'POST',key:operationId,body:{expectedRevision,body}});},
- queueRevision({draftId,operationId,revision,timezone,scheduledAt}){return owned('/drafts/'+encodeURIComponent(draftId)+'/outbox',{method:'POST',key:operationId,body:{revision,timezone,...(scheduledAt?{scheduledAt}:{})}});},
+ queueRevision({draftId,operationId,revision,timezone,scheduledAt}){return owned('/drafts/'+encodeURIComponent(draftId)+'/outbox',{method:'POST',key:operationId,body:{revision,timezone,...(scheduledAt?{dueAt:scheduledAt}:{})}});},
  queued(id){return owned('/outbox/'+encodeURIComponent(id));},
  cancelQueued(id){return owned('/outbox/'+encodeURIComponent(id)+'/cancel',{method:'POST',body:{}});},
  async uploadAttachment(file){if(!base)throw new Error('Choose a mailbox first');if(!file||file.size>1048576||file.size<1)throw new Error('Choose an attachment between 1 byte and 1 MiB.');const result=await request(base+'/attachments',{method:'POST',rawBody:file});return {...result,name:file.name,type:file.type||result.type||'application/octet-stream'};},

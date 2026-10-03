@@ -5,7 +5,8 @@ import { createEncryptedDraftCache } from "./drafts.js";
 export function installDurableCompose({ client, request, state, onError }) {
   const $ = (id) => document.getElementById(id),
     fields = ["to", "cc", "bcc", "subject", "body"];
-  let generation = 0,
+  let nativeAllowed = false,
+    generation = 0,
     activeClient,
     controller,
     cache,
@@ -41,7 +42,7 @@ export function installDurableCompose({ client, request, state, onError }) {
         organizationId: organization.organizationId,
         mailboxId: mailbox?.id,
       }) ||
-      mailbox.stage !== "active"
+      !["mailbox-created", "verified", "active"].includes(mailbox.stage)
     )
       throw Object.assign(
         Error(
@@ -49,7 +50,12 @@ export function installDurableCompose({ client, request, state, onError }) {
         ),
         { status: 403 },
       );
-    await scopedClient.session();
+    const context = await scopedClient.composition();
+    if (!same(expected, context))
+      throw Object.assign(
+        Error("Your account changed. Reopen Mail before continuing."),
+        { status: 403 },
+      );
     return expected;
   }
   function controls() {
@@ -57,7 +63,7 @@ export function installDurableCompose({ client, request, state, onError }) {
       busy = opening || uploading || closing || snap?.busy;
     $("save-draft").disabled = !!busy || locked || !snap;
     $("close-compose").disabled = !!busy;
-    $("attachments").disabled = !!busy || locked;
+    $("attachments").disabled = !!busy || locked || !nativeAllowed;
     $("send").disabled = true;
     $("schedule-send").disabled = true;
     for (const button of $("attachment-list").querySelectorAll("button"))
@@ -212,12 +218,14 @@ export function installDurableCompose({ client, request, state, onError }) {
         mailboxId: state.mailbox.id,
       };
       const expected = { ...owner },
-        scopedClient = createMailClient(request);
+        scopedClient = createMailClient((path, options) =>
+          request(path, { ...options, expectedActor: expected.actorId }),
+        );
       scopedClient.bind(expected.organizationId, expected.mailboxId);
       activeClient = scopedClient;
-      const session = await scopedClient.session();
+      const session = await scopedClient.composition();
       valid();
-      if (session.axxes?.durableDrafts !== true)
+      if (!same(expected, session) || session.durableDrafts !== true)
         throw Error("Private draft storage is temporarily unavailable.");
       cache = createEncryptedDraftCache(async () => {
         valid();
@@ -260,16 +268,13 @@ export function installDurableCompose({ client, request, state, onError }) {
           savedEditVersion: 0,
         };
       }
-      const identities = await scopedClient.identities();
-      valid();
-      const identity =
-        identities.find((x) => x.email === state.mailbox.primaryAddress) ||
-        identities[0];
+      nativeAllowed = session.nativeAttachments === true;
+      const identity = session.sender;
       $("from").replaceChildren();
       if (identity) {
         const option = document.createElement("option");
         option.textContent = identity.email;
-        option.value = identity.id;
+        option.value = identity.email;
         $("from").append(option);
       } else throw Error("Your mailbox identity is unavailable.");
       $("from").disabled = true;
