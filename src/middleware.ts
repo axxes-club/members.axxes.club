@@ -1,3 +1,4 @@
+import { publicOrigin } from "@/lib/public-origin"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
@@ -22,7 +23,11 @@ const publicRoutes = [
   "/api/dev-auth",
   "/share/",
   "/api/uploadthing",
+  "/api/storage",
+  "/api/assets/gcp",
   "/api/axxes/products",
+  // These handlers expose the published tenant catalog/CMS and accept inquiries.
+  "/api/v1/public/tenants",
 ]
 
 // Auth pages that move to Handshake (the central AXXES account) when it's switched on
@@ -35,6 +40,9 @@ const handshakePages: Record<string, string> = {
 
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
+
+  // Scheduler uses its bearer token, checked by this exact route, not a user session.
+  if (pathname === "/api/cron/newsletter" || pathname === "/api/axxes/products") return NextResponse.next()
 
   // A path is public if it is the root, or if it sits under one of the prefixes.
   const isPublic = pathname === "/" || publicRoutes.some((route) => route.endsWith("/") ? pathname.startsWith(route) : pathname === route || pathname.startsWith(`${route}/`))
@@ -57,15 +65,17 @@ export function middleware(request: NextRequest) {
   // NODE_ENV, so a production-shaped local run (`NODE_ENV=production` on
   // localhost) behaves the same way, and a real deployment is untouched.
   const localHosts = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0", "[::1]"])
-  const isLocalHost = localHosts.has(request.nextUrl.hostname)
+  // On Cloud Run nextUrl is the container address (0.0.0.0:8080); use the public host.
+  const origin = publicOrigin(request)
+  const isLocalHost = localHosts.has(new URL(origin).hostname)
 
   const handshakeUrl = isLocalHost
     ? null
     : process.env.HANDSHAKE_URL?.replace(/\/$/, "")
 
   if (handshakeUrl && handshakePages[pathname]) {
-    const back = new URL(searchParams.get("redirect") || "/dashboard", request.url)
-    if (back.origin !== request.nextUrl.origin) back.href = new URL("/dashboard", request.url).href
+    const back = new URL(searchParams.get("redirect") || "/dashboard", origin)
+    if (back.origin !== origin) back.href = new URL("/dashboard", origin).href
     const target = new URL(`${handshakeUrl}${handshakePages[pathname]}`)
     target.searchParams.set("redirect", back.href)
     return NextResponse.redirect(target)
@@ -73,7 +83,7 @@ export function middleware(request: NextRequest) {
 
   // Handle dev auth bypass: /?devauth or /sign-in?devauth
   if (searchParams.has("devauth")) {
-    const devAuthUrl = new URL("/api/dev-auth", request.url)
+    const devAuthUrl = new URL("/api/dev-auth", origin)
     // Preserve redirect param if present
     const redirect = searchParams.get("redirect")
     if (redirect) {
@@ -94,8 +104,8 @@ export function middleware(request: NextRequest) {
 
   // Redirect to sign-in if not authenticated
   if (!sessionToken) {
-    const signInUrl = new URL("/sign-in", request.url)
-    signInUrl.searchParams.set("redirect", pathname)
+    const signInUrl = new URL("/sign-in", origin)
+    signInUrl.searchParams.set("redirect", pathname + request.nextUrl.search)
     return NextResponse.redirect(signInUrl)
   }
 
@@ -128,14 +138,14 @@ export function middleware(request: NextRequest) {
   // picker. Somebody with no membership at all is forwarded to /onboarding,
   // where the picker (and "create a business") is the correct thing to show.
   if (!tenantId && !isSelectingTenant && !pathname.startsWith("/onboarding")) {
-    const autoSelect = new URL("/api/v1/tenants/select", request.url)
+    const autoSelect = new URL("/api/v1/tenants/select", origin)
     autoSelect.searchParams.set("next", pathname)
     return NextResponse.redirect(autoSelect)
   }
 
   // Already onboarded, skip onboarding
   if (tenantId && pathname.startsWith("/onboarding")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL("/dashboard", origin))
   }
 
   return NextResponse.next()

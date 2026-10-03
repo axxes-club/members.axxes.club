@@ -164,7 +164,8 @@ export function TenantSwitcher({
             No organizations found
           </div>
         ) : (
-          tenants.map((tenant) => (
+          <div className="max-h-[min(50vh,20rem)] overflow-y-auto overscroll-contain">
+          {tenants.map((tenant) => (
             <DropdownMenuItem
               key={tenant.id}
               onClick={() => handleSwitchTenant(tenant.id)}
@@ -187,7 +188,8 @@ export function TenantSwitcher({
                 )}
               </div>
             </DropdownMenuItem>
-          ))
+          ))}
+          </div>
         )}
 
         <DropdownMenuSeparator />
