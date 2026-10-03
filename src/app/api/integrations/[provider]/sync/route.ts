@@ -1,3 +1,4 @@
+import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Generic Integration Sync Endpoint
  * Manual sync trigger for any provider
@@ -25,6 +26,7 @@ async function getSessionWithTenant() {
     return null
   }
 
+  if(!await platformAccessAllowed(session.user.id,tenantId))return null;
   return { userId: session.user.id, tenantId }
 }
 

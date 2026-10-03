@@ -9,7 +9,7 @@ export class WebsitePublication {
  constructor(private pool:SqlPool){}
  private async authorize(c:SqlClient,p:Principal,pageId:string,write=false){
   if(!uuid.test(pageId)||!uuid.test(p.tenantId))throw new WebsiteError('Invalid identifier');
-  const {rows}=await c.query<Pick<WebsiteRow,'id'|'slug'|'role'>>('SELECT p.id,p.slug,m.role FROM pages p JOIN tenant_memberships m ON m.tenant_id=p.tenant_id AND m.user_id=$2 AND m.deleted_at IS NULL WHERE p.id=$1 AND p.tenant_id=$3',[pageId,p.userId,p.tenantId]);
+  const {rows}=await c.query<Pick<WebsiteRow,'id'|'slug'|'role'>>('SELECT p.id,p.slug,m.role FROM pages p JOIN tenants org ON org.id=p.tenant_id AND org.deleted_at IS NULL AND org.status='active' JOIN tenant_memberships m ON m.tenant_id=p.tenant_id AND m.user_id=$2 AND m.deleted_at IS NULL WHERE p.id=$1 AND p.tenant_id=$3',[pageId,p.userId,p.tenantId]);
   if(!rows.length)throw new WebsiteError('Page not found or access denied',403);
   if(write&&!['owner','admin','manager'].includes(rows[0].role))throw new WebsiteError('Permission denied',403);
   return rows[0];

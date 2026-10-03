@@ -1,3 +1,4 @@
+import {platformOrganizationAllowed} from '@/lib/platform-access';
 /**
  * Email Sending Infrastructure for Newsletter Module
  * Supports multiple providers: Resend, SendGrid, Mailgun, SMTP
@@ -344,6 +345,7 @@ export async function sendCampaign(campaignId: string): Promise<BulkSendResult> 
     throw new Error("Campaign not found")
   }
 
+  if(!await platformOrganizationAllowed(campaign.tenantId))throw new Error('Organization access is suspended.');
   // Get email provider
   const provider = await getEmailProvider(campaign.tenantId)
   if (!provider) {

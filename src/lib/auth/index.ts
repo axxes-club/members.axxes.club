@@ -1,3 +1,5 @@
+import {guardPlatformAuth,platformAccessAllowed} from '@/lib/platform-access';
+import {APIError} from 'better-auth/api';
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
@@ -39,7 +41,7 @@ const trustedOrigins = [
 // Central AXXES sign-in; when unset the portal uses its own sign-in pages
 export const HANDSHAKE_URL = process.env.HANDSHAKE_URL?.replace(/\/$/, "") || null
 
-export const auth = betterAuth({
+const baseAuth = betterAuth({
   baseURL: process.env.BETTER_AUTH_BASE_URL || "http://localhost:3000",
   trustedOrigins,
   advanced: cookieDomain ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } } : undefined,
@@ -64,6 +66,7 @@ export const auth = betterAuth({
   databaseHooks: {
     session: {
       create: {
+        before: async (session) => { if(!await platformAccessAllowed(session.userId)) throw new APIError('FORBIDDEN',{message:'Account access is suspended.'}); return {data:session}; },
         after: async (session) => {
           // Log login event when a new session is created
           try {
@@ -83,6 +86,8 @@ export const auth = betterAuth({
     },
   },
 })
+
+export const auth = guardPlatformAuth(baseAuth);
 
 export async function getAuthContext() {
   const cookieStore = await cookies()
@@ -126,21 +131,24 @@ export async function getAuthContext() {
     if (!member.length) resolvedTenantId = undefined
   }
 
+  if(resolvedTenantId&&!await platformAccessAllowed(session.user.id,resolvedTenantId))resolvedTenantId=undefined;
   if (!resolvedTenantId) {
     // is_primary is not unique in the schema, and in this database it is not
     // unique in practice, so the earliest membership breaks the tie rather than
     // trusting a flag that can legitimately be true twice.
-    const [membership] = await db
+    const memberships = await db
       .select({ tenantId: tenantMemberships.tenantId })
       .from(tenantMemberships)
       .where(eq(tenantMemberships.userId, session.user.id))
       .orderBy(desc(tenantMemberships.isPrimary), asc(tenantMemberships.joinedAt))
-      .limit(1)
-
-    if (!membership) redirect("/onboarding")
+      .limit(1000)
+    let membership: typeof memberships[number] | undefined;
+    for(const candidate of memberships){if(await platformAccessAllowed(session.user.id,candidate.tenantId)){membership=candidate;break;}}
+    if (!membership) redirect("/sign-out")
     resolvedTenantId = membership.tenantId
   }
 
+  if (!await platformAccessAllowed(session.user.id, resolvedTenantId)) redirect('/onboarding');
   return { userId: session.user.id, tenantId: resolvedTenantId }
 }
 

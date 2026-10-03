@@ -1,3 +1,4 @@
+import {platformAccessAllowed} from '@/lib/platform-access';
 import { NextRequest, NextResponse } from "next/server"
 import { getPusherServer } from "@/lib/pusher/server"
 import { auth } from "@/lib/auth"
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
         ),
       })
 
-      if (!membership) {
+      if (!membership || !await platformAccessAllowed(userId,tenantId)) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 })
       }
     } else {
