@@ -13,6 +13,7 @@ export async function PulseTracker({
   userId: string;
   appKey: string;
 }) {
+  let site: {public_id:string; identity_mode:string}|undefined;
   try {
     const h = await headers();
     const origin =
@@ -37,15 +38,7 @@ export async function PulseTracker({
       identity_mode: string;
       allowed_origins: string[];
     }>;
-    const site = rows.find((row) => row.allowed_origins.includes(origin));
-    if (!site) return null;
-    return (
-      <PulseTrackerClient
-        siteId={site.public_id}
-        persistent={site.identity_mode === "persistent"}
-      />
-    );
-  } catch {
-    return null;
-  }
+    site = rows.find((row) => row.allowed_origins.includes(origin));
+  } catch {return null;}
+  return site?<PulseTrackerClient siteId={site.public_id} persistent={site.identity_mode === "persistent"}/>:null;
 }
