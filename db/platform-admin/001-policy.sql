@@ -28,3 +28,9 @@ CREATE TABLE IF NOT EXISTS platform_invitation_delivery (
  sent_at timestamptz, updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS platform_admin_audit_subject ON platform_admin_audit(subject_kind,subject_id,created_at DESC);
+
+CREATE TABLE IF NOT EXISTS platform_organization_entitlements (
+ tenant_id uuid NOT NULL REFERENCES tenants(id),service_id text NOT NULL,
+ allowed boolean NOT NULL,updated_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(tenant_id,service_id)
+);

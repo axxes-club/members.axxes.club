@@ -11,7 +11,7 @@ export async function evaluateAccess(db:Sql,userId:string,organizationId?:string
   if(!t||t.deleted_at||['suspended','cancelled'].includes(String(t.status)))return {allowed:false,reason:'organization_suspended',version};
   const m=(await db.query(`SELECT id FROM tenant_memberships WHERE user_id=$1 AND tenant_id=$2 AND deleted_at IS NULL`,[userId,organizationId])).rows[0];
   if(!m)return {allowed:false,reason:'membership_missing',version};
-  if(serviceId){const e=(await db.query(`SELECT allowed FROM platform_entitlements WHERE user_id=$1 AND tenant_id=$2 AND service_id=$3`,[userId,organizationId,serviceId])).rows[0];if(e?.allowed===false)return {allowed:false,reason:'service_denied',version};}
+  if(serviceId){const organizationPolicy=(await db.query(`SELECT allowed FROM platform_organization_entitlements WHERE tenant_id=$1 AND service_id=$2`,[organizationId,serviceId])).rows[0];if(organizationPolicy?.allowed===false)return {allowed:false,reason:'service_denied',version};const e=(await db.query(`SELECT allowed FROM platform_entitlements WHERE user_id=$1 AND tenant_id=$2 AND service_id=$3`,[userId,organizationId,serviceId])).rows[0];if(e?.allowed===false)return {allowed:false,reason:'service_denied',version};}
  }
  return {allowed:true,reason:'allowed',version};
 }
@@ -24,7 +24,7 @@ export async function lockSubject(db:Sql,s:SubjectRef,kind:'user'|'organization'
  return detail;
 }
 export async function bumpVersion(db:Sql,s:SubjectRef,kind:'user'|'organization'){
- await db.query(`INSERT INTO platform_subject_policy(subject_kind,subject_id) VALUES($1,$2) ON CONFLICT(subject_kind,subject_id) DO UPDATE SET revision=platform_subject_policy.revision+1,updated_at=now()`,[kind,s.id]);
+ await db.query(`INSERT INTO platform_subject_policy(subject_kind,subject_id,revision) VALUES($1,$2,1) ON CONFLICT(subject_kind,subject_id) DO UPDATE SET revision=platform_subject_policy.revision+1,updated_at=now()`,[kind,s.id]);
 }
 // Call only inside the authority command transaction; row locks protect both version check and mutation.
 export async function setAccountState(db:Sql,s:SubjectRef,state:'active'|'suspended',expectedVersion:string,reason:string,_actor:AdminActor):Promise<string>{

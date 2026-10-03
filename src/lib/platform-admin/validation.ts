@@ -1,5 +1,5 @@
 import { PlatformError, type SubjectRef, type DirectoryQuery, type Page, type UserSummary, type OrganizationSummary, type Membership, type InvitationSummary, type AccessObservation, type UserDetails, type OrganizationDetails, type AdminCommand, type Action, type MembershipRole, type Capabilities, type OperationDetails, type OperationState } from './contracts';
-export const actions: Action[] = ['invitation.create','invitation.revoke','invitation.resend','membership.role','membership.remove','organization.profile','access.grant','access.revoke','account.suspend','account.reactivate','organization.suspend','organization.reactivate','credentials.revoke'];
+export const actions: Action[] = ['invitation.create','invitation.revoke','invitation.resend','membership.role','membership.remove','organization.profile','organization.access.grant','organization.access.revoke','access.grant','access.revoke','account.suspend','account.reactivate','organization.suspend','organization.reactivate','credentials.revoke'];
 export const roles: MembershipRole[] = ['owner','admin','manager','member','viewer'];
 const invalid = (): never => { throw new PlatformError(400, 'INVALID_PLATFORM_INPUT', 'Invalid platform administration data.'); };
 export function record(v: unknown): Record<string, unknown> { if (!v || typeof v !== 'object' || Array.isArray(v)) return invalid(); return v as Record<string,unknown>; }
@@ -27,7 +27,7 @@ export function parseUserDetails(v:unknown):UserDetails{const r=record(v);return
 export function parseOrganizationDetails(v:unknown):OrganizationDetails{const r=record(v);return {...parseOrganization(r),memberships:list(r.memberships,parseMembership),access:list(r.access,parseAccess),invitations:list(r.invitations,parseInvitation)};}
 export function parseCommand(v:unknown):AdminCommand {
   const r=record(v),a=r.action as Action;if(!actions.includes(a))return invalid();const p=record(r.payload),s=subject(r.subject),out:AdminCommand={subject:s,action:a,expectedVersion:text(r.expectedVersion,256),payload:{}};
-  const allowed:Record<Action,string[]>={'invitation.create':['email','role'],'invitation.revoke':['invitationId'],'invitation.resend':['invitationId'],'membership.role':['organization','role'],'membership.remove':['organization'],'organization.profile':['name','contactEmail'],'access.grant':['organization','serviceId'],'access.revoke':['organization','serviceId'],'account.suspend':['reason'],'account.reactivate':[],'organization.suspend':['reason'],'organization.reactivate':[],'credentials.revoke':['scope']};
+  const allowed:Record<Action,string[]>={'invitation.create':['email','role'],'invitation.revoke':['invitationId'],'invitation.resend':['invitationId'],'membership.role':['organization','role'],'membership.remove':['organization'],'organization.profile':['name','contactEmail'],'organization.access.grant':['serviceId'],'organization.access.revoke':['serviceId'],'access.grant':['organization','serviceId'],'access.revoke':['organization','serviceId'],'account.suspend':['reason'],'account.reactivate':[],'organization.suspend':['reason'],'organization.reactivate':[],'credentials.revoke':['scope']};
   if(Object.keys(p).some(k=>!allowed[a].includes(k)))return invalid();
   if(p.organization)out.payload.organization=subject(p.organization);if(p.role)out.payload.role=role(p.role);
   if(p.email!==undefined){const email=text(p.email,320).trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return invalid();out.payload.email=email;}
@@ -36,6 +36,7 @@ export function parseCommand(v:unknown):AdminCommand {
   if(a==='invitation.create'&&(!out.payload.email||!out.payload.role||out.payload.role==='owner'))return invalid();
   if(a.startsWith('invitation.')&&a!=='invitation.create'&&!out.payload.invitationId)return invalid();
   if(a.startsWith('membership.')&&(!out.payload.organization||(a==='membership.role'&&(!out.payload.role||out.payload.role==='owner'))))return invalid();
+  if(a.startsWith('organization.access.')&&!out.payload.serviceId)return invalid();
   if(a.startsWith('access.')&&(!out.payload.organization||!out.payload.serviceId))return invalid();
   if(a.endsWith('.suspend')&&!out.payload.reason)return invalid();if(a==='credentials.revoke'&&!out.payload.scope)return invalid();
   if(out.payload.organization&&out.payload.organization.authorityId!==s.authorityId)return invalid();return out;
