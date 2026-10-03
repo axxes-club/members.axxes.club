@@ -33,3 +33,25 @@ test("revocation removes existing credentials and never restores them", async ()
     await db.close();
   }
 });
+test('all-supported revocation exhausts authorization codes beyond unrelated records',async()=>{
+ const db=await policyFixture();try{
+ await db.exec(`CREATE TABLE verification(id text primary key,value text); INSERT INTO verification SELECT 'unrelated-'||n,'{"userId":"b"}' FROM generate_series(1,1001) n; INSERT INTO verification VALUES('target','{"userId":"a"}'),('legacy','not-json');`);
+ await revokeCredentials(db,{authorityId:'axxes-shared',id:'a'},'all-supported',{wmUserId:'wm',integrationId:'wm',correlationId:'test'});
+ assert.equal((await db.query(`SELECT id FROM verification WHERE id='target'`)).rows.length,0);
+ assert.equal((await db.query(`SELECT count(*)::int AS n FROM verification`)).rows[0].n,1002);
+ }finally{await db.close();}
+});
+test('the database issuance boundary rejects inserts while account suspension holds',async()=>{
+ const db=await policyFixture();try{
+ await db.exec(`CREATE TABLE session(id text,user_id text); CREATE TABLE verification(id text,value text);`);
+ const {readFile}=await import('node:fs/promises');
+ await db.exec(await readFile(new URL('../../db/platform-admin/001-policy.sql',import.meta.url),'utf8'));
+ await db.query(`INSERT INTO platform_subject_policy(subject_kind,subject_id,state) VALUES('user','a','suspended')`);
+ await assert.rejects(()=>db.query(`INSERT INTO session VALUES('racing-session','a')`));
+ await assert.rejects(()=>db.query(`INSERT INTO verification VALUES('racing-code','{"userId":"a"}')`));
+ await db.query(`INSERT INTO session VALUES('unrelated-session','b')`);
+ await db.query(`UPDATE platform_subject_policy SET state='active' WHERE subject_id='a'`);
+ assert.equal((await db.query(`SELECT id FROM session WHERE user_id='a'`)).rows.length,0);
+ await db.query(`INSERT INTO session VALUES('fresh-session','a')`);
+ }finally{await db.close();}
+});

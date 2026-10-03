@@ -1,10 +1,11 @@
 import {guardPlatformAuth,platformAccessAllowed} from '@/lib/platform-access';
+import {resolveEligibleOrganization} from '@/lib/platform-access-core';
 import {APIError} from 'better-auth/api';
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
 import { loginActivity, tenantMemberships } from "@/lib/db/schema"
-import { and, asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { sendPasswordResetEmail } from "@/lib/email"
@@ -125,6 +126,7 @@ export async function getAuthContext() {
         and(
           eq(tenantMemberships.tenantId, tenantId),
           eq(tenantMemberships.userId, session.user.id),
+          isNull(tenantMemberships.deletedAt),
         ),
       )
       .limit(1)
@@ -139,13 +141,13 @@ export async function getAuthContext() {
     const memberships = await db
       .select({ tenantId: tenantMemberships.tenantId })
       .from(tenantMemberships)
-      .where(eq(tenantMemberships.userId, session.user.id))
+      .where(and(eq(tenantMemberships.userId, session.user.id),isNull(tenantMemberships.deletedAt)))
       .orderBy(desc(tenantMemberships.isPrimary), asc(tenantMemberships.joinedAt))
       .limit(1000)
-    let membership: typeof memberships[number] | undefined;
-    for(const candidate of memberships){if(await platformAccessAllowed(session.user.id,candidate.tenantId)){membership=candidate;break;}}
-    if (!membership) redirect("/sign-out")
-    resolvedTenantId = membership.tenantId
+    const choice=await resolveEligibleOrganization(memberships,undefined,id=>platformAccessAllowed(session.user.id,id));
+    if(choice.state==='onboarding')redirect('/onboarding');
+    if(choice.state==='denied')redirect('/access-denied');
+    resolvedTenantId=choice.organizationId!;
   }
 
   if (!await platformAccessAllowed(session.user.id, resolvedTenantId)) redirect('/onboarding');

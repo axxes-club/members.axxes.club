@@ -24,3 +24,9 @@ export function wrapPlatformAuth<T extends object>(base:T,check:(userId:string,s
   return value;
  }}) as T;
 }
+
+export async function resolveEligibleOrganization(memberships:{tenantId:string}[],selected:string|undefined,allowed:(organizationId:string)=>Promise<boolean>):Promise<{organizationId:string|null;state:'ready'|'onboarding'|'denied'}>{
+ if(selected&&memberships.some(m=>m.tenantId===selected)&&await allowed(selected))return {organizationId:selected,state:'ready'};
+ for(const membership of memberships)if(await allowed(membership.tenantId))return {organizationId:membership.tenantId,state:'ready'};
+ return {organizationId:null,state:memberships.length?'denied':'onboarding'};
+}

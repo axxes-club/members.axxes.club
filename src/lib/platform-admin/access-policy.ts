@@ -129,6 +129,13 @@ export async function setAccountState(
       "PROTECTED_ACCOUNT",
       "Platform administrators require a separately reviewed access change.",
     );
+  if (state === 'suspended') {
+    const organizations=(await db.query(`SELECT t.id,t.owner_id FROM tenants t WHERE t.deleted_at IS NULL AND t.status<>'cancelled' AND (t.owner_id=$1 OR EXISTS(SELECT 1 FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.user_id=$1 AND m.role='owner' AND m.deleted_at IS NULL)) ORDER BY t.id FOR UPDATE`,[s.id])).rows;
+    for(const organization of organizations){
+      const eligible=(await db.query(`SELECT u.id FROM tenant_memberships m JOIN "user" u ON u.id=m.user_id LEFT JOIN platform_subject_policy p ON p.subject_kind='user' AND p.subject_id=u.id WHERE m.tenant_id=$1 AND m.deleted_at IS NULL AND u.id<>$2 AND (m.role='owner' OR u.id=$3) AND coalesce(p.state,'active')='active' LIMIT 1`,[organization.id,s.id,organization.owner_id])).rows;
+      if(!eligible.length) throw new PlatformError(403,'LAST_OWNER_PROTECTED','Assign another eligible organization owner before suspending this account.');
+    }
+  }
   await db.query(
     `INSERT INTO platform_subject_policy(subject_kind,subject_id,state,reason,revision) VALUES('user',$1,$2,$3,1) ON CONFLICT(subject_kind,subject_id) DO UPDATE SET state=$2,reason=$3,revision=platform_subject_policy.revision+1,updated_at=now()`,
     [s.id, state, reason],

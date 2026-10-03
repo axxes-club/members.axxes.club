@@ -321,7 +321,7 @@ export function createCommands(
         createdAt: now,
         updatedAt: now,
         message: "The authority verified this change.",
-        services: config.services.map((serviceId) => ({
+        services: (p.serviceId ? [p.serviceId] : config.services).map((serviceId) => ({
           serviceId,
           state: "succeeded",
         })),

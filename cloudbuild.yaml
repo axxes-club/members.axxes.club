@@ -30,6 +30,15 @@
       ]
     },
     {
+      "id": "credential-issuance-race-tests",
+      "name": "gcr.io/cloud-builders/docker",
+      "entrypoint": "sh",
+      "args": [
+        "-ec",
+        "network=platform-ci-$BUILD_ID\ncontainer=platform-postgres-$BUILD_ID\ndocker network create \"$$network\" >/dev/null\ntrap 'docker rm -f \"$$container\" >/dev/null 2>&1 || true; docker network rm \"$$network\" >/dev/null 2>&1 || true' EXIT\ndocker run -d --name \"$$container\" --network \"$$network\" --network-alias platform-postgres --env POSTGRES_PASSWORD=ci-only --env POSTGRES_DB=platform_ci --health-cmd='pg_isready -U postgres' --health-interval=1s postgres:17-alpine >/dev/null\nfor attempt in $$(seq 1 60); do [ \"$$(docker inspect --format='{{.State.Health.Status}}' \"$$container\")\" = healthy ] && break; sleep 1; done\ndocker run --rm --network \"$$network\" --env PLATFORM_TEST_DATABASE_URL=postgresql://postgres:ci-only@platform-postgres:5432/platform_ci ci-check:$BUILD_ID sh -ec 'rm -f .env .env.*; node_modules/.bin/tsx --test tests/platform-admin/issuance-race.pg-test.ts'\n"
+      ]
+    },
+    {
       "id": "platform-access-tests",
       "name": "gcr.io/cloud-builders/docker",
       "args": [

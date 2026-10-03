@@ -34,3 +34,38 @@ CREATE TABLE IF NOT EXISTS platform_organization_entitlements (
  allowed boolean NOT NULL,updated_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(tenant_id,service_id)
 );
+
+-- Serialize credential creation with user-policy mutations. Existing writers also
+-- cross this boundary, so a pre-insert eligibility check cannot race revocation.
+CREATE OR REPLACE FUNCTION platform_guard_credential_insert() RETURNS trigger
+LANGUAGE plpgsql AS $$
+DECLARE credential_user text;
+BEGIN
+ IF TG_TABLE_NAME='verification' THEN
+  BEGIN
+   credential_user := ((to_jsonb(NEW)->>'value')::jsonb)->>'userId';
+  EXCEPTION WHEN invalid_text_representation THEN
+   credential_user := NULL;
+  END;
+ ELSE
+  credential_user := to_jsonb(NEW)->>'user_id';
+ END IF;
+ IF credential_user IS NOT NULL THEN
+  PERFORM id FROM "user" WHERE id=credential_user FOR UPDATE;
+  IF EXISTS(SELECT 1 FROM platform_subject_policy WHERE subject_kind='user' AND subject_id=credential_user AND state='suspended') THEN
+   RAISE EXCEPTION 'Account access is suspended' USING ERRCODE='42501';
+  END IF;
+ END IF;
+ RETURN NEW;
+END;
+$$;
+DO $$
+DECLARE credential_table text;
+BEGIN
+ FOREACH credential_table IN ARRAY ARRAY['session','oauth_access_token','workspace_oidc_codes','api_tokens','verification'] LOOP
+  IF to_regclass(credential_table) IS NOT NULL AND NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid=to_regclass(credential_table) AND tgname='platform_guard_credential_insert') THEN
+   EXECUTE format('CREATE TRIGGER platform_guard_credential_insert BEFORE INSERT ON %I FOR EACH ROW EXECUTE FUNCTION platform_guard_credential_insert()',credential_table);
+  END IF;
+ END LOOP;
+END;
+$$;

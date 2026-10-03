@@ -57,13 +57,13 @@ try {
   columns = (
     await client.query(
       `SELECT c.relname AS table_name,a.attname AS column_name,format_type(a.atttypid,a.atttypmod) AS type,a.attnotnull AS required FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname=ANY($1) AND a.attnum>0 AND NOT a.attisdropped ORDER BY c.relname,a.attnum`,
-      [["user", "tenants", "tenant_memberships", "tenant_invitations"]],
+      [["user", "tenants", "tenant_memberships", "tenant_invitations", "session", "verification", "oauth_access_token", "workspace_oidc_codes", "api_tokens"]],
     )
   ).rows;
   keys = (
     await client.query(
       `SELECT c.relname AS table_name,pg_get_constraintdef(k.oid) AS definition FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname=ANY($1) AND k.contype IN ('p','u')`,
-      [["user", "tenants", "tenant_memberships", "tenant_invitations"]],
+      [["user", "tenants", "tenant_memberships", "tenant_invitations", "session", "verification", "oauth_access_token", "workspace_oidc_codes", "api_tokens"]],
     )
   ).rows;
   enums = (
@@ -88,11 +88,10 @@ for (const table of [
   "user",
   "tenants",
   "tenant_memberships",
-  "tenant_invitations",
+  "tenant_invitations", "session", "verification", "oauth_access_token", "workspace_oidc_codes", "api_tokens",
 ]) {
   const fields = columns.filter((c) => c.table_name === table);
-  if (!fields.length)
-    throw Error("Required production table missing: " + table);
+  if (!fields.length) {if(['user','tenants','tenant_memberships','tenant_invitations'].includes(table))throw Error('Required production table missing: '+table);continue;}
   schema += `\nCREATE TABLE ${quote(table)} (${[...fields.map((c) => `${quote(c.column_name)} ${c.type}${c.required ? " NOT NULL" : ""}`), ...keys.filter((k) => k.table_name === table).map((k) => k.definition)].join(",")});`;
 }
 const migration = await readFile(
@@ -108,7 +107,7 @@ try {
     observedAt: new Date().toISOString(),
     productionReadOnly: true,
     privateRowsRead: 0,
-    snapshotTables: 4,
+    snapshotTables: new Set(columns.map(c=>c.table_name)).size,
     snapshotColumns: columns.length,
     schemaHash: createHash("sha256").update(schema).digest("hex"),
     migrationHash: createHash("sha256").update(migration).digest("hex"),

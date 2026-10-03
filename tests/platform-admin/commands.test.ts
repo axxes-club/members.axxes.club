@@ -284,3 +284,20 @@ test("organization app access applies to every member and remains denied after r
     await db.close();
   }
 });
+test('account suspension preserves an eligible organization owner',async()=>{
+ const db=await setup();try{
+ const engine=createCommands(db,config),dir=createDirectory(db,true);
+ const suspend=async(id:string,key:string)=>engine.execute({subject:{authorityId:'axxes-shared',id},action:'account.suspend',expectedVersion:(await dir.getUser({authorityId:'axxes-shared',id})).version,payload:{reason:'test'}},key,actor);
+ await assert.rejects(()=>suspend('a','sole-owner'),(e:any)=>e.code==='LAST_OWNER_PROTECTED');
+ await db.query(`UPDATE tenant_memberships SET role='owner' WHERE user_id='b'`);
+ await suspend('a','alternate-owner');
+ await assert.rejects(()=>suspend('b','last-live-owner'),(e:any)=>e.code==='LAST_OWNER_PROTECTED');
+ }finally{await db.close();}
+});
+test('service entitlement results match only the requested service',async()=>{
+ const db=await setup();try{
+ const dir=createDirectory(db,true),engine=createCommands(db,config);
+ const result=await engine.execute({subject:user,action:'access.revoke',expectedVersion:(await dir.getUser(user)).version,payload:{organization:org,serviceId:'lanes'}},'one-service',actor);
+ assert.deepEqual(result.services.map(s=>s.serviceId),['lanes']);
+ }finally{await db.close();}
+});

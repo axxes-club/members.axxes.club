@@ -28,20 +28,16 @@ export async function revokeCredentials(
     (await db.query(`SELECT to_regclass('verification') AS relation`)).rows[0]
       ?.relation
   ) {
-    const rows = (
-      await db.query(
-        `SELECT id,value FROM verification WHERE value LIKE '%"userId"%' LIMIT 1000`,
-      )
-    ).rows;
-    for (const r of rows) {
-      let owner: unknown;
-      try {
-        owner = JSON.parse(String(r.value)).userId;
-      } catch {
-        continue;
+    let after = '';
+    for (;;) {
+      const rows = (await db.query(`SELECT id,value FROM verification WHERE id>$1 AND value LIKE '%"userId"%' ORDER BY id LIMIT 1000`, [after])).rows;
+      if (!rows.length) break;
+      for (const r of rows) {
+        let owner: unknown;
+        try { owner=JSON.parse(String(r.value)).userId; } catch { continue; }
+        if(owner===subject.id) await db.query(`DELETE FROM verification WHERE id=$1`,[r.id]);
       }
-      if (owner === subject.id)
-        await db.query(`DELETE FROM verification WHERE id=$1`, [r.id]);
+      after=String(rows[rows.length-1].id);
     }
   }
   return { revoked, scope };
