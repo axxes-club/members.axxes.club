@@ -8,7 +8,7 @@ export function openMailSession(value:string,key:string,userId:string,now=Date.n
 const uuid='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 export function allowedWorkspacePath(path:string,method:string):boolean{
  if(path==='v1/organizations')return method==='GET';const base='v1/organizations/'+uuid,mailbox=base+'/mailboxes/'+uuid;
- if(method==='GET'&&new RegExp('^'+mailbox+'/(?:drafts(?:/'+uuid+')?|outbox/'+uuid+')$').test(path))return true;
+ if(method==='GET'&&new RegExp('^'+mailbox+'/(?:composition|drafts(?:/'+uuid+')?|outbox/'+uuid+')$').test(path))return true;
  if(method==='POST'&&new RegExp('^'+mailbox+'/(?:drafts/'+uuid+'(?:/outbox)?|outbox/'+uuid+'/cancel)$').test(path))return true;
  if(method==='GET')return new RegExp('^'+base+'/(?:mailbox|directory|mail-domains|mailboxes/'+uuid+'/session)$').test(path)||new RegExp('^'+mailbox+'/messages/[A-Za-z0-9_-]{1,255}/attachments/[A-Za-z0-9][A-Za-z0-9._-]{0,127}$').test(path);
  return method==='POST'&&new RegExp('^'+base+'/(?:mail-domains(?:/'+uuid+'/(?:verify|retire))?|mailboxes/'+uuid+'/(?:jmap|attachments))$').test(path);
@@ -17,3 +17,5 @@ export function sameOriginMutation(origin:string|null,expected:string):boolean{t
 export class MailStreamLimitError extends Error{constructor(){super('Mail stream exceeds size limit');}}
 export async function readBoundedBytes(stream:ReadableStream<Uint8Array>|null,limit:number):Promise<Uint8Array<ArrayBuffer>>{if(!stream)return new Uint8Array(0);const reader=stream.getReader(),chunks:Uint8Array[]=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel().catch(()=>{});throw new MailStreamLimitError();}chunks.push(value);}const combined=new Uint8Array(size);let offset=0;for(const chunk of chunks){combined.set(chunk,offset);offset+=chunk.byteLength;}return combined;}finally{reader.releaseLock();}}
 export async function readBoundedText(stream:ReadableStream<Uint8Array>|null,limit:number):Promise<string>{return new TextDecoder().decode(await readBoundedBytes(stream,limit));}
+
+export function matchesExpectedMailActor(value:string|null,actor:string){return value===null||(value.length>0&&value.length<=256&&value===actor);}
