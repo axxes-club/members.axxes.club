@@ -29,7 +29,8 @@
     "test:website": "tsx --test tests/website/*.test.ts",
     "test:quota": "node --test scripts/storage/*.check.mjs",
     "test:commerce": "tsx --test tests/commerce/*.test.ts",
-    "test:storage-billing": "tsx --test tests/storage-billing-catalog.test.ts"
+    "test:storage-billing": "tsx --test tests/storage-billing-catalog.test.ts",
+    "test:platform-admin": "tsx --test tests/platform-admin/*.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
@@ -66,6 +67,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.3",
+    "google-auth-library": "^11.1.0",
     "lucide-react": "^0.575.0",
     "matrix-js-sdk": "^41.0.0",
     "nanoid": "^5.1.6",
@@ -84,10 +86,10 @@
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^7.7.4",
-    "zod": "^4.6.5",
-    "google-auth-library": "9.15.1"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25",
     "@types/nodemailer": "^7.0.11",
@@ -101,7 +103,6 @@
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5",
-    "@electric-sql/pglite": "0.3.14"
+    "typescript": "^5"
   }
 }
