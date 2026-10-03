@@ -1,3 +1,4 @@
+import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Afters Integration API
  * Handles connection status, OAuth initiation, and disconnection
@@ -25,6 +26,7 @@ async function getSessionWithTenant() {
     return null
   }
 
+  if(!await platformAccessAllowed(session.user.id,tenantId))return null;
   return { userId: session.user.id, tenantId }
 }
 

@@ -1,14 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {PGlite} from '@electric-sql/pglite';
+import {createRequire} from 'node:module';
+const {PGlite}=createRequire(process.env.AXXES_TEST_DEPENDENCIES||import.meta.url)('@electric-sql/pglite') as typeof import('@electric-sql/pglite');
 import {WebsitePublication} from '../../src/lib/website/publication';
 const tenant='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222',page='33333333-3333-4333-8333-333333333333';
 const principal={tenantId:tenant,userId:'operator'};
 const data={version:1,revision:0,page:{id:page,title:'Gangstarz',slug:'home'},theme:{logo:'/media/logo.png',background:'#212121',foreground:'#FFFFFF',primary:'#F48D25',secondary:'#F9BC22',displayFont:'Teko',labelFont:'Victor Mono'},navigation:[{label:'Events',href:'#events'}],footer:{text:'Charlotte',socials:[],showPoweredBy:true,conceptLabel:'Website concept by AXXES'},blocks:[]};
 async function setup(role='owner'){
  const db=new PGlite();
- await db.exec(`CREATE TABLE tenants(id uuid PRIMARY KEY,slug text); CREATE TABLE pages(id uuid PRIMARY KEY,tenant_id uuid,slug text,is_published boolean DEFAULT false); CREATE TABLE tenant_memberships(tenant_id uuid,user_id text,role text,deleted_at timestamptz); INSERT INTO tenants VALUES('${tenant}','gangstarz'),('${other}','other'); INSERT INTO pages VALUES('${page}','${tenant}','home',false);`);
+ await db.exec(`CREATE TABLE tenants(id uuid PRIMARY KEY,slug text,status text DEFAULT 'active',deleted_at timestamptz); CREATE TABLE pages(id uuid PRIMARY KEY,tenant_id uuid,slug text,is_published boolean DEFAULT false); CREATE TABLE tenant_memberships(tenant_id uuid,user_id text,role text,deleted_at timestamptz); INSERT INTO tenants(id,slug) VALUES('${tenant}','gangstarz'),('${other}','other'); INSERT INTO pages VALUES('${page}','${tenant}','home',false);`);
  await db.query('INSERT INTO tenant_memberships VALUES($1,$2,$3,null)',[tenant,'operator',role]);
  await db.exec(await readFile(new URL('../../db/gangstarz-cms.sql',import.meta.url),'utf8'));
  const service=new WebsitePublication({connect:async()=>({query:async<Row>(sql:string,params?:unknown[])=>db.query<Row>(sql,params),release(){}})});
@@ -31,3 +32,5 @@ test('public_excludes_hidden_blocks_and_private_settings',async()=>{const {db,se
 test('unpublished_page_returns_404',async()=>{const {db,service}=await setup();try{await service.save(principal,page,data,0);assert.equal(await service.publicPage('gangstarz','home'),null)}finally{await db.close()}});
 test('foreign_workspace_preview_denied',async()=>{const {db,service}=await setup();try{await service.save(principal,page,data,0);await assert.rejects(service.draft({...principal,tenantId:other},page),/denied/)}finally{await db.close()}});
 test('unpublish_removes_public_page',async()=>{const {db,service}=await setup();try{const r=await service.save(principal,page,data,0);await service.publish(principal,page,r);await service.unpublish(principal,page);assert.equal(await service.publicPage('gangstarz','home'),null)}finally{await db.close()}});
+
+test('suspended organization cannot read or publish its website',async()=>{const {db,service}=await setup();try{await service.save(principal,page,data,0);await db.query("UPDATE tenants SET status='suspended' WHERE id=$1",[tenant]);await assert.rejects(service.draft(principal,page),/denied/i);await assert.rejects(service.publish(principal,page,1),/denied/i);}finally{await db.close();}});

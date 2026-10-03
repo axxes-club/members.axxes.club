@@ -1,3 +1,4 @@
+import {platformAccessAllowed} from '@/lib/platform-access';
 import { NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -61,6 +62,7 @@ export async function withTenantAccess(
     return errorResponse("Access denied to this tenant", 403)
   }
 
+  if(!await platformAccessAllowed(userId,tenantId)) return errorResponse('Organization access is denied',403);
   return handler(tenantId, userId)
 }
 
@@ -124,6 +126,7 @@ export async function requireTenantAccess() {
     redirect("/sign-out")
   }
 
+  if(!await platformAccessAllowed(userId,tenantId)) redirect('/sign-out');
   return {
     tenantId,
     userId,

@@ -1,0 +1,1 @@
+export default function AccessDeniedPage(){return <main className="space-y-4"><h1 className="text-2xl font-semibold">Workspace access unavailable</h1><p>Your account is signed in, but you currently have no eligible workspace. Ask your organization administrator to review your access.</p><a href="/sign-out" className="underline">Sign out</a></main>;}

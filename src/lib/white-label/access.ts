@@ -1,3 +1,4 @@
+import {platformAccessAllowed} from '@/lib/platform-access';
 import "server-only"
 import { and, eq, isNull } from "drizzle-orm"
 import { auth } from "@/lib/auth"
@@ -26,6 +27,7 @@ export async function getAxxesStaff(): Promise<{ userId: string; name: string } 
       isNull(tenantMemberships.deletedAt)
     ),
   })
+  if(membership&&!await platformAccessAllowed(dbUser.id,AXXES_STAFF_TENANT_ID))return null;
   return membership ? { userId: dbUser.id, name: dbUser.name } : null
 }
 
