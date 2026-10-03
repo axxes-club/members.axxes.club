@@ -4,7 +4,7 @@ import { createIntegrationAuthenticator } from "../../src/lib/platform-admin/int
 test("Google token claims and configured principal/audience must match", async () => {
   const principal = "wm@project.iam.gserviceaccount.com",
     audience = "https://members.run.app";
-  let claims: any = {
+  let claims = {
     iss: "https://accounts.google.com",
     aud: audience,
     email: principal,
@@ -65,7 +65,7 @@ test("directory routes require integration auth and do not expose command/link e
         new Request(url + "capabilities", { headers: { authorization: "x" } }),
       )
     ).json();
-    assert.ok(cap.actions.every((c: any) => !c.available));
+    assert.ok(cap.actions.every((c: {available:boolean}) => !c.available));
     assert.equal(
       (
         await handler(

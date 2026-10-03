@@ -32,7 +32,7 @@ test("role edits enforce versions and owner invariants and exactly one concurren
   try {
     const engine = createCommands(db, config),
       dir = createDirectory(db, true);
-    let u = await dir.getUser(user);
+    const u = await dir.getUser(user);
     const results = await Promise.allSettled([
       engine.execute(
         {
@@ -259,7 +259,7 @@ test("organization app access applies to every member and remains denied after r
     await engine.execute(
       {
         subject: org,
-        action: "organization.access.revoke" as any,
+        action: "organization.access.revoke",
         expectedVersion: o.version,
         payload: { serviceId: "lanes" },
       },
