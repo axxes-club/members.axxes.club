@@ -52,6 +52,18 @@
       ]
     },
     {
+      "id": "platform-access-tests",
+      "name": "gcr.io/cloud-builders/docker",
+      "args": [
+        "run",
+        "--rm",
+        "ci-check:$BUILD_ID",
+        "sh",
+        "-ec",
+        "rm -f .env .env.*; npm run test:platform-admin && node_modules/.bin/tsx --test tests/platform-access/*.test.ts"
+      ]
+    },
+    {
       "id": "office-domain-tests",
       "name": "gcr.io/cloud-builders/docker",
       "args": [
