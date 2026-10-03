@@ -38,7 +38,7 @@ test("Google token claims and configured principal/audience must match", async (
 });
 
 import { createAdminHandler } from "../../src/lib/platform-admin/http";
-import { fixture } from "./fixtures";
+import { fixture,policyFixture } from "./fixtures";
 test("directory routes require integration auth and do not expose command/link endpoints without capabilities", async () => {
   const db = await fixture();
   try {
@@ -82,3 +82,4 @@ test("directory routes require integration auth and do not expose command/link e
     await db.close();
   }
 });
+test('capabilities fail closed without policy tables, and read-only mode preserves suspended account visibility',async()=>{const db=await policyFixture();try{const handler=createAdminHandler({db,authenticate:async()=>({integrationId:'wm'}),policyReady:true,policyAvailable:async()=>false,services:['lanes'],execute:async()=>{throw Error('Must not execute');}});const cap=await handler(new Request('https://members.example/api/platform-admin/v1/capabilities'));assert.equal((await cap.json()).actions.every((a:{available:boolean})=>!a.available),true);await db.exec(`INSERT INTO platform_subject_policy(subject_kind,subject_id,state) VALUES('user','a','suspended')`);const read=createAdminHandler({db,authenticate:async()=>({integrationId:'wm'}),policyReady:false,policyAvailable:async()=>true,services:['lanes']});const user=await read(new Request('https://members.example/api/platform-admin/v1/users/a'));assert.equal((await user.json()).state,'suspended');}finally{await db.close();}});

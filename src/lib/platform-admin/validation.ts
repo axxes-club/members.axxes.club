@@ -171,6 +171,8 @@ export function parseAccess(v: unknown): AccessObservation {
   const r = record(v);
   return {
     serviceId: identifier(r.serviceId),
+    ...(r.policyState==="allowed"||r.policyState==="denied"?{policyState:r.policyState}:{}),
+    ...(r.blockedReason?{blockedReason:text(r.blockedReason,200)}:{}),
     state: r.state === "allowed" || r.state === "denied" ? r.state : "unknown",
     enforcement: r.enforcement === "verified" ? "verified" : "unverified",
     ...(r.organization ? { organization: subject(r.organization) } : {}),
@@ -219,6 +221,7 @@ export function parseOrganizationDetails(v: unknown): OrganizationDetails {
   const r = record(v);
   return {
     ...parseOrganization(r),
+    contactEmail:r.contactEmail?text(r.contactEmail,320):null,
     memberships: list(r.memberships, parseMembership),
     access: list(r.access, parseAccess),
     invitations: list(r.invitations, parseInvitation),

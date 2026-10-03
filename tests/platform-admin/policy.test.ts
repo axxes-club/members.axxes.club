@@ -142,6 +142,8 @@ test("directory access reports effective organization and account state rather t
       )?.state,
       "denied",
     );
+    assert.equal((await dir.getUser(a)).access.find(v=>v.serviceId==='lanes')?.policyState,'allowed');
+    assert.equal((await dir.getUser(a)).access.find(v=>v.serviceId==='lanes')?.blockedReason,'Organization app access disabled');
     await db.exec(
       `INSERT INTO platform_subject_policy(subject_kind,subject_id,state) VALUES('user','a','suspended')`,
     );
@@ -179,3 +181,4 @@ test("service filters use effective membership and organization policy, and reje
     await db.close();
   }
 });
+test('session validity remains authoritative after revocation and rejects another user or expired session',async()=>{const db=await policyFixture();try{await db.exec(`CREATE TABLE "session"(id text PRIMARY KEY,user_id text,expires_at timestamptz);INSERT INTO "session" VALUES('cached','a',now()+interval '1 day'),('other','b',now()+interval '1 day'),('expired','a',now()-interval '1 day')`);const {createPlatformAccess}=await import('../../src/lib/platform-access-core');const access=createPlatformAccess(db,'members');assert.equal(await access.sessionAllowed('a','cached'),true);assert.equal(await access.sessionAllowed('a','other'),false);assert.equal(await access.sessionAllowed('a','expired'),false);await db.exec(`DELETE FROM "session" WHERE id='cached'`);assert.equal(await access.sessionAllowed('a','cached'),false);assert.equal(await access.sessionAllowed('b','other'),true);}finally{await db.close();}});

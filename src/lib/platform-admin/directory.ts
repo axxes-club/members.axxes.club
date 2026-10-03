@@ -52,7 +52,7 @@ export function createDirectory(
   const userVersion = `md5(u.updated_at::text || coalesce((SELECT string_agg(m.id::text || m.role || m.updated_at::text || coalesce(m.deleted_at::text,''),',' ORDER BY m.id) FROM tenant_memberships m WHERE m.user_id=u.id),'') ${policyReady ? "|| coalesce(p.revision::text,'0')" : ""})`;
   const orgVersion = `md5(t.updated_at::text || t.status || coalesce((SELECT string_agg(m.id::text || m.role || m.updated_at::text || coalesce(m.deleted_at::text,''),',' ORDER BY m.id) FROM tenant_memberships m WHERE m.tenant_id=t.id),'') ${policyReady ? "|| coalesce(p.revision::text,'0')" : ""})`;
   const userSelect = `SELECT u.id,u.name,u.email,u.email_verified,u.is_superadmin,u.created_at,${userVersion} AS version,${policyReady ? "coalesce(p.state,'active')" : "'active'"} AS state,(SELECT count(*)::int FROM tenant_memberships m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=u.id AND m.deleted_at IS NULL AND t.deleted_at IS NULL) AS count FROM "user" u ${policyReady ? "LEFT JOIN platform_subject_policy p ON p.subject_kind='user' AND p.subject_id=u.id" : ""}`;
-  const orgSelect = `SELECT t.id,t.name,t.slug,t.status,t.created_at,${orgVersion} AS version,o.id AS owner_id,o.name AS owner_name,o.email AS owner_email,(SELECT count(*)::int FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.deleted_at IS NULL) AS count FROM tenants t LEFT JOIN "user" o ON o.id=t.owner_id ${policyReady ? "LEFT JOIN platform_subject_policy p ON p.subject_kind='organization' AND p.subject_id=t.id::text" : ""}`;
+  const orgSelect = `SELECT t.id,t.name,t.slug,t.status,t.created_at,t.email AS contact_email,${orgVersion} AS version,o.id AS owner_id,o.name AS owner_name,o.email AS owner_email,(SELECT count(*)::int FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.deleted_at IS NULL) AS count FROM tenants t LEFT JOIN "user" o ON o.id=t.owner_id ${policyReady ? "LEFT JOIN platform_subject_policy p ON p.subject_kind='organization' AND p.subject_id=t.id::text" : ""}`;
   const user = (r: Record<string, unknown>) =>
     parseUser({
       subject: ref(r.id),
@@ -211,8 +211,8 @@ export function createDirectory(
     );
     if (!policyReady || !supported.length) return [];
     const eligibility = `CASE WHEN services.id='axxes-workspace-api' THEN t.status='active' ELSE t.status NOT IN ('suspended','cancelled') END`;
-    const userQuery = `SELECT services.id AS service_id,t.id AS tenant_id,(coalesce(user_policy.state,'active')='active' AND coalesce(individual.allowed,true) AND coalesce(organization_policy.allowed,true) AND ${eligibility}) AS allowed FROM tenant_memberships membership JOIN tenants t ON t.id=membership.tenant_id CROSS JOIN unnest($2::text[]) services(id) LEFT JOIN platform_subject_policy user_policy ON user_policy.subject_kind='user' AND user_policy.subject_id=membership.user_id LEFT JOIN platform_entitlements individual ON individual.tenant_id=t.id AND individual.user_id=membership.user_id AND individual.service_id=services.id LEFT JOIN platform_organization_entitlements organization_policy ON organization_policy.tenant_id=t.id AND organization_policy.service_id=services.id WHERE membership.user_id=$1 AND membership.deleted_at IS NULL AND t.deleted_at IS NULL ORDER BY t.name,services.id LIMIT 1000`;
-    const organizationQuery = `SELECT services.id AS service_id,t.id AS tenant_id,(coalesce(organization_policy.allowed,true) AND ${eligibility}) AS allowed FROM tenants t CROSS JOIN unnest($2::text[]) services(id) LEFT JOIN platform_organization_entitlements organization_policy ON organization_policy.tenant_id=t.id AND organization_policy.service_id=services.id WHERE t.id=$1 AND t.deleted_at IS NULL ORDER BY services.id`;
+    const userQuery = `SELECT services.id AS service_id,t.id AS tenant_id,coalesce(individual.allowed,true) AS policy_allowed,CASE WHEN coalesce(user_policy.state,'active')<>'active' THEN 'Account suspended' WHEN NOT(${eligibility}) THEN 'Organization not eligible' WHEN organization_policy.allowed=false THEN 'Organization app access disabled' WHEN individual.allowed=false THEN 'Member app access revoked' ELSE NULL END AS blocked_reason,(coalesce(user_policy.state,'active')='active' AND coalesce(individual.allowed,true) AND coalesce(organization_policy.allowed,true) AND ${eligibility}) AS allowed FROM tenant_memberships membership JOIN tenants t ON t.id=membership.tenant_id CROSS JOIN unnest($2::text[]) services(id) LEFT JOIN platform_subject_policy user_policy ON user_policy.subject_kind='user' AND user_policy.subject_id=membership.user_id LEFT JOIN platform_entitlements individual ON individual.tenant_id=t.id AND individual.user_id=membership.user_id AND individual.service_id=services.id LEFT JOIN platform_organization_entitlements organization_policy ON organization_policy.tenant_id=t.id AND organization_policy.service_id=services.id WHERE membership.user_id=$1 AND membership.deleted_at IS NULL AND t.deleted_at IS NULL ORDER BY t.name,services.id LIMIT 1000`;
+    const organizationQuery = `SELECT services.id AS service_id,t.id AS tenant_id,coalesce(organization_policy.allowed,true) AS policy_allowed,CASE WHEN NOT(${eligibility}) THEN 'Organization not eligible' WHEN organization_policy.allowed=false THEN 'Organization app access disabled' ELSE NULL END AS blocked_reason,(coalesce(organization_policy.allowed,true) AND ${eligibility}) AS allowed FROM tenants t CROSS JOIN unnest($2::text[]) services(id) LEFT JOIN platform_organization_entitlements organization_policy ON organization_policy.tenant_id=t.id AND organization_policy.service_id=services.id WHERE t.id=$1 AND t.deleted_at IS NULL ORDER BY services.id`;
     return (
       await db.query(kind === "user" ? userQuery : organizationQuery, [
         id,
@@ -220,6 +220,8 @@ export function createDirectory(
       ])
     ).rows.map((row) => ({
       serviceId: String(row.service_id),
+      policyState:row.policy_allowed?("allowed" as const):("denied" as const),
+      ...(row.blocked_reason?{blockedReason:String(row.blocked_reason)}:{}),
       organization: ref(row.tenant_id),
       state: row.allowed ? ("allowed" as const) : ("denied" as const),
       enforcement: "verified" as const,
@@ -360,6 +362,7 @@ export function createDirectory(
         );
       return {
         ...organization(r),
+        contactEmail:r.contact_email?String(r.contact_email):null,
         memberships: await memberships("organization", s.id),
         invitations: await invitations("organization", s.id),
         access: await access("organization", s.id),

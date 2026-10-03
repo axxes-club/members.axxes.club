@@ -75,3 +75,4 @@ test("membership pagination is stable and scoped to the selected organization", 
     await db.close();
   }
 });
+test('organization details include the editable contact email',async()=>{const db=await fixture();try{await db.exec(`UPDATE tenants SET email='studio@example.com'`);const detail=await createDirectory(db).getOrganization({authorityId:'axxes-shared',id:'11111111-1111-4111-8111-111111111111'});assert.equal(detail.contactEmail,'studio@example.com');}finally{await db.close();}});

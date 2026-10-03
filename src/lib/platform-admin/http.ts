@@ -17,6 +17,7 @@ export type AdminDependencies = {
   db: Sql;
   authenticate: (r: Request) => Promise<{ integrationId: string }>;
   policyReady: boolean;
+  policyAvailable?:()=>Promise<boolean>;
   services: string[];
   mailConfigured?: boolean;
   execute?: (
@@ -49,7 +50,9 @@ export function createAdminHandler(deps: AdminDependencies) {
             .split("/api/platform-admin/v1/")[1]
             ?.split("/")
             .filter(Boolean) ?? [],
-        dir = createDirectory(deps.db, deps.policyReady, deps.services);
+        policyAvailable = deps.policyAvailable ? await deps.policyAvailable() : deps.policyReady,
+        writeReady = deps.policyReady && policyAvailable,
+        dir = createDirectory(deps.db, policyAvailable, deps.services);
       const response = (v: unknown) => Response.json(v, { headers });
       if (request.method === "GET") {
         if (path[0] === "capabilities" && path.length === 1)
@@ -73,9 +76,9 @@ export function createAdminHandler(deps: AdminDependencies) {
                       ["lanes", "developer", "axxes-workspace-api"].includes(s),
                     )
                   : deps.services,
-              enforcement: deps.services.length ? "verified" : "unverified",
+              enforcement: policyAvailable && deps.services.length ? "verified" : "unverified",
               available:
-                deps.policyReady &&
+                writeReady &&
                 !!deps.execute &&
                 deps.services.length > 0 &&
                 (!(
@@ -168,7 +171,7 @@ export function createAdminHandler(deps: AdminDependencies) {
         }
       }
       if (request.method === "POST") {
-        if (!deps.policyReady || !deps.services.length || !deps.execute)
+        if (!writeReady || !deps.services.length || !deps.execute)
           throw new PlatformError(
             503,
             "ADMINISTRATION_NOT_READY",

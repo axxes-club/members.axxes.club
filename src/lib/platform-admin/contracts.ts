@@ -80,6 +80,8 @@ export type InvitationSummary = {
   deliveryState?: string;
 };
 export type AccessObservation = {
+  policyState?:"allowed"|"denied";
+  blockedReason?:string;
   serviceId: string;
   organization?: SubjectRef;
   state: "allowed" | "denied" | "unknown";
@@ -92,6 +94,7 @@ export type UserDetails = UserSummary & {
   invitations: InvitationSummary[];
 };
 export type OrganizationDetails = OrganizationSummary & {
+  contactEmail:string|null;
   memberships: Membership[];
   access: AccessObservation[];
   invitations: InvitationSummary[];

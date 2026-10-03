@@ -83,6 +83,7 @@ export function runtimeAdmin(overrides: Partial<AdminDependencies> = {}) {
       return link;
     },
     authenticate: createIntegrationAuthenticator(config),
+    policyAvailable:async()=>{const row=(await db.query(`SELECT to_regclass('platform_subject_policy') IS NOT NULL AND to_regclass('platform_entitlements') IS NOT NULL AND to_regclass('platform_organization_entitlements') IS NOT NULL AND to_regclass('platform_admin_operations') IS NOT NULL AND to_regclass('platform_admin_audit') IS NOT NULL AND to_regclass('platform_invitation_delivery') IS NOT NULL AS ready`)).rows[0];return row?.ready===true;},
     policyReady:
       process.env.PLATFORM_ADMIN_READY === "true" &&
       process.env.PLATFORM_ACCESS_POLICY_ENABLED === "true",
