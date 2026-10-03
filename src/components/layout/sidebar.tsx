@@ -133,6 +133,7 @@ const navigation: NavItem[] = [
     ],
   },
   { name: "Messages", href: "/messages", icon: MessageSquare },
+  { name: "Mail", href: "/mail", icon: Mail },
   {
     name: "Newsletter",
     href: "/newsletter",
