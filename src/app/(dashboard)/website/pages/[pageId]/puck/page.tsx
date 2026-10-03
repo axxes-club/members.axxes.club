@@ -1,4 +1,6 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
+import { getAuthContext } from "@/lib/auth"
+import { structuredEditorPath } from "@/lib/website/structured"
 import { PuckEditorClient } from "../puck-editor-client"
 
 interface PuckEditorPageProps {
@@ -13,6 +15,10 @@ export default async function PuckEditorPage({ params }: PuckEditorPageProps) {
   if (!pageId) {
     notFound()
   }
+
+  const { tenantId } = await getAuthContext()
+  const structured = await structuredEditorPath(tenantId, pageId)
+  if (structured) redirect(structured)
 
   return <PuckEditorClient pageId={pageId} />
 }

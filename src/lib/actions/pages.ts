@@ -6,6 +6,7 @@ import { eq, and, asc, desc, sql, not } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getAuthContext } from "@/lib/auth"
+import { assertNotStructuredPage } from "@/lib/website/structured"
 
 const pageSchema = z.object({
   title: z.string().min(1, "Page title is required"),
@@ -239,6 +240,7 @@ export async function createPage(data: PageFormData) {
 
 export async function updatePage(id: string, data: Partial<PageFormData>) {
   const { tenantId } = await getTenantId()
+  await assertNotStructuredPage(tenantId, id)
 
   // If updating slug, check for uniqueness
   if (data.slug) {
@@ -292,6 +294,7 @@ export async function updatePage(id: string, data: Partial<PageFormData>) {
 
 export async function deletePage(id: string) {
   const { tenantId } = await getTenantId()
+  await assertNotStructuredPage(tenantId, id)
 
   // Delete associated blocks first (cascade should handle this, but being explicit)
   await db
@@ -340,6 +343,7 @@ export async function publishPage(id: string) {
 
 export async function unpublishPage(id: string) {
   const { tenantId } = await getTenantId()
+  await assertNotStructuredPage(tenantId, id)
 
   const [page] = await db
     .update(pages)
