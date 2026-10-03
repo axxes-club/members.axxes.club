@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { GangstarzEditor } from "./editor";
-
-export default function Page() {
-  return <><div className="mb-4"><Link className="underline" href="/atelier">Open in Atelier ↗</Link></div><GangstarzEditor /></>;
-}
+import {redirect} from 'next/navigation';
+import {requireTenantAccess} from '@/lib/auth/tenant-context';
+import {websitePool} from '@/lib/website/runtime';
+import {findGangstarzAtelierSite} from '@/lib/website/atelier-binding';
+import {GangstarzEditor} from './editor';
+export default async function Page(){const {tenantId,userId}=await requireTenantAccess();const site=await findGangstarzAtelierSite(websitePool,{tenantId,userId});if(site)redirect(`https://atelier.axxes.app/api/organization/open?tenant=${tenantId}&site=${site}`);return <GangstarzEditor/>;}

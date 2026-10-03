@@ -1,3 +1,4 @@
+import {findGangstarzAtelierSite} from '@/lib/website/atelier-binding';
 import {NextResponse} from 'next/server';
 import {auth} from '@/lib/auth';
 import {websitePool,websitePublication} from '@/lib/website/runtime';
@@ -17,7 +18,7 @@ export async function POST(request:Request){
   const origin=request.headers.get('origin');const host=request.headers.get('host');
   if(!origin||new URL(origin).host!==host)throw new WebsiteError('Invalid request origin',403);
   if(Number(request.headers.get('content-length')||0)>1_100_000)throw new WebsiteError('Content too large',413);
-  const {principal,pageId}=await context(request);const body=await request.json();let revision:number|undefined;
+  const {principal,pageId}=await context(request);if(await findGangstarzAtelierSite(websitePool,{tenantId:principal.tenantId,userId:principal.userId}))throw new WebsiteError('This website is edited and published in Atelier',409);const body=await request.json();let revision:number|undefined;
   if(body.action==='save')revision=await websitePublication.save(principal,pageId,body.data,body.expectedRevision);
   else if(body.action==='publish')revision=await websitePublication.publish(principal,pageId,body.expectedRevision);
   else if(body.action==='restore')revision=await websitePublication.restore(principal,pageId,body.revision,body.expectedRevision);
