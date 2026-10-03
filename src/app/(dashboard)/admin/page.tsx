@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation"
 export const dynamic = "force-dynamic"
 
-import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { user, inviteCodes } from "@/lib/db/schema"
 import { eq, desc } from "drizzle-orm"
@@ -16,13 +15,10 @@ import { ActivityTable } from "./activity-table"
 import { CreateInviteCodeForm } from "./create-invite-code-form"
 import { getAdminStats, getAllTenants, getLoginActivity } from "@/lib/actions/admin"
 import { Users, Building2, Activity } from "lucide-react"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 async function getSuperadminUser() {
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   const session = await auth.api.getSession({
     headers: new Headers({ cookie: cookieHeader }),

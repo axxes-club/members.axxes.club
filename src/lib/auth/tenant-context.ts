@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { tenantMemberships } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { auth } from "@/lib/auth"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 interface ApiErrorResponse {
   success: false
@@ -19,11 +20,7 @@ function errorResponse(message: string, status: number): NextResponse<ApiErrorRe
 }
 
 async function getSession() {
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
   return auth.api.getSession({
     headers: new Headers({
       cookie: cookieHeader,
@@ -90,10 +87,7 @@ export async function withResourceAccess(
 // they still fall through to their own 401.
 export async function requireTenantAccess() {
   const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
   const session = await auth.api.getSession({
     headers: new Headers({
       cookie: cookieHeader,

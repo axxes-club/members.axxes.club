@@ -1,17 +1,17 @@
 import "server-only"
-import { cookies } from "next/headers"
 import { and, eq, isNull } from "drizzle-orm"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { tenantMemberships, user } from "@/lib/db/schema"
 import { AXXES_STAFF_TENANT_ID } from "./config"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 /**
  * Who may provision and configure white-label customers: anyone in the AXXES
  * CLUB organization, plus AXXES superadmins. Returns null for everyone else.
  */
 export async function getAxxesStaff(): Promise<{ userId: string; name: string } | null> {
-  const cookieHeader = (await cookies()).getAll().map((c) => `${c.name}=${c.value}`).join("; ")
+  const cookieHeader = await rawCookieHeader()
   const session = await auth.api.getSession({ headers: new Headers({ cookie: cookieHeader }) })
   if (!session?.user) return null
 

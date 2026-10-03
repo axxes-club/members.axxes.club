@@ -5,14 +5,11 @@ import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { conversationParticipants, tenantMemberships } from "@/lib/db/schema"
 import { eq, and, isNull } from "drizzle-orm"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 async function getSession() {
-  const cookieStore = await cookies()
 
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   return auth.api.getSession({
     headers: new Headers({

@@ -11,13 +11,10 @@ import { db } from "@/lib/db"
 import { user, brandProfiles, themeSettings, tenants } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { getTotalUnreadCount } from "@/lib/actions/messaging"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 async function getCurrentUser() {
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   const session = await auth.api.getSession({
     headers: new Headers({ cookie: cookieHeader }),

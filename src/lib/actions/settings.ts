@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { nanoid } from "nanoid"
 import { getAuthContext } from "@/lib/auth"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 const tenantUpdateSchema = z.object({
   name: z.string().min(1, "Business name is required").optional(),
@@ -283,15 +284,10 @@ export async function getInvitationByToken(token: string) {
 
 // Accept an invitation
 export async function acceptInvitation(token: string) {
-  const { cookies } = await import("next/headers")
   const { auth } = await import("@/lib/auth")
 
   // Get current user session
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   const session = await auth.api.getSession({
     headers: new Headers({ cookie: cookieHeader }),

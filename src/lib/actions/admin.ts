@@ -4,15 +4,11 @@ import { db } from "@/lib/db"
 import { inviteCodes, user, tenants, tenantMemberships, loginActivity } from "@/lib/db/schema"
 import { eq, desc, count } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
 import { auth } from "@/lib/auth"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 async function requireSuperadmin() {
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   const session = await auth.api.getSession({
     headers: new Headers({ cookie: cookieHeader }),

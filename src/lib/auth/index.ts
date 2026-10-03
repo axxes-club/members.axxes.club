@@ -6,6 +6,7 @@ import { and, asc, desc, eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { sendPasswordResetEmail } from "@/lib/email"
+import { rawCookieHeader } from "@/lib/auth/raw-cookie"
 
 // With Handshake (handshake.axxes.club), every *.axxes.club app shares one session cookie
 const cookieDomain = process.env.AUTH_COOKIE_DOMAIN
@@ -88,10 +89,7 @@ export async function getAuthContext() {
   const tenantId = cookieStore.get("tenant_id")?.value
 
   // Build cookie header string from all cookies
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((c) => `${c.name}=${c.value}`)
-    .join("; ")
+  const cookieHeader = await rawCookieHeader()
 
   // Get session from Better Auth
   const session = await auth.api.getSession({
