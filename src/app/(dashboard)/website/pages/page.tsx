@@ -22,12 +22,12 @@ export default async function WebsitePagesPage() {
         heading="Website Pages"
         description="Create and manage your website pages"
         actions={
-          <Link href="/website/pages/new">
+          <div className="flex gap-2"><Link href="/atelier"><Button variant="outline">Open in Atelier</Button></Link><Link href="/website/pages/new">
             <Button>
               <Plus className="h-4 w-4" />
               New Page
             </Button>
-          </Link>
+          </Link></div>
         }
       />
 

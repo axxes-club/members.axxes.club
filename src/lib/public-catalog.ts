@@ -1,5 +1,5 @@
 type CatalogProduct = { key: string; name: string; description: string; tagline: string; url: string; color: string; status: string; sso: boolean }
-const workspaceApps = new Set(["suite", "lanes", "folders", "nexus", "pulse", "matter", "relay", "vibez", "office", "manifest", "tollbooth", "developer", "keel", "binnacle", "krates"])
+const workspaceApps = new Set(["atelier", "suite", "lanes", "folders", "nexus", "pulse", "matter", "relay", "vibez", "office", "manifest", "tollbooth", "developer", "keel", "binnacle", "krates"])
 
 // Explicit fields only: the public launcher must never expose account metadata.
 export function publicCatalogProduct(product: CatalogProduct) {

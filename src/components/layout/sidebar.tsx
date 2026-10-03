@@ -129,6 +129,7 @@ const navigation: NavItem[] = [
     icon: Globe,
     subsections: [
       { name: "Pages", href: "/website/pages", icon: FileText },
+      { name: "Atelier", href: "/atelier", icon: FileText },
       { name: "Settings", href: "/website/settings", icon: Settings },
     ],
   },
