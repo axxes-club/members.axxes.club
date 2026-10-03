@@ -1,0 +1,56 @@
+#composer {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+#composer form {
+  display: grid;
+  gap: 12px;
+}
+#composer .recipient-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+#composer textarea {
+  min-height: 240px;
+  resize: vertical;
+  line-height: 1.6;
+}
+#composer #draft-conflict {
+  border: 1px solid currentColor;
+  padding: 12px;
+  border-radius: 8px;
+}
+#composer #conflict-copy {
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow: auto;
+}
+#private-draft-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+#private-draft-list button {
+  width: 100%;
+  text-align: left;
+}
+#composer button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+@media (max-width: 600px) {
+  #composer {
+    margin: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+  #composer .recipient-extras {
+    grid-template-columns: 1fr;
+  }
+}
