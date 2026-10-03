@@ -64,3 +64,6 @@ export * from "./office"
 
 // The AXXES product catalog (shared by every app)
 export * from "./products"
+
+// Pulse organization metadata (event storage lives in an isolated database)
+export * from "./pulse"
