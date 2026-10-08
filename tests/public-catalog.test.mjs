@@ -7,12 +7,12 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 const file = path.resolve('src/lib/public-catalog.ts');
-const module = new Module(file);
-module.paths = Module._nodeModulePaths(path.dirname(file));
-module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+const catalogModule = new Module(file);
+catalogModule.paths = Module._nodeModulePaths(path.dirname(file));
+catalogModule._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, file);
-const { publicCatalogProduct } = module.exports;
+const { publicCatalogProduct } = catalogModule.exports;
 const product = { key: 'relay', name: 'Relay', description: 'Team messaging', tagline: 'Stay connected', url: 'https://relay.axxes.club', color: '#123456', status: 'live', sso: true };
 
 test('Club is omitted from the public app switcher for both available statuses', () => {
