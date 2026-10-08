@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tenants, contacts } from "@/lib/db/schema";
@@ -14,7 +15,7 @@ type InquiryBody = {
   source?: string;
 };
 
-export async function POST(
+async function POSTHandler(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -96,3 +97,4 @@ export async function POST(
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/public/tenants/[slug]/inquiries/route.ts'+':POST',3000);

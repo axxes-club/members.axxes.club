@@ -1,5 +1,8 @@
 "use server"
 
+import {admitAction} from "@/lib/security/admission-server"
+import {safeHead,UnsafeDestinationError} from "@/lib/security/safe-head.mjs"
+
 import { headers } from "next/headers"
 import { and, eq, inArray, sql } from "drizzle-orm"
 import { deleteStoredUrls } from "@/lib/gcs/server"
@@ -74,7 +77,8 @@ export async function duplicateDamAsset(id: string): Promise<DamAsset> {
 }
 
 export async function createDamAssetFromUrl(input: { url: string; name?: string; folder?: string | null }): Promise<DamAsset> {
-  const { tenantId } = await access("write")
+  const { tenantId,userId } = await access("write")
+  await admitAction(userId,tenantId,"asset-url-metadata",20)
 
   let url: URL
   try {
@@ -88,11 +92,11 @@ export async function createDamAssetFromUrl(input: { url: string; name?: string;
   let mimeType: string | null = null
   let fileSize: number | null = null
   try {
-    const res = await fetch(url, { method: "HEAD", redirect: "follow", signal: AbortSignal.timeout(5000) })
-    mimeType = res.headers.get("content-type")?.split(";")[0].trim() || null
-    const length = Number(res.headers.get("content-length"))
+    const res = await safeHead(url)
+    mimeType = String(res.headers["content-type"] ?? "").split(";")[0].trim() || null
+    const length = Number(res.headers["content-length"])
     fileSize = Number.isFinite(length) && length > 0 && length < 2 ** 31 ? length : null
-  } catch {}
+  } catch(error) {if(error instanceof UnsafeDestinationError)throw new Error("Choose a public HTTP(S) URL")}
   if (!mimeType || mimeType === "application/octet-stream") mimeType = guessMime(url.pathname) ?? mimeType
 
   const filename = decodeURIComponent(url.pathname.split("/").pop() || "") || url.hostname

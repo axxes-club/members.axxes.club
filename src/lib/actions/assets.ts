@@ -1,5 +1,7 @@
 "use server"
 
+import {safeHead} from "@/lib/security/safe-head.mjs"
+
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { assets, type NewAsset } from "@/lib/db/schema"
@@ -159,10 +161,11 @@ export async function getAllTags() {
 
 // Utility to fetch URL metadata (dimensions, mime type)
 export async function fetchUrlMetadata(url: string) {
+  await getAuthContext()
   try {
-    const response = await fetch(url, { method: "HEAD" })
-    const contentType = response.headers.get("content-type")
-    const contentLength = response.headers.get("content-length")
+    const response = await safeHead(url)
+    const contentType = String(response.headers["content-type"] ?? "")
+    const contentLength = String(response.headers["content-length"] ?? "")
 
     let category: string | undefined
     if (contentType?.startsWith("image/")) category = "image"

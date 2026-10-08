@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
@@ -33,7 +34,7 @@ async function getSession() {
  * Deliberately a redirect, not JSON: this is a navigation, and it must set a
  * cookie, which a server component cannot do.
  */
-export async function GET(request: NextRequest) {
+async function GETHandler(request: NextRequest) {
   const session = await getSession()
   if (!session?.user) redirect("/sign-in")
 
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
 }
 
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const session = await getSession()
 
@@ -141,3 +142,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/v1/tenants/select/route.ts'+':GET',12000);
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/tenants/select/route.ts'+':POST',3000);

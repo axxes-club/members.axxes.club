@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextResponse } from "next/server"
 import { and, eq } from "drizzle-orm"
 import { requireTenantAccess } from "@/lib/auth/tenant-context"
@@ -5,7 +6,7 @@ import { db } from "@/lib/db"
 import { uploadSessions } from "@/lib/db/schema"
 
 // Polled by the phone-handoff dialog; a route (not a server action) so polling doesn't block other actions
-export async function GET(_req: Request, { params }: { params: Promise<{ token: string }> }) {
+async function GETHandler(_req: Request, { params }: { params: Promise<{ token: string }> }) {
   const context = await requireTenantAccess().catch(() => null)
   if (!context) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -22,3 +23,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
     expired: session.expiresAt.getTime() < Date.now(),
   })
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/dam/upload-sessions/[token]/route.ts'+':GET',12000);

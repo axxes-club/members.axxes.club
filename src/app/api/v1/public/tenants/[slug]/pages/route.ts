@@ -1,9 +1,10 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tenants, pages, pageBlocks } from "@/lib/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 
-export async function GET(
+async function GETHandler(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -33,3 +34,4 @@ export async function GET(
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/v1/public/tenants/[slug]/pages/route.ts'+':GET',12000);

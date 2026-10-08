@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Afters Integration API
@@ -31,7 +32,7 @@ async function getSessionWithTenant() {
 }
 
 // GET - Check connection status
-export async function GET() {
+async function GETHandler() {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -53,7 +54,7 @@ export async function GET() {
 }
 
 // POST - Initiate OAuth flow (returns authorization URL)
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE - Disconnect integration
-export async function DELETE() {
+async function DELETEHandler() {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -124,7 +125,7 @@ export async function DELETE() {
 }
 
 // PATCH - Update integration settings (e.g., toggle sync)
-export async function PATCH(request: NextRequest) {
+async function PATCHHandler(request: NextRequest) {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -164,3 +165,10 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/afters/route.ts'+':GET',12000);
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/integrations/afters/route.ts'+':POST',3000);
+
+export const DELETE=wrapAdmission(DELETEHandler,'src/app/api/integrations/afters/route.ts'+':DELETE',3000);
+
+export const PATCH=wrapAdmission(PATCHHandler,'src/app/api/integrations/afters/route.ts'+':PATCH',3000);

@@ -1,10 +1,11 @@
+import {admitAction} from "@/lib/security/admission-server";
 import {guardPlatformAuth,platformAccessAllowed} from '@/lib/platform-access';
 import {resolveEligibleOrganization} from '@/lib/platform-access-core';
 import {APIError} from 'better-auth/api';
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
-import { loginActivity, tenantMemberships } from "@/lib/db/schema"
+import { loginActivity, tenantMemberships, tenants } from "@/lib/db/schema"
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
@@ -49,6 +50,8 @@ const baseAuth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  // Shared identity enrollment is controlled by Handshake invite creation.
+  disabledPaths: ["/sign-up/email"],
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
@@ -122,11 +125,13 @@ export async function getAuthContext() {
     const member = await db
       .select({ id: tenantMemberships.id })
       .from(tenantMemberships)
+      .innerJoin(tenants,eq(tenants.id,tenantMemberships.tenantId))
       .where(
         and(
           eq(tenantMemberships.tenantId, tenantId),
           eq(tenantMemberships.userId, session.user.id),
           isNull(tenantMemberships.deletedAt),
+          isNull(tenants.deletedAt),eq(tenants.status,"active"),
         ),
       )
       .limit(1)
@@ -141,7 +146,8 @@ export async function getAuthContext() {
     const memberships = await db
       .select({ tenantId: tenantMemberships.tenantId })
       .from(tenantMemberships)
-      .where(and(eq(tenantMemberships.userId, session.user.id),isNull(tenantMemberships.deletedAt)))
+      .innerJoin(tenants,eq(tenants.id,tenantMemberships.tenantId))
+      .where(and(eq(tenantMemberships.userId, session.user.id),isNull(tenantMemberships.deletedAt),isNull(tenants.deletedAt),eq(tenants.status,"active")))
       .orderBy(desc(tenantMemberships.isPrimary), asc(tenantMemberships.joinedAt))
       .limit(1000)
     const choice=await resolveEligibleOrganization(memberships,undefined,id=>platformAccessAllowed(session.user.id,id));
@@ -151,6 +157,7 @@ export async function getAuthContext() {
   }
 
   if (!await platformAccessAllowed(session.user.id, resolvedTenantId)) redirect('/onboarding');
+  await admitAction(session.user.id,resolvedTenantId);
   return { userId: session.user.id, tenantId: resolvedTenantId }
 }
 

@@ -1,10 +1,11 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextResponse, type NextRequest } from "next/server"
 import { requireTenantAccess } from "@/lib/auth/tenant-context"
 import { queryDamAssets } from "@/lib/dam/queries"
 import type { DamAssetType, DamSort } from "@/lib/dam/types"
 
 // Reads go through a route handler (not a server action) so they run in parallel and can be aborted
-export async function GET(req: NextRequest) {
+async function GETHandler(req: NextRequest) {
   const context = await requireTenantAccess().catch(() => null)
   if (!context) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -18,3 +19,5 @@ export async function GET(req: NextRequest) {
   })
   return NextResponse.json(page)
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/dam/assets/route.ts'+':GET',12000);

@@ -30,7 +30,8 @@
     "test:quota": "node --test scripts/storage/*.check.mjs",
     "test:commerce": "tsx --test tests/commerce/*.test.ts",
     "test:storage-billing": "tsx --test tests/storage-billing-catalog.test.ts",
-    "test:platform-admin": "tsx --test tests/platform-admin/*.test.ts"
+    "test:platform-admin": "tsx --test tests/platform-admin/*.test.ts",
+    "test:security": "node --test tests/safe-head.test.mjs tests/security-admission.test.mjs tests/security-webhook.test.mjs tests/security-credential.test.mjs tests/security-account.test.mjs tests/security-account-policy.test.mjs && node --import tsx --test tests/security-signup.test.ts tests/security-smtp.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
@@ -89,7 +90,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite": "0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25",
     "@types/nodemailer": "^7.0.11",

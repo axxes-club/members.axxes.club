@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 /**
  * Afters OAuth Callback
  * Handles the OAuth callback from Afters.am
@@ -9,7 +10,7 @@ import { integrationConnection } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { getIntegration } from "@/lib/integrations"
 
-export async function GET(request: NextRequest) {
+async function GETHandler(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get("code")
   const state = searchParams.get("state")
@@ -119,3 +120,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?error=${encodeURIComponent(message)}`)
   }
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/afters/callback/route.ts'+':GET',12000);
