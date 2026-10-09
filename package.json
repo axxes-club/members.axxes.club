@@ -34,7 +34,7 @@
     "test:security": "node --test tests/safe-head.test.mjs tests/security-admission.test.mjs tests/security-webhook.test.mjs tests/security-credential.test.mjs tests/security-account.test.mjs tests/security-account-policy.test.mjs && node --import tsx --test tests/security-signup.test.ts tests/security-smtp.test.ts"
   },
   "dependencies": {
-    "@google-cloud/storage": "7.19.0",
+    "@google-cloud/storage": "8.2.0",
     "@hookform/resolvers": "^5.9.1",
     "@matrix-org/olm": "^3.2.15",
     "@neondatabase/serverless": "^1.1.0",
