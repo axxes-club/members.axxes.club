@@ -1,5 +1,5 @@
 import "server-only"
-import { asc, eq, sql } from "drizzle-orm"
+import { and, asc, eq, notInArray, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { axxesProduct } from "@/lib/db/schema"
 
@@ -38,6 +38,16 @@ const CATEGORY_BLURBS: Record<string, string> = {
   Developers: "Build on AXXES.",
 }
 
+// Discovery rules apply even before the catalog database is updated.
+const DISCOVERY_EXCLUSIONS = ["manifest", "stock", "webmaster", "wm", "handshake", "account"]
+const promotedProducts = and(eq(axxesProduct.surfaceInMembers, true), notInArray(axxesProduct.key, DISCOVERY_EXCLUSIONS))
+
+function displayProduct<T extends { name: string; description: string; tagline: string }>(product: T): T {
+  return { ...product, name: product.name.replace(/\bAXXES Pay\b/g, "Payments"),
+    description: product.description.replace(/\bAXXES Pay\b/g, "Payments"),
+    tagline: product.tagline.replace(/\bAXXES Pay\b/g, "Payments") }
+}
+
 // `Work` sits last on purpose. It is the bucket a horizontal tool lands in, and
 // keeping it at the end means unhiding one never re-splits the featured groups
 // above it. `Support` goes before `Developers` because a desk is bought by
@@ -46,11 +56,12 @@ const CATEGORY_ORDER = ["Suite", "Events", "Commerce", "Support", "Developers", 
 
 /** Every product the launcher shows, in catalog order. */
 export async function getProducts() {
-  return db
+  const products = await db
     .select()
     .from(axxesProduct)
-    .where(eq(axxesProduct.surfaceInMembers, true))
+    .where(promotedProducts)
     .orderBy(asc(axxesProduct.sortOrder))
+  return products.map(displayProduct)
 }
 
 /** The same list, bucketed by category with the category order preserved. */
@@ -83,7 +94,7 @@ export async function getCatalogStats() {
       inPortal: sql<number>`count(*) filter (where ${axxesProduct.membersPath} is not null)::int`,
     })
     .from(axxesProduct)
-    .where(eq(axxesProduct.surfaceInMembers, true))
+    .where(promotedProducts)
   return row ?? { total: 0, sso: 0, inPortal: 0 }
 }
 
@@ -107,5 +118,5 @@ export async function getProduct(key: string) {
     .from(axxesProduct)
     .where(eq(axxesProduct.key, key))
     .limit(1)
-  return row
+  return row ? displayProduct(row) : undefined
 }
