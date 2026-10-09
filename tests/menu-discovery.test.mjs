@@ -13,11 +13,11 @@ const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.S
 const names = new Set(['launcherCatalogProduct', 'appLaunchUrl']);
 const functions = ast.statements.filter(node => ts.isFunctionDeclaration(node) && names.has(node.name?.text));
 assert.equal(functions.length, 2);
-const module = new Module(file);
-module._compile(ts.transpileModule(functions.map(node => node.getText(ast)).join('\n'), {
+const loaded = new Module(file);
+loaded._compile(ts.transpileModule(functions.map(node => node.getText(ast)).join('\n'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, file);
-const { launcherCatalogProduct, appLaunchUrl } = module.exports;
+const { launcherCatalogProduct, appLaunchUrl } = loaded.exports;
 const app = { key: 'relay', name: 'Relay', url: 'https://relay.axxes.club', status: 'live', workspaceLaunch: true };
 
 test('cached private, Stock and identity entries never enter discovery', () => {

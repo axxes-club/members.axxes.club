@@ -31,18 +31,18 @@ const drizzle = {
   asc: field => field, sql: () => ({}),
 };
 const file = path.resolve('src/lib/actions/products.ts');
-const module = new Module(file);
-module.require = name => {
+const loaded = new Module(file);
+loaded.require = name => {
   if (name === 'server-only') return {};
   if (name === 'drizzle-orm') return drizzle;
   if (name === '@/lib/db') return { db };
   if (name === '@/lib/db/schema') return { axxesProduct: schema };
   throw new Error(`Unexpected import: ${name}`);
 };
-module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+loaded._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, file);
-const { getProducts, getProductGroups, getCatalogStats, getProduct } = module.exports;
+const { getProducts, getProductGroups, getCatalogStats, getProduct } = loaded.exports;
 
 test('member list, groups and stats share discovery exclusions despite stale visibility flags', async () => {
   const list = await getProducts();
