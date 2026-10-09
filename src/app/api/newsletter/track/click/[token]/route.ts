@@ -1,10 +1,11 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq, and } from "drizzle-orm"
 import { trackedLinks, newsletterEvents, newsletterSends, newsletterCampaigns } from "@/lib/db/schema"
 import { publicOrigin } from "@/lib/public-origin"
 
-export async function GET(
+async function GETHandler(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
@@ -62,3 +63,4 @@ export async function GET(
   // Redirect to original URL
   return NextResponse.redirect(link.originalUrl)
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/newsletter/track/click/[token]/route.ts'+':GET',12000);

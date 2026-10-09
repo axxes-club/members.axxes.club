@@ -1,7 +1,8 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { consumeInviteCode } from "@/lib/actions/admin"
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const body = await request.json()
     const { code } = body
@@ -24,3 +25,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/use-invite/route.ts'+':POST',3000);

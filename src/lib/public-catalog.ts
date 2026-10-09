@@ -5,8 +5,14 @@ const workspaceApps = new Set(["atelier", "suite", "lanes", "folders", "nexus", 
 export function publicCatalogProduct(product: CatalogProduct) {
   // `suite` is the Club portal, not a general app. Keep its internal catalog
   // record and integrations; omit it only from the shared public app switcher.
-  if (product.key === "suite") return null
+  // Private operations, Stock and identity stay reachable outside discovery,
+  // regardless of stale catalog visibility flags.
+  if (["suite", "manifest", "stock", "webmaster", "wm", "handshake", "account"].includes(product.key.toLowerCase())) return null
   if (product.status !== "live" && product.status !== "beta") return null
-  try { if (new URL(product.url).protocol !== "https:") return null } catch { return null }
-  return { key: product.key, name: product.name, description: product.description, tagline: product.tagline, url: product.url, color: product.color, status: product.status, sso: product.sso, workspaceLaunch: workspaceApps.has(product.key) }
+  try {
+    const url = new URL(product.url)
+    if (url.protocol !== "https:" || url.username || url.password) return null
+    if (["manifest.axxes.club", "stock.axxes.app", "wm.axxes.app", "handshake.axxes.club"].includes(url.hostname)) return null
+  } catch { return null }
+  return { key: product.key, name: product.name.replace(/\bAXXES Pay\b/g, "Payments"), description: product.description.replace(/\bAXXES Pay\b/g, "Payments"), tagline: product.tagline.replace(/\bAXXES Pay\b/g, "Payments"), url: product.url, color: product.color, status: product.status, sso: product.sso, workspaceLaunch: workspaceApps.has(product.key) }
 }

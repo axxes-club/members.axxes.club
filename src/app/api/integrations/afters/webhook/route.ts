@@ -1,101 +1,29 @@
-/**
- * Afters Webhook Handler
- * Receives real-time events from Afters.am
- */
-
-import { NextRequest, NextResponse } from "next/server"
-import { getIntegration } from "@/lib/integrations"
-import { db } from "@/lib/db"
-import { integrationConnection } from "@/lib/db/schema"
-import { eq, and } from "drizzle-orm"
-import { createHmac } from "crypto"
-
-const AFTERS_WEBHOOK_SECRET = process.env.AFTERS_WEBHOOK_SECRET
-
-// Verify webhook signature
-function verifySignature(payload: string, signature: string, secret: string): boolean {
-  // Simple HMAC verification - adjust based on Afters' actual implementation
-  const expectedSignature = createHmac("sha256", secret)
-    .update(payload)
-    .digest("hex")
-  
-  return signature === expectedSignature
+import {NextResponse} from 'next/server';
+import {getIntegration} from '@/lib/integrations';
+import {db} from '@/lib/db';
+import {integrationConnection} from '@/lib/db/schema';
+import {eq,and} from 'drizzle-orm';
+import {parseWebhook,reserveDelivery,finishDelivery} from '@/lib/security/webhook.mjs';
+import {securityPool,wrapAdmission} from '@/lib/security/admission-server';
+async function handle(request:Request){
+ let delivery:{digest:string;lease:string}|undefined;
+ try{
+  const event=await parseWebhook(request,process.env.AFTERS_WEBHOOK_SECRET);
+  const connection=await db.query.integrationConnection.findFirst({where:and(eq(integrationConnection.tenantId,event.tenantId),eq(integrationConnection.provider,'afters'),eq(integrationConnection.isActive,true))});
+  if(!connection)return NextResponse.json({error:'No active connection found'},{status:404});
+  const integration=getIntegration('afters');if(!integration)return NextResponse.json({error:'Integration unavailable'},{status:503});
+  const lease=await reserveDelivery(securityPool(),'afters',event.digest);
+  if(!lease)return NextResponse.json({success:true,duplicate:true});
+  delivery={digest:event.digest,lease};
+  const result=await integration.handleWebhook({eventType:event.eventType,payload:event.payload});
+  await finishDelivery(securityPool(),'afters',event.digest,lease,result.success);delivery=undefined;
+  return NextResponse.json({success:result.success,action:result.action},{status:result.success?200:503});
+ }catch(error){
+  if(delivery)await finishDelivery(securityPool(),'afters',delivery.digest,delivery.lease,false).catch(()=>{});
+  const status=error&&typeof error==='object'&&'status'in error&&typeof error.status==='number'?error.status:503;
+  return NextResponse.json({error:status===503?'Webhook unavailable':'Invalid webhook'},{status});
+ }
 }
-
-export async function POST({ text, headers }: NextRequest) {
-  try {
-    const body = await text()
-    const signature = headers.get("x-afters-signature") || ""
-    
-    // Verify webhook signature if secret is configured
-    if (AFTERS_WEBHOOK_SECRET && !verifySignature(body, signature, AFTERS_WEBHOOK_SECRET)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
-    }
-    
-    const payload = JSON.parse(body)
-    
-    // Validate required fields
-    const { event_type, tenant_id, data } = payload
-    
-    if (!event_type || !tenant_id) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
-    
-    // Find the integration connection for this tenant
-    const connection = await db.query.integrationConnection.findFirst({
-      where: and(
-        eq(integrationConnection.tenantId, tenant_id),
-        eq(integrationConnection.provider, "afters"),
-        eq(integrationConnection.isActive, true)
-      ),
-    })
-    
-    if (!connection) {
-      return NextResponse.json({ error: "No active connection found" }, { status: 404 })
-    }
-    
-    // Get the Afters integration handler
-    const integration = getIntegration("afters")
-    
-    if (!integration) {
-      return NextResponse.json({ error: "Integration not found" }, { status: 500 })
-    }
-    
-    // Handle the webhook event
-    const result = await integration.handleWebhook({
-      eventType: event_type,
-      payload: {
-        tenant_id,
-        ...data,
-      },
-      signature,
-    })
-    
-    if (result.success) {
-      return NextResponse.json({ 
-        success: true, 
-        action: result.action,
-        processed_at: new Date().toISOString(),
-      })
-    } else {
-      return NextResponse.json({ 
-        success: false, 
-        error: "Failed to process webhook" 
-      }, { status: 500 })
-    }
-  } catch (error) {
-    console.error("Afters webhook error:", error)
-    return NextResponse.json({ 
-      error: "Internal server error" 
-    }, { status: 500 })
-  }
-}
-
-// Health check endpoint
-export async function GET() {
-  return NextResponse.json({ 
-    status: "ok", 
-    endpoint: "afters-webhook",
-    timestamp: new Date().toISOString(),
-  })
-}
+const admitted=wrapAdmission(handle,'afters-webhook',1200);
+export async function POST(request:Request){if(!process.env.AFTERS_WEBHOOK_SECRET)return NextResponse.json({error:'Webhook unavailable'},{status:503});return admitted(request);}
+export async function GET(){return NextResponse.json({status:'ok',endpoint:'afters-webhook'});}

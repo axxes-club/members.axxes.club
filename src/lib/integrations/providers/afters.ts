@@ -562,7 +562,8 @@ export class AftersIntegration extends BaseIntegration {
         case "event.updated": {
           const tenantId = event.payload.tenant_id as string
           if (tenantId) {
-            await this.syncEvents(tenantId, false)
+            const result=await this.syncEvents(tenantId, false)
+            if(!result.success)return {success:false}
           }
           return { success: true, action: "synced_event" }
         }
@@ -571,7 +572,8 @@ export class AftersIntegration extends BaseIntegration {
         case "order.updated": {
           const tenantId = event.payload.tenant_id as string
           if (tenantId) {
-            await this.syncOrders(tenantId, false)
+            const result=await this.syncOrders(tenantId, false)
+            if(!result.success)return {success:false}
           }
           return { success: true, action: "synced_order" }
         }
@@ -579,7 +581,8 @@ export class AftersIntegration extends BaseIntegration {
         case "ticket.sold": {
           const tenantId = event.payload.tenant_id as string
           if (tenantId) {
-            await this.syncOrders(tenantId, false)
+            const result=await this.syncOrders(tenantId, false)
+            if(!result.success)return {success:false}
           }
           return { success: true, action: "synced_tickets" }
         }

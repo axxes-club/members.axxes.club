@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Generic Integration API Route
@@ -31,7 +32,7 @@ async function getSessionWithTenant() {
 }
 
 // GET - Check connection status
-export async function GET(
+async function GETHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -57,7 +58,7 @@ export async function GET(
 }
 
 // POST - Initiate OAuth flow or connect with API key
-export async function POST(
+async function POSTHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -139,7 +140,7 @@ export async function POST(
 }
 
 // DELETE - Disconnect integration
-export async function DELETE(
+async function DELETEHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -181,7 +182,7 @@ export async function DELETE(
 }
 
 // PATCH - Update integration settings
-export async function PATCH(
+async function PATCHHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -225,3 +226,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/[provider]/route.ts'+':GET',12000);
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/integrations/[provider]/route.ts'+':POST',3000);
+
+export const DELETE=wrapAdmission(DELETEHandler,'src/app/api/integrations/[provider]/route.ts'+':DELETE',3000);
+
+export const PATCH=wrapAdmission(PATCHHandler,'src/app/api/integrations/[provider]/route.ts'+':PATCH',3000);

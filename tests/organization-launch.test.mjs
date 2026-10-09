@@ -17,6 +17,7 @@ const tenant = '1655ea4c-d5dd-4905-a5b9-a61fc6b7cd4d';
 function route({ session = { user: { id: 'member' } }, member = true } = {}) {
   const query = { from() { return this; }, innerJoin() { return this; }, where() { return this; }, async limit() { return member ? [{ id: tenant }] : []; } };
   return load('src/app/api/organization/open/route.ts', {
+    '@/lib/security/admission-server': { wrapAdmission: handler => handler },
     'next/server': { NextResponse }, 'next/headers': { headers: async () => new Headers() },
     '@/lib/auth': { auth: { api: { getSession: async () => session } } },
     '@/lib/db': { db: { select: () => query } },

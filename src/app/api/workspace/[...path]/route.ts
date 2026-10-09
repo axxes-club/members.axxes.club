@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {NextRequest} from 'next/server';
 import {allowedWorkspacePath,openMailSession,sameOriginMutation,readBoundedText,readBoundedBytes,MailStreamLimitError} from '@/lib/mail/security';
 import {mailActor,mailConfig,privateError} from '@/lib/mail/server';
@@ -17,4 +18,4 @@ async function proxy(request:NextRequest,context:{params:Promise<{path:string[]}
  const text=await readBoundedText(upstream.body,8000000);return new Response(text,{status:upstream.status,headers:{'content-type':'application/json','cache-control':'no-store'}});
  }catch{return privateError('Mail service is temporarily unavailable',503);}
 }
-export const GET=proxy,POST=proxy;
+export const GET=wrapAdmission(proxy,'mail-proxy-read'),POST=wrapAdmission(proxy,'mail-proxy-write',3000);

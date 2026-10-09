@@ -1,9 +1,10 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { newsletterSends, newsletterEvents, newsletterCampaigns } from "@/lib/db/schema"
 
-export async function GET(
+async function GETHandler(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
@@ -76,3 +77,4 @@ export async function GET(
     },
   })
 }
+export const GET=wrapAdmission(GETHandler,'src/app/api/newsletter/track/open/[token]/route.ts'+':GET',12000);

@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { tenants, tenantMemberships } from "@/lib/db/schema"
@@ -16,7 +17,7 @@ async function getSession() {
   return auth.api.getSession({ headers: headersObj })
 }
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const session = await getSession()
 
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+async function GETHandler() {
   try {
     const session = await getSession()
 
@@ -135,3 +136,7 @@ export async function GET() {
     )
   }
 }
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/tenants/route.ts'+':POST',3000);
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/v1/tenants/route.ts'+':GET',12000);

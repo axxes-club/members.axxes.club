@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {createRequire} from 'node:module';import vm from 'node:vm';import {PGlite} from '@electric-sql/pglite';
+const ts=createRequire(import.meta.url)('typescript');
+async function load(file,context){const exports={};vm.runInNewContext(ts.transpileModule(await readFile(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,...context});return exports;}
+test('account suspension and deleted sessions cannot be bypassed by disabled entitlement policy',async()=>{
+ const db=new PGlite();await db.exec(`CREATE TABLE "user"(id text PRIMARY KEY);CREATE TABLE platform_subject_policy(subject_kind text,subject_id text,state text,revision integer);CREATE TABLE "session"(id text,user_id text,expires_at timestamptz);INSERT INTO "user" VALUES('active'),('suspended');INSERT INTO platform_subject_policy VALUES('user','suspended','suspended',1);INSERT INTO "session" VALUES('live','active',now()+interval '1 hour');`);
+ const core=await load('src/lib/platform-access-core.ts',{});
+ const adapter=await load('src/lib/platform-access.ts',{globalThis:{platformAccessPool:{query:db.query.bind(db),listenerCount:()=>1}},process:{env:{PLATFORM_ACCESS_POLICY_ENABLED:'false'}},require:name=>name==='./platform-access-core'?core:{Pool:class{constructor(){throw Error('Unexpected external database');}}}});
+ try{assert.equal(await adapter.platformAccessAllowed('active'),true);assert.equal(await adapter.platformAccessAllowed('suspended'),false);assert.equal(await adapter.platformAccessAllowed('deleted'),false);assert.equal(await adapter.platformSessionAllowed('active','live'),true);assert.equal(await adapter.platformSessionAllowed('active','revoked'),false);}finally{await db.close();}
+});

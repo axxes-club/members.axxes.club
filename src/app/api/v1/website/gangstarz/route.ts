@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {findGangstarzAtelierSite} from '@/lib/website/atelier-binding';
 import {NextResponse} from 'next/server';
 import {auth} from '@/lib/auth';
@@ -12,8 +13,8 @@ async function context(request:Request){
  return {principal:{userId:session.user.id,tenantId:rows[0].tenant_id},pageId:rows[0].page_id};
 }
 function failure(error:unknown){return NextResponse.json({error:error instanceof WebsiteError?error.message:'Website operation failed'},{status:error instanceof WebsiteError?error.status:500,headers:{'Cache-Control':'no-store'}})}
-export async function GET(request:Request){try{const {principal,pageId}=await context(request);const data=await websitePublication.draft(principal,pageId);const revisions=await websitePublication.history(principal,pageId);return NextResponse.json({data,revisions},{headers:{'Cache-Control':'no-store'}})}catch(e){return failure(e)}}
-export async function POST(request:Request){
+async function GETHandler(request:Request){try{const {principal,pageId}=await context(request);const data=await websitePublication.draft(principal,pageId);const revisions=await websitePublication.history(principal,pageId);return NextResponse.json({data,revisions},{headers:{'Cache-Control':'no-store'}})}catch(e){return failure(e)}}
+async function POSTHandler(request:Request){
  try{
   const origin=request.headers.get('origin');const host=request.headers.get('host');
   if(!origin||new URL(origin).host!==host)throw new WebsiteError('Invalid request origin',403);
@@ -27,3 +28,7 @@ export async function POST(request:Request){
   return NextResponse.json({success:true,revision});
  }catch(e){return failure(e)}
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/v1/website/gangstarz/route.ts'+':GET',12000);
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/website/gangstarz/route.ts'+':POST',3000);

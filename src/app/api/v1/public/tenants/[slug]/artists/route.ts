@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { tenants, artists } from "@/lib/db/schema";
@@ -11,7 +12,7 @@ import { and, asc, eq, sql } from "drizzle-orm";
  *   ?fields=slugs  just the slugs (static generation / sitemaps)
  *   ?q=<term>      substring search over name and bio
  */
-export async function GET(
+async function GETHandler(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -66,3 +67,5 @@ export async function GET(
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/v1/public/tenants/[slug]/artists/route.ts'+':GET',12000);

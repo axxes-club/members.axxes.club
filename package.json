@@ -30,7 +30,8 @@
     "test:quota": "node --test scripts/storage/*.check.mjs",
     "test:commerce": "tsx --test tests/commerce/*.test.ts",
     "test:storage-billing": "tsx --test tests/storage-billing-catalog.test.ts",
-    "test:platform-admin": "tsx --test tests/platform-admin/*.test.ts"
+    "test:platform-admin": "tsx --test tests/platform-admin/*.test.ts",
+    "test:security": "node --test tests/safe-head.test.mjs tests/security-admission.test.mjs tests/security-webhook.test.mjs tests/security-credential.test.mjs tests/security-account.test.mjs tests/security-account-policy.test.mjs && node --import tsx --test tests/security-signup.test.ts tests/security-smtp.test.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "7.19.0",
@@ -62,7 +63,7 @@
     "@tanstack/react-query": "^5.103.2",
     "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "^7.3.3",
-    "better-auth": "^1.4.19",
+    "better-auth": "1.6.33",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
@@ -71,9 +72,9 @@
     "lucide-react": "^0.575.0",
     "matrix-js-sdk": "^41.0.0",
     "nanoid": "^5.1.6",
-    "next": "16.3.6",
+    "next": "16.3.8",
     "next-themes": "^0.4.6",
-    "nodemailer": "^8.0.1",
+    "nodemailer": "10.0.16",
     "nuqs": "^2.10.1",
     "pg": "8.23.1",
     "pusher": "^5.3.4",
@@ -89,7 +90,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite": "0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25",
     "@types/nodemailer": "^7.0.11",
@@ -100,9 +101,17 @@
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.3.6",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "braces": "file:vendor/braces-3.0.3-secure.tgz"
+  },
+  "overrides": {
+    "braces": "$braces",
+    "uuid": "11.1.1",
+    "effect": "3.22.2",
+    "@babel/runtime": "7.29.10",
+    "esbuild": "0.28.2"
   }
 }

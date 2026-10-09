@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {platformAccessAllowed} from '@/lib/platform-access';
 import { NextRequest, NextResponse } from "next/server"
 import { getPusherServer } from "@/lib/pusher/server"
@@ -19,7 +20,7 @@ async function getSession() {
   })
 }
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const session = await getSession()
     if (!session?.user) {
@@ -97,3 +98,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Auth failed" }, { status: 500 })
   }
 }
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/v1/pusher/auth/route.ts'+':POST',3000);

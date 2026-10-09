@@ -1,7 +1,8 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { sendCampaign } from "@/lib/newsletter/email-sender"
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const body = await request.json()
     const { campaignId } = body
@@ -27,3 +28,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+export const POST=wrapAdmission(POSTHandler,'src/app/api/newsletter/send/route.ts'+':POST',3000);

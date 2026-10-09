@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Generic Integration Sync Endpoint
@@ -30,7 +31,7 @@ async function getSessionWithTenant() {
   return { userId: session.user.id, tenantId }
 }
 
-export async function POST(
+async function POSTHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -119,7 +120,7 @@ export async function POST(
 }
 
 // GET sync status
-export async function GET(
+async function GETHandler(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
@@ -146,3 +147,6 @@ export async function GET(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+export const POST=wrapAdmission(POSTHandler,'src/app/api/integrations/[provider]/sync/route.ts'+':POST',3000);
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/[provider]/sync/route.ts'+':GET',12000);

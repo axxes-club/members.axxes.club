@@ -1,9 +1,10 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq, and, sql } from "drizzle-orm"
 import { newsletterSends, listMemberships, newsletterEvents, newsletterCampaigns, subscriberLists } from "@/lib/db/schema"
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const body = await request.json()
     const { token, campaignId, reason } = body
@@ -93,3 +94,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+export const POST=wrapAdmission(POSTHandler,'src/app/api/newsletter/unsubscribe/route.ts'+':POST',3000);

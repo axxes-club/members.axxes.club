@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 /**
  * Dropbox OAuth Callback
  * Handles the OAuth callback from Dropbox
@@ -9,7 +10,7 @@ import { integrationConnection } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { getIntegration } from "@/lib/integrations"
 
-export async function GET(request: NextRequest) {
+async function GETHandler(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get("code")
   const error = searchParams.get("error")
@@ -122,3 +123,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?error=${encodeURIComponent(message)}`)
   }
 }
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/dropbox/callback/route.ts'+':GET',12000);

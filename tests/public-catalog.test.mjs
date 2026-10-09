@@ -41,3 +41,25 @@ test('unavailable apps and unsafe or malformed URLs stay out of the launcher', (
   for (const status of ['soon', 'retired']) assert.equal(publicCatalogProduct({ ...product, status }), null);
   for (const url of ['http://relay.axxes.club', 'javascript:alert(1)', 'not a URL']) assert.equal(publicCatalogProduct({ ...product, url }), null);
 });
+
+
+test('private operations and Stock stay out even when stale catalog rows advertise them', () => {
+  for (const key of ['manifest', 'stock', 'webmaster', 'wm', 'handshake', 'account', 'MANIFEST', 'WebMaster']) {
+    for (const status of ['live', 'beta']) assert.equal(publicCatalogProduct({ ...product, key, status }), null);
+  }
+  for (const url of ['https://wm.axxes.app', 'https://manifest.axxes.club', 'https://stock.axxes.app', 'https://handshake.axxes.club']) {
+    assert.equal(publicCatalogProduct({ ...product, key: 'legacy', url }), null);
+  }
+});
+
+test('legacy Pay display names are neutral while keys and launch routes stay stable', () => {
+  const legacy = Object.freeze({ ...product, key: 'tollbooth', name: 'AXXES Pay', url: 'https://tollbooth.axxes.club' });
+  const output = publicCatalogProduct(legacy);
+  assert.equal(output.name, 'Payments');
+  assert.equal(output.key, legacy.key);
+  assert.equal(output.url, legacy.url);
+  assert.equal(legacy.name, 'AXXES Pay');
+  const copy = publicCatalogProduct({ ...legacy, tagline: 'AXXES Pay checkout', description: 'AXXES Pay and AXXES Payments' });
+  assert.equal(copy.tagline, 'Payments checkout');
+  assert.equal(copy.description, 'Payments and AXXES Payments');
+});

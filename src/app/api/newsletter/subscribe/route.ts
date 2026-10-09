@@ -1,10 +1,11 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq, and, sql } from "drizzle-orm"
 import { subscriberLists, listMemberships, contacts, tenants } from "@/lib/db/schema"
 import { nanoid } from "nanoid"
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   try {
     const body = await request.json()
     const { email, listSlug, tenantSlug, firstName, lastName, source = "form" } = body
@@ -195,3 +196,5 @@ async function updateSubscriberCount(listId: string) {
     .where(eq(subscriberLists.id, listId))
 }
 
+
+export const POST=wrapAdmission(POSTHandler,'src/app/api/newsletter/subscribe/route.ts'+':POST',3000);

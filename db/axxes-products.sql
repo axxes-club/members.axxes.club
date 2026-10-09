@@ -82,7 +82,7 @@ VALUES
   -- ------------------------------------------------------------- Commerce --
   ('manifest','Stock', 'Every number explains itself',
    'Purchasing, fulfilment, transfers and quality on one honest ledger. Immovable stock moves, mistakes reversed rather than edited, and a cost layer that can be read line by line.',
-   'https://manifest.axxes.club', '#c8ff3d', 'Commerce', 'beta', true, 'ClipboardList', NULL, true, 20),
+   'https://manifest.axxes.club', '#c8ff3d', 'Commerce', 'beta', true, 'ClipboardList', NULL, false, 20),
 
   ('krates',  'Krates', 'The straightforward stock list',
    'The plain track: products, variants and stock levels across locations. Signs in separately for now. PENDING MERGE into Stock — see AXXES-BRAND.md; the key must not change either way.',

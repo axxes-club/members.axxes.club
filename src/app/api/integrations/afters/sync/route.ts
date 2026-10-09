@@ -1,3 +1,4 @@
+import {wrapAdmission} from '@/lib/security/admission-server';
 import {platformAccessAllowed} from '@/lib/platform-access';
 /**
  * Afters Sync Endpoint
@@ -30,7 +31,7 @@ async function getSessionWithTenant() {
   return { userId: session.user.id, tenantId }
 }
 
-export async function POST(request: NextRequest) {
+async function POSTHandler(request: NextRequest) {
   const { json } = request;
   try {
     const context = await getSessionWithTenant()
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET sync status
-export async function GET() {
+async function GETHandler() {
   try {
     const context = await getSessionWithTenant()
     if (!context) {
@@ -134,3 +135,6 @@ export async function GET() {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+export const POST=wrapAdmission(POSTHandler,'src/app/api/integrations/afters/sync/route.ts'+':POST',3000);
+
+export const GET=wrapAdmission(GETHandler,'src/app/api/integrations/afters/sync/route.ts'+':GET',12000);
